@@ -9,8 +9,10 @@ int main(int argc, char *argv[])
     std::shared_ptr<CGravizWinMain> gui(new CGravizWinMain());
     gui->init();
 
-    std::shared_ptr<CSystemController> controller(new CSystemController(gui));
-    std::shared_ptr<CGravizSystem> gravizApp(new CGravizSystem(controller));
+    std::shared_ptr<NController::CSystemController> controller(
+                new NController::CSystemController(gui));
+    std::shared_ptr<NGraviz::CGravizSystem> gravizApp(
+                new NGraviz::CGravizSystem(controller));
 
     gui->show();
 

@@ -1,5 +1,17 @@
-#include "framework/Commands/system/CSystemCmd.h"
+/**
+ * Project   Graviz
+ *
+ * @file     CSystemCmd.cpp
+ * @author   Dmytro Sadovyi
+ * @date     03.11.2016
+ */
+
 #include <QDebug>
+
+#include "framework/Commands/system/CSystemCmd.h"
+
+namespace NCommand
+{
 
 CSystemCmd::CSystemCmd(QStringList args)
     : ITerminalCommand(args)
@@ -23,3 +35,4 @@ void CSystemCmd::run()
     proc.waitForFinished(2*60*60*10);
 }
 
+} // namespace NCommand

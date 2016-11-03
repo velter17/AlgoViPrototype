@@ -1,8 +1,18 @@
-#ifndef CCOMPILER_H
-#define CCOMPILER_H
+/**
+ * Project   Graviz
+ *
+ * @file     CCompiler.h
+ * @author   Dmytro Sadovyi
+ * @date     03.11.2016
+ */
+
+#pragma once
 
 #include "framework/Commands/ITerminalCommand.h"
 #include "framework/Commands/system/CSystemCmd.h"
+
+namespace NCommand
+{
 
 class CCompiler : public ITerminalCommand
 {
@@ -11,7 +21,7 @@ public:
     QString getManualMessage();
 
 protected:
-    void run();
+    void run() override;
 };
 
-#endif // CCOMPILER_H
+} // namespace NCommand

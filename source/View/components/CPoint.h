@@ -1,5 +1,12 @@
-#ifndef CPOINT_H
-#define CPOINT_H
+/**
+ * Project   Graviz
+ *
+ * @file     CPoint.h
+ * @author   Dmytro Sadovyi
+ * @date     03.11.2016
+ */
+
+#pragma once
 
 #include <QGraphicsItem>
 #include <QPoint>
@@ -7,9 +14,12 @@
 #include <QStyle>
 #include <QStyleOptionGraphicsItem>
 
+namespace NView
+{
+
 class CPoint : public QGraphicsItem
 {
-public: // functions
+public: // methods
     CPoint(const QPoint& p);
     ~CPoint();
 
@@ -17,8 +27,8 @@ public: // functions
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
 
-private:
+private: // fields
     static const int sPointRadius;
 };
 
-#endif // CPOINT_H
+} // namespace NView

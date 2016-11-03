@@ -1,8 +1,19 @@
-#include "CPoint.h"
+/**
+ * Project   Graviz
+ *
+ * @file     CPoint.cpp
+ * @author   Dmytro Sadovyi
+ * @date     03.11.2016
+ */
+
+#include "View/components/CPoint.h"
 #include <QDebug>
 #include <QGraphicsSceneMouseEvent>
 #include <QGraphicsScene>
 #include <QTextItem>
+
+namespace NView
+{
 
 const int CPoint::sPointRadius = 3;
 
@@ -53,3 +64,4 @@ void CPoint::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     this->scene()->update(this->boundingRect().adjusted(-pos().x(), -pos().y(), pos().x(), pos().y()));
 }
 
+} // namespace NView

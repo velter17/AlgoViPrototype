@@ -1,5 +1,17 @@
-#include "framework/Commands/ITerminalCommand.h"
+/**
+ * Project   Graviz
+ *
+ * @file     ITerminalCommand.cpp
+ * @author   Dmytro Sadovyi
+ * @date     03.11.2016
+ */
+
 #include <QDebug>
+
+#include "framework/Commands/ITerminalCommand.h"
+
+namespace NCommand
+{
 
 ITerminalCommand::ITerminalCommand(QStringList args)
     : mDirectory("./")
@@ -72,3 +84,5 @@ QString ITerminalCommand::getOptionsHelp()
     sstream << mOptions;
     return QString::fromStdString(sstream.str());
 }
+
+} // namespace NCommand

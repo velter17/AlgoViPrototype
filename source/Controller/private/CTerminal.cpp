@@ -1,13 +1,24 @@
-#include "Controller/CTerminal.h"
-#include "framework/Commands/system/CSystemCmd.h"
-#include "framework/Commands/CFileSystem.h"
-#include "framework/Commands/system/CCompiler.h"
+/**
+ * Project   Graviz
+ *
+ * @file     CTerminal.cpp
+ * @author   Dmytro Sadovyi
+ * @date     03.11.2016
+ */
 
 #include <QTextBlock>
 #include <QApplication>
 #include <iostream>
 #include <QDebug>
 #include <QTimer>
+
+#include "Controller/CTerminal.h"
+#include "framework/Commands/system/CSystemCmd.h"
+#include "framework/Commands/CFileSystem.h"
+#include "framework/Commands/system/CCompiler.h"
+
+namespace NController
+{
 
 QColor CTerminal::Colors::Background = QColor(0,0,0);
 QColor CTerminal::Colors::Main = QColor(0,255,0);
@@ -18,7 +29,6 @@ CTerminal::CTerminal(QWidget *parent)
     : QPlainTextEdit(parent)
     , mPromptString("graviz")
     , mLocked(false)
-    , mController(nullptr)
     , mTabPressCount(0)
 {
     mHistoryItr = mHistory.end();
@@ -37,13 +47,18 @@ void CTerminal::keyPressEvent(QKeyEvent *e)
     if(mLocked)
         return;
 
+    /* Single character */
     if(e->key() >= 0x20 && e->key() <= 0x7e
            && (e->modifiers() == Qt::NoModifier || e->modifiers() == Qt::ShiftModifier))
                 QPlainTextEdit::keyPressEvent(e);
+
+    /* Delete one character by backspace key */
     if(e->key() == Qt::Key_Backspace
            && e->modifiers() == Qt::NoModifier
            && textCursor().positionInBlock() > mPromptStringLen)
             QPlainTextEdit::keyPressEvent(e);
+
+    /* Restore command, which was been typed before */
     if(e->key() == Qt::Key_Up)
     {
         qDebug () << mHistory;
@@ -60,6 +75,8 @@ void CTerminal::keyPressEvent(QKeyEvent *e)
             p.insertText(*mHistoryItr);
         }
     }
+
+    /* Restore command, which was been typed after */
     if(e->key() == Qt::Key_Down)
     {
         if(mHistoryItr != mHistory.end() && !mHistory.isEmpty())
@@ -78,6 +95,8 @@ void CTerminal::keyPressEvent(QKeyEvent *e)
             p.insertText(*mHistoryItr);
         }
     }
+
+    /* Move cursor left or right */
     if(e->key() == Qt::Key_Left || e->key() == Qt::Key_Right)
     {
         if(!(e->key() == Qt::Key_Left && textCursor().columnNumber() == mPromptStringLen))
@@ -87,6 +106,11 @@ void CTerminal::keyPressEvent(QKeyEvent *e)
             this->setTextCursor(cursor);
         }
     }
+
+    /* Query for typing hint
+     * One tab - autocompletion of current word
+     * Two tabs - list of completion hints
+    */
     if(e->key() == Qt::Key_Tab)
     {
         if(mTabPressCount == 0)
@@ -95,9 +119,11 @@ void CTerminal::keyPressEvent(QKeyEvent *e)
         }
         ++mTabPressCount;
     }
+
+    /* Execute command */
     if(e->key() == Qt::Key_Return && e->modifiers() == Qt::NoModifier)
     {
-        QString cmdStr = this->textCursor().block().text().mid(mPromptStringLen);
+        /*QString cmdStr = this->textCursor().block().text().mid(mPromptStringLen);
         qDebug () << cmdStr;
         mHistory.append(cmdStr);
         mHistoryItr = mHistory.end();
@@ -142,7 +168,7 @@ void CTerminal::keyPressEvent(QKeyEvent *e)
             cmd->start();
         }
         //else if(!cmddata.title.isEmpty())
-        //    appendError("Error. " + cmddata.title + ": unknown command");
+        //    appendError("Error. " + cmddata.title + ": unknown command");*/
     }
 }
 
@@ -207,11 +233,6 @@ void CTerminal::contextMenuEvent(QContextMenuEvent *e)
 
 }
 
-void CTerminal::setController(CSystemController *ptr)
-{
-    mController = ptr;
-}
-
 void CTerminal::newCmdPrompt()
 {
     this->textCursor().block().text().clear();
@@ -257,3 +278,4 @@ void CTerminal::unlock()
     newCmdPrompt();
 }
 
+} // namespace NController

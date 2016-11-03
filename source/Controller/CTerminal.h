@@ -1,5 +1,12 @@
-#ifndef CTERMINAL_H
-#define CTERMINAL_H
+/**
+ * Project   Graviz
+ *
+ * @file     CTerminal.h
+ * @author   Dmytro Sadovyi
+ * @date     03.11.2016
+ */
+
+#pragma once
 
 #include <QPlainTextEdit>
 #include <QPushButton>
@@ -7,16 +14,19 @@
 #include <QPair>
 #include <QColor>
 #include <QStringList>
+
 #include "framework/Commands/CFileSystem.h"
 #include "Controller/CSystemController.h"
+
+namespace NController
+{
 
 class CSystemController;
 
 class CTerminal : public QPlainTextEdit
 {
     Q_OBJECT
-public:
-
+public: // methods
     CTerminal(QWidget* parent);
 
     void keyPressEvent(QKeyEvent *e);
@@ -24,21 +34,24 @@ public:
     void mouseDoubleClickEvent(QMouseEvent *e);
     void contextMenuEvent(QContextMenuEvent *e);
 
-    void setController(CSystemController* ptr);
-
-private:
+private: // methods
     QString preprocessMsg(const QString& msg);
     void newCmdPrompt();
-public slots:
+
+public slots: // methods
     void appendMain(const QString& str);
     void appendOutput(const QString& str);
     void appendError(const QString& str);
-private slots:
+
+private slots: // methods
     void lock();
     void unlock();
     void tabKeyHandler();
 
-private:
+signals:
+    void command(const QStringList& args);
+
+private: // fields
     QString mPromptString;
 
     struct Colors
@@ -49,18 +62,12 @@ private:
         static QColor Error;
     };
     QPalette mPalette;
-
     bool mLocked;
-
-    CFileSystem mFileSystem;
+    NCommand::CFileSystem mFileSystem;
     int mPromptStringLen;
-
     QStringList mHistory;
     QStringList::iterator mHistoryItr;
-
-    CSystemController* mController;
-
     int mTabPressCount;
 };
 
-#endif // CTERMINAL_H
+} // namespace NController

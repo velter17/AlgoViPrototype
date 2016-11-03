@@ -1,8 +1,20 @@
-#include "framework/Commands/system/CCompiler.h"
+/**
+ * Project   Graviz
+ *
+ * @file     CCompiler.cpp
+ * @author   Dmytro Sadovyi
+ * @date     03.11.2016
+ */
+
 #include <boost/program_options.hpp>
 #include <QDebug>
 #include <QString>
 #include <iostream>
+
+#include "framework/Commands/system/CCompiler.h"
+
+namespace NCommand
+{
 
 CCompiler::CCompiler(QStringList args)
     : ITerminalCommand(args)
@@ -41,3 +53,5 @@ QString CCompiler::getManualMessage()
            "See help for options description (-h, --help)"
            "</font>";
 }
+
+} // namespace NCommand

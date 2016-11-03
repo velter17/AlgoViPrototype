@@ -1,9 +1,7 @@
 
 FILE ( GLOB_RECURSE COMMANDS_LIB_SOURCES
    "*.h"
-   "private/*.cpp"
-   "system/*.h"
-   "system/private/*.cpp"
+   "*.cpp"
 )
 
 ADD_LIBRARY ( ${COMMANDS_LIB_NAME} STATIC ${COMMANDS_LIB_SOURCES})

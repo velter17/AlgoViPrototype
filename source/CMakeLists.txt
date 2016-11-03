@@ -1,15 +1,7 @@
 FILE ( GLOB_RECURSE GRAVIZ_SOURCES
-   "main.cpp"
-   "Controller/*.h"
-   "Controller/*.cpp"
-   "View/*.h"
-   "View/*.cpp"
-   "gui/*.h"
-   "gui/*.cpp"
+   "*.h"
+   "*.cpp"
    "gui/*.ui"
-   "gui/*.qml"
-   "graviz/*.h"
-   "graviz/*.cpp"
 )
 
 SET ( GRAVIZ_APP_NAME "graviz" )

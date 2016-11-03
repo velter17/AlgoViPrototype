@@ -1,18 +1,28 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+/**
+ * Project   Graviz
+ *
+ * @file     CGravizWinMain.h
+ * @author   Dmytro Sadovyi
+ * @date     03.11.2016
+ */
+
+#pragma once
 
 #include <QMainWindow>
 #include <memory>
+#include <QLabel>
+#include <QMap>
 
 #include "View/CGraphicView.h"
 #include "Controller/CSystemController.h"
 #include "Controller/CTerminal.h"
 #include "graviz/Types.h"
-#include <QLabel>
-#include <QMap>
 
-class CSystemController;
+
+namespace NController {
 class CTerminal;
+class CSystemController;
+}
 
 namespace Ui {
 class CGravizWinMain;
@@ -29,15 +39,13 @@ public: // methids
 
     void setAlgoLabel(const QString& title, const QString& value);
     QGraphicsView* getGraphicsView();
-    CTerminal* getTerminal();
+    NController::CTerminal* getTerminal();
 
 signals:
-    void modeChanged(TSystemMode mode);
+    void modeChanged(NGraviz::TSystemMode mode);
 
 private: //fields
     Ui::CGravizWinMain *ui;
 
     QMap<QString, std::shared_ptr<QLabel>> mAlgoLabels;
 };
-
-#endif // MAINWINDOW_H

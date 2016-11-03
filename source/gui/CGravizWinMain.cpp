@@ -1,8 +1,17 @@
-#include "gui/CGravizWinMain.h"
-#include "ui_CGravizWinMain.h"
+/**
+ * Project   Graviz
+ *
+ * @file     CGravizWinMain.cpp
+ * @author   Dmytro Sadovyi
+ * @date     03.11.2016
+ */
+
 #include <QDebug>
 #include <QProcess>
 #include <QLabel>
+
+#include "gui/CGravizWinMain.h"
+#include "ui_CGravizWinMain.h"
 #include "graviz/Types.h"
 
 CGravizWinMain::CGravizWinMain(QWidget *parent)
@@ -34,7 +43,7 @@ QGraphicsView *CGravizWinMain::getGraphicsView()
     return ui->mGraphicsView;
 }
 
-CTerminal *CGravizWinMain::getTerminal()
+NController::CTerminal *CGravizWinMain::getTerminal()
 {
     return ui->mTerminal;
 }

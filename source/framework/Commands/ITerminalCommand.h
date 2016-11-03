@@ -1,5 +1,12 @@
-#ifndef CTERMINALCOMMAND_H
-#define CTERMINALCOMMAND_H
+/**
+ * Project   Graviz
+ *
+ * @file     ITerminalCommand.h
+ * @author   Dmytro Sadovyi
+ * @date     03.11.2016
+ */
+
+#pragma once
 
 #include <boost/program_options.hpp>
 #include <QStringList>
@@ -8,10 +15,13 @@
 #include <sstream>
 #include <QThread>
 
+namespace NCommand
+{
+
 class ITerminalCommand : public QThread
 {
     Q_OBJECT
-public:
+public: // methods
     ITerminalCommand(QStringList args = QStringList());
     virtual ~ITerminalCommand();
 
@@ -23,15 +33,14 @@ signals:
     void log(QString msg);
     void error(QString msg);
     void logHtml(QString msg);
-protected:
+protected: // methods
    QString getOptionsHelp();
    bool readOptions(const QStringList &args, boost::program_options::variables_map &vm);
 
-protected:
+protected: // fields
    QString mDirectory;
    boost::program_options::options_description mOptions;
    QStringList mArgs;
 };
 
-
-#endif // CTERMINALCOMMAND_H
+} // namespace NCommand

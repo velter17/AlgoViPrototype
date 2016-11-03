@@ -1,6 +1,18 @@
-#include "framework/Commands/CFileSystem.h"
+/**
+ * Project   Graviz
+ *
+ * @file     CFileSystem.cpp
+ * @author   Dmytro Sadovyi
+ * @date     03.11.2016
+ */
+
 #include <QDebug>
 #include <sstream>
+
+#include "framework/Commands/CFileSystem.h"
+
+namespace NCommand
+{
 
 CFileSystem::CFileSystem()
     : mCurrentPath("/home/dsadovyi")
@@ -92,4 +104,4 @@ bool CFileSystem::isDirectory(const QString& obj)
     return boost::filesystem::is_directory(p);
 }
 
-
+} // namespace NCommand
