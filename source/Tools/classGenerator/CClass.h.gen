@@ -1,0 +1,21 @@
+/**
+ * Project   Graviz
+ *
+ * @file     $FILE_NAME$
+ * @author   $AUTHOR$
+ * @date     $DATE$
+ */
+
+#pragma once
+
+$Nnamespace $NAMESPACE$
+$N{
+$N
+class $CLASS_NAME$
+{
+public: // methods
+    $CLASS_NAME$();
+};
+$N
+$N} // namespace $NAMESPACE$
+

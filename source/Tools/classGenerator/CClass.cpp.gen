@@ -1,0 +1,20 @@
+/**
+ * Project   Graviz
+ *
+ * @file     $FILE_NAME$
+ * @author   $AUTHOR$
+ * @date     $DATE$
+ */
+
+#include "$HEADER_PATH$"
+
+$Nnamespace $NAMESPACE$
+$N{
+
+$CLASS_NAME$::$CLASS_NAME$()
+{
+
+}
+
+$N
+$N} // namespace $NAMESPACE$
