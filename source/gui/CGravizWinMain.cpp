@@ -19,6 +19,8 @@ CGravizWinMain::CGravizWinMain(QWidget *parent)
     , ui(new Ui::CGravizWinMain)
 {
     ui->setupUi(this);
+    connect(ui->mTerminal, &NController::CTerminal::command,
+            [this](const QString& cmd){emit newCommand(cmd);});
 }
 
 CGravizWinMain::~CGravizWinMain()
@@ -43,13 +45,32 @@ QGraphicsView *CGravizWinMain::getGraphicsView()
     return ui->mGraphicsView;
 }
 
-NController::CTerminal *CGravizWinMain::getTerminal()
+void CGravizWinMain::lock()
 {
-    return ui->mTerminal;
+    ui->mTerminal->lock();
+}
+
+void CGravizWinMain::unlock()
+{
+    ui->mTerminal->unlock();
+}
+
+void CGravizWinMain::handleLog(QString msg)
+{
+    ui->mTerminal->appendOutput(msg);
+}
+
+void CGravizWinMain::handleError(QString msg)
+{
+    ui->mTerminal->appendError(msg);
+}
+
+void CGravizWinMain::handleLogHtml(QString msg)
+{
+    ui->mTerminal->appendHtml(msg);
 }
 
 void CGravizWinMain::init()
 {
 
 }
-

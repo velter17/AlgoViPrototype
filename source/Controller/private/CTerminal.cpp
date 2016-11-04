@@ -37,13 +37,12 @@ CTerminal::CTerminal(QWidget *parent)
     mPalette.setColor(QPalette::Text, Colors::Main);
     setPalette(mPalette);
 
-    connect(&mFileSystem, SIGNAL(error(QString)), this, SLOT(appendError(QString)));
-
     newCmdPrompt();
 }
 
 void CTerminal::keyPressEvent(QKeyEvent *e)
 {
+    qDebug () << "CTerminal> keyPress";
     if(mLocked)
         return;
 
@@ -115,7 +114,7 @@ void CTerminal::keyPressEvent(QKeyEvent *e)
     {
         if(mTabPressCount == 0)
         {
-            QTimer::singleShot(200, this, SLOT(tabKeyHandler()));
+            QTimer::singleShot(100, this, SLOT(tabKeyHandler()));
         }
         ++mTabPressCount;
     }
@@ -123,52 +122,12 @@ void CTerminal::keyPressEvent(QKeyEvent *e)
     /* Execute command */
     if(e->key() == Qt::Key_Return && e->modifiers() == Qt::NoModifier)
     {
-        /*QString cmdStr = this->textCursor().block().text().mid(mPromptStringLen);
+        QString cmdStr = this->textCursor().block().text().mid(mPromptStringLen);
         qDebug () << cmdStr;
         mHistory.append(cmdStr);
         mHistoryItr = mHistory.end();
-        QStringList args = cmdStr.split(QRegExp("\\s+"), QString::SkipEmptyParts);
-        qDebug () << "args: " << args;
-        QString command = *args.begin();
-        qDebug () << "command is " << command;
-        if(command == "compile")
-        {
-            args.erase(args.begin());
-            CCompiler* compiler = new CCompiler(args);
-            connect(compiler, SIGNAL(finished()), compiler, SLOT(deleteLater()));
-            connect(compiler, SIGNAL(error(QString)), this, SLOT(appendError(QString)));
-            connect(compiler, SIGNAL(log(QString)), this, SLOT(appendOutput(QString)));
-            connect(compiler, SIGNAL(logHtml(QString)), this, SLOT(appendHtml(QString)));
-            connect(compiler, SIGNAL(started()), this, SLOT(lock()));
-            connect(compiler, SIGNAL(finished()), this, SLOT(unlock()));
-            compiler->setWorkingDir(mFileSystem.getCurrentPath());
-            compiler->start();
-            //mController->setSolutionPath(mFileSystem.getCurrentPath() + "/app");
-        }
-        else if(false)//cmddata.title == "ls")
-        {
-//            QStringList ls = mFileSystem.getDirList();
-//            for(QString str : ls)
-//                appendOutput(str);
-        }
-        else if(command == "cd")
-        {
-            mFileSystem.changeDir(*(args.begin()+1));
-            newCmdPrompt();
-        }
-        else
-        {
-            CSystemCmd* cmd = new CSystemCmd(QStringList() << cmdStr);
-            connect(cmd, SIGNAL(finished()), cmd, SLOT(deleteLater()));
-            connect(cmd, SIGNAL(error(QString)), this, SLOT(appendError(QString)));
-            connect(cmd, SIGNAL(log(QString)), this, SLOT(appendOutput(QString)));
-            connect(cmd, SIGNAL(finished()), this, SLOT(unlock()));
-            connect(cmd, SIGNAL(started()), this, SLOT(lock()));
-            cmd->setWorkingDir(mFileSystem.getCurrentPath());
-            cmd->start();
-        }
-        //else if(!cmddata.title.isEmpty())
-        //    appendError("Error. " + cmddata.title + ": unknown command");*/
+        qDebug () << "execute";
+        emit command(cmdStr);
     }
 }
 
@@ -182,7 +141,7 @@ void CTerminal::tabKeyHandler()
         --idx;
     }
     cmdStr = cmdStr.mid(idx+1);
-    QPair<QStringList, int> hints = mFileSystem.getHint(cmdStr);
+    QPair<QStringList, int> hints = NCommand::CFileSystem::getInstance().getHint(cmdStr);
     qDebug () << "hints: " << hints.first;
     
     if(mTabPressCount > 1 && hints.first.size() > 1)
@@ -209,7 +168,8 @@ void CTerminal::tabKeyHandler()
         {
             QString toAppend = (*hints.first.begin()).mid(hints.second, lcp-hints.second);
             this->textCursor().insertText(toAppend);
-            if(hints.first.size() == 1 && mFileSystem.isDirectory(cmdStr + toAppend))
+            if(hints.first.size() == 1 &&
+                    NCommand::CFileSystem::getInstance().isDirectory(cmdStr + toAppend))
             {
                 this->textCursor().insertText("/");
             }
@@ -236,7 +196,7 @@ void CTerminal::contextMenuEvent(QContextMenuEvent *e)
 void CTerminal::newCmdPrompt()
 {
     this->textCursor().block().text().clear();
-    QString prompt = mPromptString + ":" + mFileSystem.getCurrentPath() + "# ";
+    QString prompt = mPromptString + ":" + NCommand::CFileSystem::getInstance().getCurrentPath() + "# ";
     mPromptStringLen = prompt.length();
     appendMain(prompt);
 }
@@ -258,7 +218,6 @@ void CTerminal::appendMain(const QString &str)
 
 void CTerminal::appendOutput(const QString &str)
 {
-    qDebug () << "I am here";
     this->appendHtml("<font color=" + Colors::Output.name() + ">" + preprocessMsg(str) + "</font>");
 }
 
@@ -269,11 +228,13 @@ void CTerminal::appendError(const QString &str)
 
 void CTerminal::lock()
 {
+    qDebug () << "CTerminal> lock";
     mLocked = true;
 }
 
 void CTerminal::unlock()
 {
+    qDebug () << "CTerminal> unlock";
     mLocked = false;
     newCmdPrompt();
 }

@@ -42,14 +42,14 @@ public slots: // methods
     void appendMain(const QString& str);
     void appendOutput(const QString& str);
     void appendError(const QString& str);
-
-private slots: // methods
     void lock();
     void unlock();
+
+private slots: // methods
     void tabKeyHandler();
 
 signals:
-    void command(const QStringList& args);
+    void command(const QString& cmd);
 
 private: // fields
     QString mPromptString;
@@ -63,7 +63,6 @@ private: // fields
     };
     QPalette mPalette;
     bool mLocked;
-    NCommand::CFileSystem mFileSystem;
     int mPromptStringLen;
     QStringList mHistory;
     QStringList::iterator mHistoryItr;

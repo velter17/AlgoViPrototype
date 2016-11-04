@@ -28,7 +28,7 @@ cmakeArgs = [
 makeArgs = [
     'make',
     'install',
-#    '-j8'
+    '-j8'
 ]
 
 try:

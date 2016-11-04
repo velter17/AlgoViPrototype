@@ -24,8 +24,9 @@ class CGravizSystem;
 namespace NController
 {
 
-class CSystemController
+class CSystemController : public QObject
 {
+    Q_OBJECT
 public:
     CSystemController(std::shared_ptr<CGravizWinMain> GUI);
 
@@ -40,6 +41,13 @@ public:
      * @param view
      */
     void setView(std::shared_ptr<NView::CGraphicView> view);
+
+public slots:
+    void handleCommand(QString cmd);
+    void handleLog(QString msg);
+    void handleError(QString msg);
+    void handleLogHtml(QString msg);
+    void unlock();
 
 private:
     std::shared_ptr<CGravizWinMain> mGUI;

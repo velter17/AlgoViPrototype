@@ -20,6 +20,17 @@ CFileSystem::CFileSystem()
 
 }
 
+CFileSystem::CFileSystem(const CFileSystem &)
+{
+
+}
+
+CFileSystem &CFileSystem::getInstance()
+{
+    static CFileSystem sys;
+    return sys;
+}
+
 QStringList CFileSystem::getDirList()
 {
 

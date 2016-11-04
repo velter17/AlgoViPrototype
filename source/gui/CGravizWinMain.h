@@ -21,7 +21,6 @@
 
 namespace NController {
 class CTerminal;
-class CSystemController;
 }
 
 namespace Ui {
@@ -39,10 +38,15 @@ public: // methids
 
     void setAlgoLabel(const QString& title, const QString& value);
     QGraphicsView* getGraphicsView();
-    NController::CTerminal* getTerminal();
+    void lock();
+    void unlock();
+    void handleLog(QString msg);
+    void handleError(QString msg);
+    void handleLogHtml(QString msg);
 
 signals:
     void modeChanged(NGraviz::TSystemMode mode);
+    void newCommand(const QString& cmd);
 
 private: //fields
     Ui::CGravizWinMain *ui;

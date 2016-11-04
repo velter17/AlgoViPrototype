@@ -21,12 +21,16 @@ class CFileSystem : public QObject
 {
     Q_OBJECT
 public: // methods
-    CFileSystem();
+    static CFileSystem& getInstance();
+
     QStringList getDirList();
     QString getCurrentPath();
     void changeDir(const QString& dir);
     QPair<QStringList, int> getHint(const QString& curStr);
     bool isDirectory(const QString& obj);
+private: // methods
+    CFileSystem();
+    CFileSystem(const CFileSystem&);
 signals:
     void error(const QString& msg);
 private: // fields
