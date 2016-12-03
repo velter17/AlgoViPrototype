@@ -20,4 +20,12 @@ enum class TSystemMode
                  // add new type before it
 };
 
+enum class TProblemSolverType
+{
+    RealTime, // update answer each time, when we change input
+    Straight, // update answer by query
+    Interactive, // dialog with user
+};
+
+
 } // namespace NGraviz

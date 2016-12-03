@@ -43,11 +43,11 @@ public:
     void setView(std::shared_ptr<NView::CGraphicView> view);
 
 public slots:
-    void handleCommand(QString cmd);
+    void handleCommand(NController::TTerminalCommandType type, const QString& cmd);
     void handleLog(QString msg);
     void handleError(QString msg);
-    void handleLogHtml(QString msg);
     void unlock();
+    void setAppMode();
 
 private:
     std::shared_ptr<CGravizWinMain> mGUI;

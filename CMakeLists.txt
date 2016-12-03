@@ -21,6 +21,6 @@ INCLUDE_DIRECTORIES ( ${Boost_INCLUDE_DIRS} )
 
 INCLUDE_DIRECTORIES ( "source" )
 
-SET ( CMAKE_CXX_FLAGS "-std=c++11 -O3" )
+SET ( CMAKE_CXX_FLAGS "-std=c++11 -g" )
 
 ADD_SUBDIRECTORY ( source )

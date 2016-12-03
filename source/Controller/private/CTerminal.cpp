@@ -11,6 +11,7 @@
 #include <iostream>
 #include <QDebug>
 #include <QTimer>
+#include <QScrollBar>
 
 #include "Controller/CTerminal.h"
 #include "framework/Commands/system/CSystemCmd.h"
@@ -28,9 +29,10 @@ QColor CTerminal::Colors::Output = QColor(255,255,255);
 CTerminal::CTerminal(QWidget *parent)
     : QPlainTextEdit(parent)
     , mPromptString("graviz")
-    , mLocked(false)
     , mTabPressCount(0)
 {
+
+    mState = TTerminalState::CommandInput;
     mHistoryItr = mHistory.end();
 
     mPalette.setColor(QPalette::Base, Colors::Background);
@@ -38,24 +40,69 @@ CTerminal::CTerminal(QWidget *parent)
     setPalette(mPalette);
 
     newCmdPrompt();
+
+    QFont font = this->font();
+    font.setFixedPitch(true);
+    this->setFont(font);
+    qDebug () << "Fixed pitchA === " << this->font().fixedPitch();
+    qDebug () << "Fixed pitchB === " << this->fontInfo().fixedPitch();
+    QFont font1("monospace");
+    QFontInfo info(font1);
+    this->setFont(font1);
+    qDebug () << "!!!" << info.fixedPitch();
 }
 
 void CTerminal::keyPressEvent(QKeyEvent *e)
 {
-    qDebug () << "CTerminal> keyPress";
-    if(mLocked)
+    this->verticalScrollBar()->setValue(verticalScrollBar()->maximum());
+
+    if(mState == TTerminalState::InsideApp)
+    {
+        if(e->key() == Qt::Key_C && e->modifiers() == Qt::ControlModifier)
+        {
+            this->textCursor().insertText("^C");
+            lock();
+            command(TTerminalCommandType::System, "^C");
+        }
+        if(e->key() >= 0x20 && e->key() <= 0x7e
+               && (e->modifiers() == Qt::NoModifier
+                   || e->modifiers() == Qt::ShiftModifier
+                   || e->modifiers() == Qt::KeypadModifier))
+                    QPlainTextEdit::keyPressEvent(e);
+        if(e->key() == Qt::Key_Backspace
+               && e->modifiers() == Qt::NoModifier
+               && textCursor().positionInBlock() > 0)
+                QPlainTextEdit::keyPressEvent(e);
+        if((e->key() == Qt::Key_Enter || e->key() == Qt::Key_Return)
+                && (e->modifiers() == Qt::NoModifier
+                    || e->modifiers() == Qt::KeypadModifier))
+        {
+            QString cmdStr = this->textCursor().block().text();
+            qDebug () << "cmdStr == " << cmdStr;
+            this->textCursor().insertBlock();
+            emit command(TTerminalCommandType::Application, cmdStr);
+            //QPlainTextEdit::keyPressEvent(e);
+        }
         return;
+    }
 
     /* Single character */
     if(e->key() >= 0x20 && e->key() <= 0x7e
-           && (e->modifiers() == Qt::NoModifier || e->modifiers() == Qt::ShiftModifier))
-                QPlainTextEdit::keyPressEvent(e);
+           && (e->modifiers() == Qt::NoModifier
+               || e->modifiers() == Qt::ShiftModifier
+               || e->modifiers() == Qt::KeypadModifier))
+                //QPlainTextEdit::keyPressEvent(e);
+    {
+        this->textCursor().insertHtml(preprocessMsg(e->text()));
+    }
 
     /* Delete one character by backspace key */
     if(e->key() == Qt::Key_Backspace
            && e->modifiers() == Qt::NoModifier
            && textCursor().positionInBlock() > mPromptStringLen)
-            QPlainTextEdit::keyPressEvent(e);
+    {
+        QPlainTextEdit::keyPressEvent(e);
+    }
 
     /* Restore command, which was been typed before */
     if(e->key() == Qt::Key_Up)
@@ -112,22 +159,26 @@ void CTerminal::keyPressEvent(QKeyEvent *e)
     */
     if(e->key() == Qt::Key_Tab)
     {
+        qDebug () << "TAB!";
         if(mTabPressCount == 0)
         {
-            QTimer::singleShot(100, this, SLOT(tabKeyHandler()));
+            QTimer::singleShot(150, this, SLOT(tabKeyHandler()));
         }
         ++mTabPressCount;
     }
 
     /* Execute command */
-    if(e->key() == Qt::Key_Return && e->modifiers() == Qt::NoModifier)
+    if((e->key() == Qt::Key_Enter || e->key() == Qt::Key_Return)
+            && (e->modifiers() == Qt::NoModifier
+                || e->modifiers() == Qt::KeypadModifier))
     {
         QString cmdStr = this->textCursor().block().text().mid(mPromptStringLen);
-        qDebug () << cmdStr;
+        qDebug () << "execute command : " << cmdStr;
         mHistory.append(cmdStr);
         mHistoryItr = mHistory.end();
-        qDebug () << "execute";
-        emit command(cmdStr);
+        this->textCursor().insertBlock();
+        emit command(TTerminalCommandType::System, cmdStr);
+        //QPlainTextEdit::keyPressEvent(e);
     }
 }
 
@@ -142,8 +193,8 @@ void CTerminal::tabKeyHandler()
     }
     cmdStr = cmdStr.mid(idx+1);
     QPair<QStringList, int> hints = NCommand::CFileSystem::getInstance().getHint(cmdStr);
-    qDebug () << "hints: " << hints.first;
-    
+    qDebug () << "hints: " << hints.first << ", tabs=" << mTabPressCount;
+
     if(mTabPressCount > 1 && hints.first.size() > 1)
     {
         QTextBlock b = this->document()->lastBlock();
@@ -195,15 +246,42 @@ void CTerminal::contextMenuEvent(QContextMenuEvent *e)
 
 void CTerminal::newCmdPrompt()
 {
-    this->textCursor().block().text().clear();
+    //this->textCursor().block().text().clear();
     QString prompt = mPromptString + ":" + NCommand::CFileSystem::getInstance().getCurrentPath() + "# ";
     mPromptStringLen = prompt.length();
     appendMain(prompt);
 }
 
+void CTerminal::appendString(const QString &str)
+{
+    this->appendHtml(str);
+    //this->textCursor().insertBlock();
+    //this->appendHtml("<font color=" + Colors::Main.name() + ">^</font>");
+    //this->appendMain("");
+    this->verticalScrollBar()->setValue(verticalScrollBar()->maximum());
+}
+
+void CTerminal::insertString(const QString &str)
+{
+    //QTextCursor p = QTextCursor(document()->lastBlock());
+    //p.insertHtml(str);
+    //p.insertText(str);
+    //this->textCursor().insertBlock();
+    QTextBlock block = document()->lastBlock();
+    QTextCursor p(block);
+    p.select(QTextCursor::BlockUnderCursor);
+    p.removeSelectedText();
+    this->textCursor().deletePreviousChar();
+    this->appendHtml(str);
+    this->textCursor().insertBlock();
+    this->verticalScrollBar()->setValue(verticalScrollBar()->maximum());
+}
+
 QString CTerminal::preprocessMsg(const QString &msg)
 {
     QString ret = msg.toHtmlEscaped();
+    if(ret.length() > 0 && *(ret.end()-1) == '\n')
+        ret.chop(1);
     ret.replace(QString("\n"), QString("<br>"));
     ret.replace(QString(" "), QString("&nbsp;"));
     return ret;
@@ -213,30 +291,44 @@ QString CTerminal::preprocessMsg(const QString &msg)
 
 void CTerminal::appendMain(const QString &str)
 {
-    this->appendHtml("<font color=" + Colors::Main.name() + ">" + preprocessMsg(str) + "</font>");
+    //appendString("<font color=" + Colors::Main.name() + ">" + preprocessMsg(str) + "</font>");
+    appendString(str);
 }
 
 void CTerminal::appendOutput(const QString &str)
 {
-    this->appendHtml("<font color=" + Colors::Output.name() + ">" + preprocessMsg(str) + "</font>");
+    insertString("<font color=" + Colors::Output.name() + ">" + preprocessMsg(str) + "</font>");
 }
 
 void CTerminal::appendError(const QString &str)
 {
-    this->appendHtml("<font color=" + Colors::Error.name() + ">" + preprocessMsg(str) + "</font>");
+    insertString("<font color=" + Colors::Error.name() + ">" + preprocessMsg(str) + "</font>");
+}
+
+void CTerminal::question(const QString &str, const std::vector<QString> &answers)
+{
+
 }
 
 void CTerminal::lock()
 {
     qDebug () << "CTerminal> lock";
-    mLocked = true;
+    mStateBeforeLock = mState;
+    mState = TTerminalState::Locked;
 }
 
 void CTerminal::unlock()
 {
     qDebug () << "CTerminal> unlock";
-    mLocked = false;
+    mState = mStateBeforeLock;
     newCmdPrompt();
+}
+
+void CTerminal::appMode()
+{
+    qDebug () << "CTerminal> appMode";
+    mStateBeforeLock = mState;
+    mState = TTerminalState::InsideApp;
 }
 
 } // namespace NController

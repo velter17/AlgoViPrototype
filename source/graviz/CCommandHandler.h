@@ -21,17 +21,16 @@ class CCommandHandler : public QObject
 public: // methods
     CCommandHandler(CGravizSystem* parent);
 
-    void handle(const QString &commandStr);
+    void handle(const QString &commandStr, bool system = false);
 
 signals:
     void log(QString msg);
     void error(QString msg);
-    void logHtml(QString msg);
     void endCommand();
+    void endSystemCommand();
 private slots:
     void handleLog(QString msg);
     void handleError(QString msg);
-    void handleHtml(QString msg);
     void handleEndCommand();
 
 private: // fields

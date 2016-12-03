@@ -13,15 +13,15 @@ def main():
     parser.add_argument("-s", "--namespace", default="none", help="Wrap into namespace, default is none")
     args = parser.parse_args()
     header = open("CClass.h.gen")
-    classHeader = open(args.path + "C" + args.name + ".h", 'w')
+    classHeader = open(args.path + args.name + ".h", 'w')
     replaceList = [
-            ["$CLASS_NAME$","C" + args.name],
-            ["$FILE_NAME$", "C" + args.name + ".h"],
+            ["$CLASS_NAME$", args.name],
+            ["$FILE_NAME$", args.name + ".h"],
             ["$AUTHOR$", args.author],
             ["$DATE$", datetime.date.today().strftime("%d.%m.%Y")]
             ]
     if args.namespace != "none":
-        replaceList.append(["$NAMESPACE$", "N" + args.namespace])
+        replaceList.append(["$NAMESPACE$", args.namespace])
     for line in header:
         for replaceItem in replaceList:
             line = line.replace(replaceItem[0], replaceItem[1])
@@ -34,9 +34,9 @@ def main():
     source = open("CClass.cpp.gen")
     if not os.path.exists(args.path + "private/"):
         os.makedirs(args.path + "private/")
-    classSource = open(args.path + "private/C" + args.name + ".cpp", "w")
-    replaceList[1][1] = "C" + args.name + ".cpp"
-    replaceList.append(["$HEADER_PATH$", "../C" + args.name + ".h"])
+    classSource = open(args.path + "private/" + args.name + ".cpp", "w")
+    replaceList[1][1] = args.name + ".cpp"
+    replaceList.append(["$HEADER_PATH$", "../" + args.name + ".h"])
     for line in source:
         for replaceItem in replaceList:
             line = line.replace(replaceItem[0], replaceItem[1])

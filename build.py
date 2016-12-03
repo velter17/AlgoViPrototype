@@ -13,6 +13,7 @@ installPath = srcPath + '/gravizApp/'
 
 parser = argparse.ArgumentParser(description='Graviz build script')
 parser.add_argument('-c', '--clean_build', action='store_const', const=True, default=False, help='Make clean build')
+parser.add_argument('makeargs', nargs="?", default="install", help="make arguments")
 
 args = parser.parse_args()
 
@@ -27,8 +28,7 @@ cmakeArgs = [
 ]
 makeArgs = [
     'make',
-    'install',
-    '-j8'
+     args.makeargs
 ]
 
 try:

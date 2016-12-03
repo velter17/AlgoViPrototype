@@ -28,6 +28,8 @@ public: // methods
     void changeDir(const QString& dir);
     QPair<QStringList, int> getHint(const QString& curStr);
     bool isDirectory(const QString& obj);
+
+    void remove(const QString& path);
 private: // methods
     CFileSystem();
     CFileSystem(const CFileSystem&);

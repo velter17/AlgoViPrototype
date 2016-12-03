@@ -17,10 +17,12 @@
 #include "Controller/CSystemController.h"
 #include "Controller/CTerminal.h"
 #include "graviz/Types.h"
+#include "Controller/Types.h"
 
 
 namespace NController {
 class CTerminal;
+enum class TTerminalCommandType;
 }
 
 namespace Ui {
@@ -40,13 +42,13 @@ public: // methids
     QGraphicsView* getGraphicsView();
     void lock();
     void unlock();
+    void appMode();
     void handleLog(QString msg);
     void handleError(QString msg);
-    void handleLogHtml(QString msg);
 
 signals:
     void modeChanged(NGraviz::TSystemMode mode);
-    void newCommand(const QString& cmd);
+    void newCommand(NController::TTerminalCommandType type, const QString& cmd);
 
 private: //fields
     Ui::CGravizWinMain *ui;

@@ -12,6 +12,8 @@
 #include "framework/Commands/CFileSystem.h"
 #include "../CCommandHandler.h"
 
+#include "graviz/ProblemSolver/CProblemSolver.h"
+
 namespace NGraviz
 {
 
@@ -21,7 +23,7 @@ CCommandHandler::CCommandHandler(CGravizSystem *parent)
 
 }
 
-void CCommandHandler::handle(const QString& commandStr)
+void CCommandHandler::handle(const QString& commandStr, bool system)
 {
     qDebug () << "CCommandHandler> handle " << commandStr;
     QStringList args = commandStr.split(QRegExp("\\s+"), QString::SkipEmptyParts);
@@ -31,18 +33,30 @@ void CCommandHandler::handle(const QString& commandStr)
         args.erase(args.begin());
         NCommand::CCompiler* compiler = new NCommand::CCompiler(args);
         connect(compiler, SIGNAL(finished()), compiler, SLOT(deleteLater()));
-        connect(compiler, SIGNAL(error(QString)), this, SLOT(handleError(QString)));
-        connect(compiler, SIGNAL(log(QString)), this, SLOT(handleLog(QString)));
-        connect(compiler, SIGNAL(logHtml(QString)), this, SLOT(handleHtml(QString)));
-        connect(compiler, SIGNAL(finished()), this, SLOT(handleEndCommand()));
-        compiler->setWorkingDir(NCommand::CFileSystem::getInstance().getCurrentPath());
+        if(!system)
+        {
+            connect(compiler, SIGNAL(error(QString)), this, SLOT(handleError(QString)));
+            connect(compiler, SIGNAL(log(QString)), this, SLOT(handleLog(QString)));
+            connect(compiler, SIGNAL(finished()), this, SLOT(handleEndCommand()));
+        }
+        else
+        {
+            connect(compiler, &NCommand::CCompiler::finished, [this](){emit endSystemCommand();});
+        }
+        //compiler->setWorkingDir(NCommand::CFileSystem::getInstance().getCurrentPath());
+        compiler->setWorkingDir("/home/dsadovyi/Coding");
         compiler->start();
+        //compiler->wait();
         //mController->setSolutionPath(mFileSystem.getCurrentPath() + "/app");
     }
     else if(command == "cd")
     {
         NCommand::CFileSystem::getInstance().changeDir(*(args.begin()+1));
         emit endCommand();
+    }
+    else if(command == "exec")
+    {
+        mParent->runSolver("");
     }
     else
     {
@@ -66,11 +80,6 @@ void CCommandHandler::handleLog(QString msg)
 void CCommandHandler::handleError(QString msg)
 {
     emit error(msg);
-}
-
-void CCommandHandler::handleHtml(QString msg)
-{
-    emit logHtml(msg);
 }
 
 void CCommandHandler::handleEndCommand()

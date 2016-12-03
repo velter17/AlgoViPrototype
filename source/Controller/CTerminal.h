@@ -17,39 +17,42 @@
 
 #include "framework/Commands/CFileSystem.h"
 #include "Controller/CSystemController.h"
+#include "Controller/ITerminal.h"
 
 namespace NController
 {
 
-class CSystemController;
-
-class CTerminal : public QPlainTextEdit
+class CTerminal : public QPlainTextEdit, ITerminal
 {
     Q_OBJECT
 public: // methods
     CTerminal(QWidget* parent);
 
-    void keyPressEvent(QKeyEvent *e);
-    void mousePressEvent(QMouseEvent *e);
-    void mouseDoubleClickEvent(QMouseEvent *e);
-    void contextMenuEvent(QContextMenuEvent *e);
+    void keyPressEvent(QKeyEvent *e) override;
+    void mousePressEvent(QMouseEvent *e) override;
+    void mouseDoubleClickEvent(QMouseEvent *e) override;
+    void contextMenuEvent(QContextMenuEvent *e) override;
 
 private: // methods
     QString preprocessMsg(const QString& msg);
     void newCmdPrompt();
-
-public slots: // methods
+    void appendString(const QString& str);
+    void insertString(const QString& str);
     void appendMain(const QString& str);
-    void appendOutput(const QString& str);
-    void appendError(const QString& str);
-    void lock();
-    void unlock();
+
+public slots: // interface methods
+    void appendOutput(const QString& str) override;
+    void appendError(const QString& str) override;
+    void question(const QString& str, const std::vector <QString> &answers) override;
+    void lock() override;
+    void unlock() override;
+    void appMode() override;
 
 private slots: // methods
     void tabKeyHandler();
 
 signals:
-    void command(const QString& cmd);
+    void command(TTerminalCommandType type, const QString& cmd);
 
 private: // fields
     QString mPromptString;
@@ -62,11 +65,12 @@ private: // fields
         static QColor Error;
     };
     QPalette mPalette;
-    bool mLocked;
     int mPromptStringLen;
     QStringList mHistory;
     QStringList::iterator mHistoryItr;
     int mTabPressCount;
+    QString lastCmd;
+    TTerminalState mStateBeforeLock;
 };
 
 } // namespace NController

@@ -17,12 +17,10 @@ namespace NCommand
 CFileSystem::CFileSystem()
     : mCurrentPath("/home/dsadovyi")
 {
-
 }
 
 CFileSystem::CFileSystem(const CFileSystem &)
 {
-
 }
 
 CFileSystem &CFileSystem::getInstance()
@@ -113,6 +111,11 @@ bool CFileSystem::isDirectory(const QString& obj)
     else
         p = obj.toStdString();
     return boost::filesystem::is_directory(p);
+}
+
+void CFileSystem::remove(const QString &path)
+{
+    boost::filesystem::remove(path.toStdString());
 }
 
 } // namespace NCommand
