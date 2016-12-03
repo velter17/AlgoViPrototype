@@ -9,6 +9,7 @@
 #include <QProcess>
 #include <QDebug>
 #include <QThread>
+#include <memory>
 
 #include "graviz/CGravizSystem.h"
 #include "framework/Commands/system/CCompiler.h"
@@ -45,10 +46,10 @@ CGravizSystem::CGravizSystem(std::shared_ptr<NController::CSystemController> con
     {
         qDebug () << "ProblemSolver thread was finished";
         QMetaObject::invokeMethod(mController.get(), "handleLog", Qt::QueuedConnection,
-                                  Q_ARG(QString, QString("-----------------------------\n") +
-                                        "Exit status: " + QString::number(code) +
-                                        "\nChecker message: " + checkerMsg +
-                                        "\n-----------------------------"));
+                                  Q_ARG(QString, QString("---------------------------------------\n") +
+                                        " [ Info ] Exit status: " + QString::number(code) +
+                                        "\n [ Info ] Checker message: " + checkerMsg +
+                                        "\n---------------------------------------\n"));
         QMetaObject::invokeMethod(mController.get(), "unlock", Qt::QueuedConnection);
         this->setMode(TSystemMode::Interaction);
     });
@@ -92,19 +93,21 @@ void CGravizSystem::runSolver(QString inputData)
     setMode(TSystemMode::Execution);
 
     mSourceCodeFileInfo.refresh();
-    if(mLastModified.toTime_t() != mSourceCodeFileInfo.lastModified().toTime_t() && false)
+    if(mLastModified.toTime_t() != mSourceCodeFileInfo.lastModified().toTime_t())
     {
-        mController->handleLog("+-----------------------------------+\n"
-                               "|......Source code was modified.....|\n"
-                               "|......Compiling application....... |\n"
-                               "+-----------------------------------+\n";
+        mController->handleLog(" [ Info ] Source code was modified\n"
+                               " [ Info ] Compiling...\n");
         mLastModified = mSourceCodeFileInfo.lastModified();
 
-        connect(mCommandHandler.get(), &CCommandHandler::endSystemCommand, [this, inputData](){
-            qDebug () << "Compilation was finished....";
+        std::shared_ptr<QMetaObject::Connection> pconn(new QMetaObject::Connection);
+        QMetaObject::Connection &conn = *pconn;
+        conn = connect(mCommandHandler.get(), &CCommandHandler::endSystemCommand,
+                       [this, inputData, pconn, &conn](){
+            mController->handleLog(" [ Info ] Ready\n");
             mController->setAppMode();
             QMetaObject::invokeMethod(mProblemSolver.get(), "solve", Qt::QueuedConnection,
                                       Q_ARG(QString, inputData));
+            disconnect(conn);
         });
         compileSourceCode(mSourceCodeFileInfo.absoluteFilePath());
     }

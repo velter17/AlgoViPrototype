@@ -30,6 +30,8 @@ CTerminal::CTerminal(QWidget *parent)
     : QPlainTextEdit(parent)
     , mPromptString("graviz")
     , mTabPressCount(0)
+    , mLastWriter(1)
+    , mNewLineFlag(false)
 {
 
     mState = TTerminalState::CommandInput;
@@ -39,17 +41,10 @@ CTerminal::CTerminal(QWidget *parent)
     mPalette.setColor(QPalette::Text, Colors::Main);
     setPalette(mPalette);
 
-    newCmdPrompt();
-
-    QFont font = this->font();
-    font.setFixedPitch(true);
+    QFont font("monospace");
     this->setFont(font);
-    qDebug () << "Fixed pitchA === " << this->font().fixedPitch();
-    qDebug () << "Fixed pitchB === " << this->fontInfo().fixedPitch();
-    QFont font1("monospace");
-    QFontInfo info(font1);
-    this->setFont(font1);
-    qDebug () << "!!!" << info.fixedPitch();
+
+    newCmdPrompt();
 }
 
 void CTerminal::keyPressEvent(QKeyEvent *e)
@@ -63,16 +58,37 @@ void CTerminal::keyPressEvent(QKeyEvent *e)
             this->textCursor().insertText("^C");
             lock();
             command(TTerminalCommandType::System, "^C");
+            return;
         }
         if(e->key() >= 0x20 && e->key() <= 0x7e
                && (e->modifiers() == Qt::NoModifier
                    || e->modifiers() == Qt::ShiftModifier
                    || e->modifiers() == Qt::KeypadModifier))
-                    QPlainTextEdit::keyPressEvent(e);
+                    //QPlainTextEdit::keyPressEvent(e);
+        {
+            if(!(mLastWriter == 0 || textCursor().positionInBlock() == 0))
+            {
+                if(textCursor().positionInBlock() > 0)
+                {
+                    this->textCursor().deletePreviousChar();
+                }
+                this->textCursor().insertBlock();
+            }
+            mLastWriter = 0;
+            this->textCursor().insertHtml(preprocessMsg(e->text()));
+            mInputBuffer += e->text();
+            this->verticalScrollBar()->setValue(verticalScrollBar()->maximum());
+        }
+
         if(e->key() == Qt::Key_Backspace
                && e->modifiers() == Qt::NoModifier
-               && textCursor().positionInBlock() > 0)
-                QPlainTextEdit::keyPressEvent(e);
+               && textCursor().positionInBlock() > 0
+               && mLastWriter == 0)
+        {
+            mInputBuffer.chop(1);
+             QPlainTextEdit::keyPressEvent(e);
+        }
+
         if((e->key() == Qt::Key_Enter || e->key() == Qt::Key_Return)
                 && (e->modifiers() == Qt::NoModifier
                     || e->modifiers() == Qt::KeypadModifier))
@@ -80,7 +96,8 @@ void CTerminal::keyPressEvent(QKeyEvent *e)
             QString cmdStr = this->textCursor().block().text();
             qDebug () << "cmdStr == " << cmdStr;
             this->textCursor().insertBlock();
-            emit command(TTerminalCommandType::Application, cmdStr);
+            emit command(TTerminalCommandType::Application, mInputBuffer);
+            mInputBuffer.clear();
             //QPlainTextEdit::keyPressEvent(e);
         }
         return;
@@ -177,8 +194,8 @@ void CTerminal::keyPressEvent(QKeyEvent *e)
         mHistory.append(cmdStr);
         mHistoryItr = mHistory.end();
         this->textCursor().insertBlock();
+        mLastWriter = 1;
         emit command(TTerminalCommandType::System, cmdStr);
-        //QPlainTextEdit::keyPressEvent(e);
     }
 }
 
@@ -254,7 +271,10 @@ void CTerminal::newCmdPrompt()
 
 void CTerminal::appendString(const QString &str)
 {
-    this->appendHtml(str);
+//    QTextCursor p = QTextCursor(document()->lastBlock());
+//    p.insertHtml(str);
+    this->textCursor().insertHtml(str);
+    //this->appendHtml(str);
     //this->textCursor().insertBlock();
     //this->appendHtml("<font color=" + Colors::Main.name() + ">^</font>");
     //this->appendMain("");
@@ -263,46 +283,80 @@ void CTerminal::appendString(const QString &str)
 
 void CTerminal::insertString(const QString &str)
 {
-    //QTextCursor p = QTextCursor(document()->lastBlock());
-    //p.insertHtml(str);
+    QTextCursor p = QTextCursor(document()->lastBlock());
+    p.insertHtml(str);
+    this->textCursor().insertBlock();
     //p.insertText(str);
     //this->textCursor().insertBlock();
-    QTextBlock block = document()->lastBlock();
+    /*QTextBlock block = document()->lastBlock();
     QTextCursor p(block);
     p.select(QTextCursor::BlockUnderCursor);
     p.removeSelectedText();
     this->textCursor().deletePreviousChar();
     this->appendHtml(str);
-    this->textCursor().insertBlock();
+    this->textCursor().insertBlock();*/
     this->verticalScrollBar()->setValue(verticalScrollBar()->maximum());
 }
 
 QString CTerminal::preprocessMsg(const QString &msg)
 {
     QString ret = msg.toHtmlEscaped();
-    if(ret.length() > 0 && *(ret.end()-1) == '\n')
-        ret.chop(1);
+    if(mLastWriter == 1 && ret.length() > 0 && *(ret.end()-1) != '\n')
+    {
+        mNewLineFlag = true;
+        ret.append('\n');
+    }
+    else
+    {
+        mNewLineFlag = false;
+    }
     ret.replace(QString("\n"), QString("<br>"));
     ret.replace(QString(" "), QString("&nbsp;"));
     return ret;
 }
 
 
-
 void CTerminal::appendMain(const QString &str)
 {
-    //appendString("<font color=" + Colors::Main.name() + ">" + preprocessMsg(str) + "</font>");
-    appendString(str);
+    if(mLastWriter == 1 && textCursor().positionInBlock() > 0)
+    {
+        if(textCursor().positionInBlock() > 0)
+        {
+            this->textCursor().deletePreviousChar();
+        }
+        this->textCursor().insertBlock();
+    }
+    mLastWriter = 0;
+    appendString("<font color=" + Colors::Main.name() + ">" + preprocessMsg(str) + "</font>");
+    //appendString(str);
 }
 
 void CTerminal::appendOutput(const QString &str)
 {
-    insertString("<font color=" + Colors::Output.name() + ">" + preprocessMsg(str) + "</font>");
+    if(mLastWriter == 0 && textCursor().positionInBlock() > 0)
+    {
+        this->textCursor().insertBlock();
+    }
+    else if(textCursor().positionInBlock() > 0 && mNewLineFlag)
+    {
+        this->textCursor().deletePreviousChar();
+    }
+    mLastWriter = 1;
+    appendString("<font color=" + Colors::Output.name() + ">" + preprocessMsg(str) + "</font>");
 }
 
 void CTerminal::appendError(const QString &str)
 {
-    insertString("<font color=" + Colors::Error.name() + ">" + preprocessMsg(str) + "</font>");
+    if(mLastWriter == 0 && textCursor().positionInBlock() > 0)
+    {
+        this->textCursor().insertBlock();
+    }
+    else if(textCursor().positionInBlock() > 0 && mNewLineFlag)
+    {
+        this->textCursor().deletePreviousChar();
+    }
+    mLastWriter = 1;
+    appendString("<font color=" + Colors::Error.name() + ">" + preprocessMsg(str) + "</font>");
 }
 
 void CTerminal::question(const QString &str, const std::vector<QString> &answers)

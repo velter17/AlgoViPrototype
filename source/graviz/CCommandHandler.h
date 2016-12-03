@@ -33,6 +33,9 @@ private slots:
     void handleError(QString msg);
     void handleEndCommand();
 
+private:
+    bool sysCommand(const QString& command);
+
 private: // fields
     CGravizSystem* mParent;
 };

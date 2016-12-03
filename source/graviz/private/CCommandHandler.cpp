@@ -27,6 +27,11 @@ void CCommandHandler::handle(const QString& commandStr, bool system)
 {
     qDebug () << "CCommandHandler> handle " << commandStr;
     QStringList args = commandStr.split(QRegExp("\\s+"), QString::SkipEmptyParts);
+    if(args.empty())
+    {
+        handleEndCommand();
+        return;
+    }
     QString command = *args.begin();
     if(command == "compile")
     {
@@ -58,7 +63,7 @@ void CCommandHandler::handle(const QString& commandStr, bool system)
     {
         mParent->runSolver("");
     }
-    else
+    else if(sysCommand(command))
     {
         NCommand::CSystemCmd* cmd = new NCommand::CSystemCmd(QStringList() << commandStr);
         connect(cmd, SIGNAL(finished()), cmd, SLOT(deleteLater()));
@@ -68,8 +73,11 @@ void CCommandHandler::handle(const QString& commandStr, bool system)
         cmd->setWorkingDir(NCommand::CFileSystem::getInstance().getCurrentPath());
         cmd->start();
     }
-    //else if(!cmddata.title.isEmpty())
-    //    emit error("Error. " + cmddata.title + ": unknown command");
+    else
+    {
+        emit error("Error. " + command + ": unknown command");
+        handleEndCommand();
+    }
 }
 
 void CCommandHandler::handleLog(QString msg)
@@ -85,6 +93,12 @@ void CCommandHandler::handleError(QString msg)
 void CCommandHandler::handleEndCommand()
 {
     emit endCommand();
+}
+
+bool CCommandHandler::sysCommand(const QString &command)
+{
+    static QSet <QString> availableCommands {"date", "time", "pwd", "ls" };
+    return availableCommands.find(command) != availableCommands.end();
 }
 
 

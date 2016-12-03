@@ -71,6 +71,10 @@ private: // fields
     int mTabPressCount;
     QString lastCmd;
     TTerminalState mStateBeforeLock;
+
+    int mLastWriter;
+    QString mInputBuffer;
+    bool mNewLineFlag;
 };
 
 } // namespace NController
