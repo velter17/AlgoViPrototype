@@ -33,7 +33,16 @@ void CTestProvider::clear()
 
 size_t CTestProvider::size() const
 {
-   return mTests.size();
+    return mTests.size();
+}
+
+void CTestProvider::deleteTest(int i)
+{
+    qDebug () << "CTestProvider> deleteTest " << i;
+    assert(i >= 0 && i < mTests.size());
+    for(int j = i+1; j < mTests.size(); ++j)
+        std::swap(mTests[j], mTests[j-1]);
+    mTests.pop_back();
 }
 
 STest CTestProvider::get(int i) const
@@ -92,7 +101,7 @@ QString CTestProvider::getFormatted(int i) const
       ret.append('|');
       if(inputList.size() <= i)
       {
-         for(int j = 0; j < maxLen[0]; ++j)
+         for(int j = 0; j < maxLen[0]+2; ++j)
             ret.append(' ');
       }
       else

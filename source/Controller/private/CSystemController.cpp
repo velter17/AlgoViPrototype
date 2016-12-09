@@ -70,7 +70,12 @@ void CSystemController::setAppMode()
 
 void CSystemController::setQuestionMode()
 {
-   mGUI->questionMode();
+    mGUI->questionMode();
+}
+
+void CSystemController::exit()
+{
+    mGUI->close();
 }
 
 } // namespace NController

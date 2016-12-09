@@ -145,6 +145,7 @@ void CTerminal::keyPressEvent(QKeyEvent *e)
             QTextCursor p(block);
             p.select(QTextCursor::BlockUnderCursor);
             p.removeSelectedText();
+            this->textCursor().insertBlock();
             newCmdPrompt();
             p.movePosition(QTextCursor::EndOfBlock);
             p.insertText(*mHistoryItr);
@@ -162,6 +163,7 @@ void CTerminal::keyPressEvent(QKeyEvent *e)
             QTextCursor p(block);
             p.select(QTextCursor::BlockUnderCursor);
             p.removeSelectedText();
+            this->textCursor().insertBlock();
             /*p.movePosition(QTextCursor::StartOfBlock);
             p.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
             p.removeSelectedText();*/

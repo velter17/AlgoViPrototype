@@ -32,6 +32,8 @@ public: // methods
     void clear();
     size_t size() const;
 
+    void deleteTest(int i);
+
     STest get(int i) const;
     QString getFormatted(int i) const;
 private:

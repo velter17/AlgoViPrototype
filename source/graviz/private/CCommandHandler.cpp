@@ -47,6 +47,14 @@ void CCommandHandler::handle(const QString& commandStr)
     {
         mParent->handle<TGravizCommand::RunSolver>(args);
     }
+    else if(command == "exit")
+    {
+        mParent->handle<TGravizCommand::Exit>(args);
+    }
+    else if(command == "test")
+    {
+        mParent->handle<TGravizCommand::Test>(args);
+    }
     else if(sysCommand(command))
     {
         command = *commandStr.split(QRegExp("\\s+"), QString::SkipEmptyParts).begin();

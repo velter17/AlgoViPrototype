@@ -16,6 +16,7 @@
 
 #include "framework/Commands/ProblemSolver/CCompilerHandler.h"
 #include "framework/Commands/ITerminalCommand.h"
+#include "framework/Commands/ProblemSolver/CTestProvider.h"
 
 namespace NCommand
 {
@@ -23,12 +24,13 @@ namespace NCommand
 class CProblemSolver : public ITerminalCommand
 {
 public: // methods
-    CProblemSolver(const QStringList& args);
+    CProblemSolver(const QStringList& args, std::shared_ptr<CTestProvider> testProvider);
 
     QString getSourceCodePath();
     const QStringList& getCompilationFlags();
 
     bool init();
+    bool saveTestFlag();
 
 public slots:
     void run() override;
@@ -42,6 +44,11 @@ private: // fields
     QProcess* mApp;
     std::vector<std::string> mFlagParsed;
     QStringList mFlags;
+    bool mTestSaveFlag;
+
+    int mTestToExecute;
+    bool mTestToExecuteFlag;
+    std::shared_ptr<CTestProvider> mTestProvider;
 };
 
 } // namespace NCommand

@@ -31,9 +31,11 @@ enum class TGravizCommand
 {
     System,             // should be redirect to system
     RunSolver,          // start application
+    Test,               // test commands
     TerminateProcess,   // stop application
     Compile,            // compile source code
     ChangeDirectory,    // change working directory
+    Exit,               // Exit from system
     Unknown,            // unknown command name
     Empty,              // no command
 

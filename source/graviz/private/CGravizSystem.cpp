@@ -14,6 +14,7 @@
 #include "graviz/CGravizSystem.h"
 #include "framework/Commands/system/CCompiler.h"
 #include "graviz/settings/CSolverSettings.h"
+#include "framework/Commands/ProblemSolver/CTestCommand.h"
 
 namespace NGraviz
 {
@@ -103,7 +104,7 @@ void CGravizSystem::handle<TGravizCommand::RunSolver>(const QStringList &args)
     qDebug () << "CGravizSystem> RunSolver " << args;
     setMode(TSystemMode::InProcess);
     //mProblemSolver.reset(new NCommand::CProblemSolver(args));
-    mProblemSolver = new NCommand::CProblemSolver(args);
+    mProblemSolver = new NCommand::CProblemSolver(args, mTestProvider);
     connect(mProblemSolver, &NCommand::CProblemSolver::log, [this](const QString& log){
         //mController->handleLog(log);
         QMetaObject::invokeMethod(mController.get(), "handleLog", Qt::QueuedConnection,
@@ -128,11 +129,10 @@ void CGravizSystem::handle<TGravizCommand::RunSolver>(const QStringList &args)
        qDebug () << "CGravizSystem> RunSolver> questionRunner";
        this->setMode(TSystemMode::WaitForAnswer);
        mQuestioner.reset(new NCommand::CQuestioner(QStringList()
-          << "-q" << "Save test to local test-list?"
+          << "-q" << "Save test to archive?"
           << "-o" << "y - Yes"
           << "-o" << "n - No"));
        connect(mQuestioner.get(), &NCommand::CQuestioner::log, [this](const QString& msg){
-          //mController->handleLog(msg);
           QMetaObject::invokeMethod(mController.get(), "handleLog", Qt::QueuedConnection,
                                     Q_ARG(QString, msg));
        });
@@ -143,13 +143,9 @@ void CGravizSystem::handle<TGravizCommand::RunSolver>(const QStringList &args)
              mController->handleLog("Saved\n");
              mTestProvider->addTest(NCommand::STest(mInputBuffer, mOutputBuffer));
           }
-          else if(ans == 'n')
-             mController->handleLog("Not saved\n");
-          else
-             mController->handleLog("What??? O_o\n");
           mQuestioner->deleteLater();
-          for(int i = 0; i < mTestProvider->size(); ++i)
-             mController->handleLog(mTestProvider->getFormatted(i));
+//          for(int i = 0; i < mTestProvider->size(); ++i)
+//             mController->handleLog(mTestProvider->getFormatted(i));
           mController->unlock();
           this->setMode(TSystemMode::Default);
        });
@@ -171,15 +167,21 @@ void CGravizSystem::handle<TGravizCommand::RunSolver>(const QStringList &args)
                                       Q_ARG(QString, QString(
                                             " [ Info ] Exit status: " + QString::number(code) +
                                           "\n [ Info ] Checker message: " + "No checker" + "\n")));
-//            QMetaObject::invokeMethod(mController.get(), "unlock", Qt::QueuedConnection);
-//            this->setMode(TSystemMode::Default);
+            if(!mProblemSolver->saveTestFlag())
+            {
+                QMetaObject::invokeMethod(mController.get(), "unlock", Qt::QueuedConnection);
+                this->setMode(TSystemMode::Default);
+            }
             solverThread->quit();
         });
-        connect(solverThread, &QThread::finished, [this, questionRunner](){
-           qDebug () << "Input: " << mInputBuffer;
-           qDebug () << "Output: " << mOutputBuffer;
-            questionRunner();
-        });
+        if(mProblemSolver->saveTestFlag())
+        {
+            connect(solverThread, &QThread::finished, [this, questionRunner](){
+               qDebug () << "Input: " << mInputBuffer;
+               qDebug () << "Output: " << mOutputBuffer;
+                questionRunner();
+            });
+        }
         mInputBuffer.clear();
         mOutputBuffer.clear();
         solverThread->start();
@@ -247,7 +249,9 @@ void CGravizSystem::handle<TGravizCommand::Compile>(const QStringList &args)
 {
     qDebug () << "CGravizSystem> Compile " << args;
     NCommand::CCompiler* compiler = new NCommand::CCompiler(args);
-    connect(compiler, SIGNAL(finished()), compiler, SLOT(deleteLater()));
+    connect(compiler, &NCommand::CCompiler::finished, [this, compiler](int code){
+        compiler->deleteLater();
+    });
     connect(compiler, &NCommand::CCompiler::error, [this](QString msg){
         mController->handleError(msg);
     });
@@ -262,11 +266,47 @@ void CGravizSystem::handle<TGravizCommand::Compile>(const QStringList &args)
 }
 
 template <>
+void CGravizSystem::handle<TGravizCommand::Test>(const QStringList &args)
+{
+    qDebug () << "CGravizSystem> Test " << args;
+    QThread* testThread = new QThread();
+    NCommand::CTestCommand* test = new NCommand::CTestCommand(args, mTestProvider);
+    test->moveToThread(testThread);
+    connect(test, &NCommand::CTestCommand::finished, [this, testThread, test](int code){
+        testThread->quit();
+        test->deleteLater();
+        //mController->unlock();
+        QMetaObject::invokeMethod(mController.get(), "unlock", Qt::QueuedConnection);
+    });
+    connect(testThread, SIGNAL(finished()), testThread, SLOT(deleteLater()));
+    connect(test, &NCommand::CTestCommand::error, [this](QString msg){
+//        mController->handleError(msg);
+        QMetaObject::invokeMethod(mController.get(), "handleError", Qt::QueuedConnection,
+                                  Q_ARG(QString, msg));
+    });
+    connect(test, &NCommand::CTestCommand::log, [this](QString msg){
+//        mController->handleLog(msg);
+        QMetaObject::invokeMethod(mController.get(), "handleLog", Qt::QueuedConnection,
+                                  Q_ARG(QString, msg));
+    });
+    connect(testThread, SIGNAL(started()), test, SLOT(run()));
+    testThread->start();
+//    test->run();
+}
+
+template <>
 void CGravizSystem::handle<TGravizCommand::ChangeDirectory>(const QStringList &args)
 {
     qDebug () << "CGravizSystem> ChangeDirectory " << args;
     NCommand::CFileSystem::getInstance().changeDir(*args.begin());
     mController->unlock();
+}
+
+template <>
+void CGravizSystem::handle<TGravizCommand::Exit>(const QStringList &args)
+{
+    qDebug () << "CGravizSystem> Exit " << args;
+    mController->exit();
 }
 
 template <>

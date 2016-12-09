@@ -40,7 +40,7 @@ void CCompilerHandler::performCompilation(const QString& path, const QStringList
 
     CCompiler* compiler = new CCompiler(
                 QStringList() << "-i" << fullPath
-                              << "-o" << "/home/dsadovyi/Code/app"
+                              << "-o" << "/home/dsadovyi/Coding/app"
                               << args);
     compiler->setTime(60*60*10);
     connect(compiler, &CCompiler::finished, [this, compiler, fullPath](int code)

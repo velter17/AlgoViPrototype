@@ -49,6 +49,7 @@ public slots:
     void unlock();
     void setAppMode();
     void setQuestionMode();
+    void exit();
 
 private:
     std::shared_ptr<CGravizWinMain> mGUI;

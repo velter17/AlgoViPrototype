@@ -17,8 +17,10 @@
 namespace NCommand
 {
 
-CProblemSolver::CProblemSolver(const QStringList &args)
+CProblemSolver::CProblemSolver(const QStringList &args, std::shared_ptr<CTestProvider> testProvider)
     : ITerminalCommand(args)
+    , mTestProvider(testProvider)
+    , mTestToExecuteFlag(false)
 {
     mOptions.add_options()
         ("src,s", boost::program_options::value<std::string>()->required(), "source code")
@@ -26,7 +28,9 @@ CProblemSolver::CProblemSolver(const QStringList &args)
             "compilation flags\n"
             "use c++ -DVAL like -f VAL")
         ("input,i",boost::program_options::value<std::string>(), "input file")
-        ("output,o", boost::program_options::value<std::string>(), "output file");
+        ("output,o", boost::program_options::value<std::string>(), "output file")
+        ("test-save,t", boost::program_options::bool_switch()->default_value(false), "Post saving test to archive")
+        ("<", "Use to redirect input from archive-test");
 }
 
 QString CProblemSolver::getSourceCodePath()
@@ -41,6 +45,32 @@ const QStringList& CProblemSolver::getCompilationFlags()
 
 bool CProblemSolver::init()
 {
+    if(mArgs.size() > 2 && *(mArgs.end()-2) == "<")
+    {
+        QString testNum = mArgs.back();
+        mArgs.pop_back();
+        mArgs.pop_back();
+        auto validateNum = [](const QString& str)
+        {
+            bool ret = true;
+            for(char c : str.toStdString())
+                ret &= isdigit(c);
+            return ret;
+        };
+        if(validateNum(testNum) && testNum.toInt() > 0 && testNum.toInt() <= mTestProvider->size())
+        {
+            mTestToExecuteFlag = true;
+            mTestToExecute = testNum.toInt()-1;
+        }
+        else
+        {
+            if(!validateNum(testNum))
+                emit error(testNum + " - invalid test num");
+            else
+                emit error(testNum + " - invalid test num (index out of range)");
+            return false;
+        }
+    }
     if(readOptions(mArgs, mVarMap))
     {
         for(const std::string& f : mFlagParsed)
@@ -53,6 +83,11 @@ bool CProblemSolver::init()
     {
         return false;
     }
+}
+
+bool CProblemSolver::saveTestFlag()
+{
+    return mVarMap["test-save"].as<bool>();
 }
 
 void CProblemSolver::run()
@@ -76,20 +111,13 @@ void CProblemSolver::run()
     connect(mApp, static_cast<void((QProcess::*)(int))>(&QProcess::finished), [this](int exitCode){
         qDebug () << "QProcess::finished";
         emit finished(exitCode);
-       // mApp.reset();
     });
-    //connect(mApp, &QProcess::errorOccurred, [](QProcess::ProcessError error){qDebug () << error;});
-    mApp->start(QString("stdbuf -o 0 ") + "/home/dsadovyi/Code/app", QProcess::Unbuffered | QProcess::ReadWrite);
-//    connect(thread, &QThread::started, [this](){
-//        mApp->start(QString("stdbuf -o 0 ") + mSettings.getSolverAppPath(), QProcess::Unbuffered | QProcess::ReadWrite);
-//        qDebug () << "process pid is  " << mApp->pid();
-//        //mApp->waitForFinished();
-//    });
-//    connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
-//    thread->start();
+    mApp->start(QString("stdbuf -o 0 ") + "/home/dsadovyi/Coding/app", QProcess::Unbuffered | QProcess::ReadWrite);
     mApp->waitForStarted();
-//    appendData(args);
- //   mApp->waitForFinished();
+    if(mTestToExecuteFlag)
+    {
+        this->appendData(mTestProvider->get(mTestToExecute).input);
+    }
 }
 
 void CProblemSolver::terminate()
