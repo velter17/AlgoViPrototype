@@ -16,8 +16,10 @@
 #include "Controller/CSystemController.h"
 #include "graviz/CCommandHandler.h"
 #include "graviz/Types.h"
-#include "graviz/ProblemSolver/CProblemSolver.h"
-#include "graviz/ProblemSolver/CProblemCompiler.h"
+#include "framework/Commands/ProblemSolver/CProblemSolver.h"
+#include "framework/Commands/ProblemSolver/CCompilerHandler.h"
+#include "framework/Commands/ProblemSolver/CTestProvider.h"
+#include "framework/Commands/common/CQuestioner.h"
 
 namespace NController {
 class CSystemController;
@@ -31,30 +33,36 @@ class CCommandHandler;
 class CGravizSystem : public QObject
 {
     Q_OBJECT
-public:
+public: // methods
     CGravizSystem(std::shared_ptr<NController::CSystemController> controll);
 
     void handleCommand(NController::TTerminalCommandType type, const QString& cmd);
-    void runSolver(QString inputData);
 
+    template <TGravizCommand command>
+    void handle(const QStringList& args);
 
-public slots:
+private: // methods
+    template <TGravizCommand command>
+    void handleFuncRegistrator();
+
+public slots: // methods
     void setMode(TSystemMode mode);
 
-private slots:
-    void compileSourceCode(const QString& path);
-
-private:
+private: // fields
     std::shared_ptr<NController::CSystemController> mController;
     std::shared_ptr<NView::CGraphicView> mView;
     std::shared_ptr<CCommandHandler> mCommandHandler;
-    std::shared_ptr<CProblemSolver> mProblemSolver;
-    std::shared_ptr<CProblemCompiler> mProblemCompiler;
+    std::shared_ptr<NCommand::CCompilerHandler> mCompilerHandler;
+    std::shared_ptr<NCommand::CQuestioner> mQuestioner;
+    std::shared_ptr<NCommand::CTestProvider> mTestProvider;
+    NCommand::CProblemSolver* mProblemSolver;
     TSystemMode mMode;
+    QString mInputBuffer;
+    QString mOutputBuffer;
 
-    QFileSystemWatcher mFileWatcher;
-    QFileInfo mSourceCodeFileInfo;
-    QDateTime mLastModified;
+    typedef void (CGravizSystem::*THandler)(const QString& args);
+
+    THandler mCommandHandlers[(size_t)TGravizCommand::Total];
 };
 
 } // namespace NGraviz

@@ -11,6 +11,7 @@
 #include <QString>
 #include <iostream>
 
+#include "framework/Commands/CFileSystem.h"
 #include "framework/Commands/system/CCompiler.h"
 
 namespace NCommand
@@ -18,30 +19,49 @@ namespace NCommand
 
 CCompiler::CCompiler(QStringList args)
     : ITerminalCommand(args)
+    , mFlags({"std=c++11", "O2", "DVELTER"})
 {
     mOptions.add_options()
-        ("src,s", boost::program_options::value<std::string>()->required(), "path to source file")
-        ("lang,l", boost::program_options::value<std::string>()->default_value("c++"), "language");
+        ("input,i", boost::program_options::value<std::string>()->required(), "path to source file")
+        //("lang,l", boost::program_options::value<std::string>()->default_value("c++"), "language")
+        ("output,o,", boost::program_options::value<std::string>()->required(), "destination path")
+        ("flag,f", boost::program_options::value<std::vector<std::string> >(&mFlags)->multitoken(),
+            "compilation flags\n(for c++ -DVAL you should use -f VAL");
 }
 
 void CCompiler::run()
 {
+    emit started();
     boost::program_options::variables_map vm;
     if(!readOptions(mArgs, vm))
     {
+        emit finished(0);
         return;
     }
-    QString src = QString::fromStdString(vm["src"].as<std::string>());
-    emit log("Processing.....");
-    CSystemCmd* proc = new CSystemCmd(QStringList() << "g++ -std=c++11 -o app " + src);
-    connect(proc, SIGNAL(finished()), proc, SLOT(deleteLater()));
-    connect(proc, &CCompiler::log,
+
+    QString src = QString::fromStdString(vm["input"].as<std::string>());
+    QString compilerCommand = QString("g++ -o ") +
+            CFileSystem::getInstance().getFullPath(QString::fromStdString(vm["output"].as<std::string>())).c_str();
+    for(const std::string& f : mFlags)
+    {
+        compilerCommand += QString(" -") + f.c_str();
+    }
+    compilerCommand += QString(" ") + CFileSystem::getInstance().getFullPath(src).c_str();
+    qDebug () << "compiler command is " << compilerCommand;
+    mProc.reset(new CSystemCmd(QStringList() << compilerCommand));
+    //connect(proc.get(), SIGNAL(finished()), proc.get(), SLOT(deleteLater()));
+    connect(mProc.get(), &CCompiler::log,
             [this](QString msg){emit log(msg);});
-    connect(proc, &CCompiler::error,
+    connect(mProc.get(), &CCompiler::error,
             [this](QString msg){emit error(msg);});
-    proc->setWorkingDir(this->mDirectory);
-    proc->start();
-    proc->wait();
+    connect(mProc.get(), &CSystemCmd::finished, [this](int code){emit finished(code);});
+    mProc->setWorkingDir(this->mDirectory);
+    mProc->run();
+}
+
+void CCompiler::terminate()
+{
+    mProc->terminate();
 }
 
 QString CCompiler::getManualMessage()
@@ -49,7 +69,6 @@ QString CCompiler::getManualMessage()
     return "<br><font color=yellow><b>Compiler</b></font><br><br>"
            "<font color=white>"
            "Command for source code compilation<br>"
-           "Application will be automatically used as task solver<br>"
            "See help for options description (-h, --help)"
            "</font>";
 }

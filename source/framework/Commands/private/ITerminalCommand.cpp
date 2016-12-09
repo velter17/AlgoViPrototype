@@ -14,9 +14,10 @@ namespace NCommand
 {
 
 ITerminalCommand::ITerminalCommand(QStringList args)
-    : mDirectory("./")
-    , mOptions("Allowed options:")
+    : mDirectory("")
+    , mOptions("Allowed options")
     , mArgs(args)
+    , mTime(60*60) // minute
 
 {
     mOptions.add_options()
@@ -76,6 +77,17 @@ bool ITerminalCommand::readOptions(const QStringList& args, boost::program_optio
 void ITerminalCommand::setWorkingDir(const QString &dir)
 {
     mDirectory = dir;
+}
+
+void ITerminalCommand::setTime(int msecs)
+{
+    mTime = msecs;
+}
+
+
+void ITerminalCommand::appendData(const QString &data)
+{
+    // empty function for overloading
 }
 
 QString ITerminalCommand::getOptionsHelp()

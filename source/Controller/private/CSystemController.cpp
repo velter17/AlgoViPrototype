@@ -65,7 +65,12 @@ void CSystemController::unlock()
 
 void CSystemController::setAppMode()
 {
-    mGUI->appMode();
+   mGUI->appMode();
+}
+
+void CSystemController::setQuestionMode()
+{
+   mGUI->questionMode();
 }
 
 } // namespace NController

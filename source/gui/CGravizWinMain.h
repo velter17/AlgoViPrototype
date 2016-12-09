@@ -43,6 +43,7 @@ public: // methids
     void lock();
     void unlock();
     void appMode();
+    void questionMode();
     void handleLog(QString msg);
     void handleError(QString msg);
 

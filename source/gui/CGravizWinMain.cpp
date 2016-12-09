@@ -59,7 +59,12 @@ void CGravizWinMain::unlock()
 
 void CGravizWinMain::appMode()
 {
-    ui->mTerminal->appMode();
+   ui->mTerminal->appMode();
+}
+
+void CGravizWinMain::questionMode()
+{
+   ui->mTerminal->questionMode();
 }
 
 void CGravizWinMain::handleLog(QString msg)

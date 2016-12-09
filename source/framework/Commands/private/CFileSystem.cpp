@@ -15,7 +15,7 @@ namespace NCommand
 {
 
 CFileSystem::CFileSystem()
-    : mCurrentPath("/home/dsadovyi")
+    : mCurrentPath(boost::filesystem::path(getenv("HOME")))
 {
 }
 
@@ -56,17 +56,32 @@ QString CFileSystem::getCurrentPath()
 
 void CFileSystem::changeDir(const QString &dir)
 {
-    if(!boost::filesystem::exists(mCurrentPath / dir.toStdString()))
+    std::string toDir = dir.toStdString();
+    if(toDir.size() > 1 && toDir.back() == '/')
+        toDir.pop_back();
+    if(toDir.front() == '/')
     {
-        emit error(dir + ": no such file or directory");
-        return;
+        if(!boost::filesystem::exists(toDir))
+        {
+            emit error(" [ Error ] " + dir + ": no such path\n");
+            return;
+        }
+        mCurrentPath = toDir;
     }
-    else if(!boost::filesystem::is_directory(mCurrentPath / dir.toStdString()))
+    else
     {
-        emit error(dir + ": not a directory");
-        return;
+        if(!boost::filesystem::exists(mCurrentPath / toDir))
+        {
+            emit error(" [ Error ] " + dir + " : no such file or directory\n");
+            return;
+        }
+        else if(!boost::filesystem::is_directory(mCurrentPath / toDir))
+        {
+            emit error(" [ Error ] " + dir + ": not a directory\n");
+            return;
+        }
+        mCurrentPath = (mCurrentPath / toDir).normalize();
     }
-    mCurrentPath = (mCurrentPath / dir.toStdString()).normalize();
 }
 
 QPair<QStringList, int> CFileSystem::getHint(const QString &curStr)
@@ -111,6 +126,16 @@ bool CFileSystem::isDirectory(const QString& obj)
     else
         p = obj.toStdString();
     return boost::filesystem::is_directory(p);
+}
+
+boost::filesystem::path CFileSystem::getFullPath(const QString &path)
+{
+    boost::filesystem::path p;
+    if(path[0] != '/')
+        p = mCurrentPath / path.toStdString();
+    else
+        p = path.toStdString();
+    return boost::filesystem::complete(p);
 }
 
 void CFileSystem::remove(const QString &path)

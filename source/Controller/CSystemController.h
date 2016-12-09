@@ -48,6 +48,7 @@ public slots:
     void handleError(QString msg);
     void unlock();
     void setAppMode();
+    void setQuestionMode();
 
 private:
     std::shared_ptr<CGravizWinMain> mGUI;

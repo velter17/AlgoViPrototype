@@ -26,6 +26,7 @@ public slots: // methods
     virtual void lock() = 0;
     virtual void unlock() = 0;
     virtual void appMode() = 0;
+    virtual void questionMode() = 0;
 
 signals:
     virtual void command(TTerminalCommandType type, const QString& cmd) = 0;

@@ -14,37 +14,60 @@
 
 #include "../CProblemSolver.h"
 
-namespace NGraviz
+namespace NCommand
 {
 
-CProblemSolver::CProblemSolver(const CSolverSettings &settings)
-    : mSettings(settings)
-    , mSettingsTimestamp(0)
-    , mSettingsUpdatedTimestamp(0)
+CProblemSolver::CProblemSolver(const QStringList &args)
+    : ITerminalCommand(args)
 {
-
+    mOptions.add_options()
+        ("src,s", boost::program_options::value<std::string>()->required(), "source code")
+        ("flag,f", boost::program_options::value<std::vector<std::string>>(&mFlagParsed),
+            "compilation flags\n"
+            "use c++ -DVAL like -f VAL")
+        ("input,i",boost::program_options::value<std::string>(), "input file")
+        ("output,o", boost::program_options::value<std::string>(), "output file");
 }
 
-void CProblemSolver::solve(QString inputData)
+QString CProblemSolver::getSourceCodePath()
 {
-    qDebug () << "solve " << mSettings.getSolverAppPath();
-    if(mSettings.getSolverAppPath().isEmpty())
+    return QString::fromStdString(mVarMap["src"].as<std::string>());
+}
+
+const QStringList& CProblemSolver::getCompilationFlags()
+{
+    return mFlags;
+}
+
+bool CProblemSolver::init()
+{
+    if(readOptions(mArgs, mVarMap))
     {
-        return;
+        for(const std::string& f : mFlagParsed)
+        {
+            mFlags << "-f" << QString::fromStdString(f);
+        }
+        return true;
     }
+    else
+    {
+        return false;
+    }
+}
+
+void CProblemSolver::run()
+{
+    qDebug () << "solve " << getSourceCodePath();
 
     mApp = new QProcess();
-    //mApp.reset(new QProcess());
-//    QThread *thread = new QThread;
-//    mApp->moveToThread(thread);
     connect(mApp, &QProcess::readyReadStandardError, [this](){
-        emit err(mApp->readAllStandardError());
+        emit error(mApp->readAllStandardError());
     });
     connect(mApp, &QProcess::readyReadStandardOutput, [this](){
         QString str = mApp->readAllStandardOutput();
         qDebug () << "output : " << str;
         //emit out(mApp->readAllStandardOutput());
-        emit out(str);
+        emit log(str);
     });
     connect(mApp, &QProcess::started, [this](){
         qDebug () << "started solver!!!";
@@ -52,11 +75,11 @@ void CProblemSolver::solve(QString inputData)
     });
     connect(mApp, static_cast<void((QProcess::*)(int))>(&QProcess::finished), [this](int exitCode){
         qDebug () << "QProcess::finished";
-        emit finished(exitCode, "Finished");
+        emit finished(exitCode);
        // mApp.reset();
     });
-    connect(mApp, &QProcess::errorOccurred, [](QProcess::ProcessError error){qDebug () << error;});
-    mApp->start(QString("stdbuf -o 0 ") + mSettings.getSolverAppPath(), QProcess::Unbuffered | QProcess::ReadWrite);
+    //connect(mApp, &QProcess::errorOccurred, [](QProcess::ProcessError error){qDebug () << error;});
+    mApp->start(QString("stdbuf -o 0 ") + "/home/dsadovyi/Code/app", QProcess::Unbuffered | QProcess::ReadWrite);
 //    connect(thread, &QThread::started, [this](){
 //        mApp->start(QString("stdbuf -o 0 ") + mSettings.getSolverAppPath(), QProcess::Unbuffered | QProcess::ReadWrite);
 //        qDebug () << "process pid is  " << mApp->pid();
@@ -65,7 +88,7 @@ void CProblemSolver::solve(QString inputData)
 //    connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
 //    thread->start();
     mApp->waitForStarted();
-    appendData(inputData);
+//    appendData(args);
  //   mApp->waitForFinished();
 }
 
@@ -74,9 +97,8 @@ void CProblemSolver::terminate()
     mApp->terminate();
 }
 
-void CProblemSolver::appendData(QString data)
+void CProblemSolver::appendData(const QString &data)
 {
-    assert(mSettings.getType() == TProblemSolverType::Interactive);
     assert(0 != mApp);
     if(data.isEmpty())
     {
@@ -87,16 +109,4 @@ void CProblemSolver::appendData(QString data)
     mApp->write("\n");
 }
 
-CSolverSettings CProblemSolver::getSettings() const
-{
-    return mSettings;
-}
-
-void CProblemSolver::setSettings(const CSolverSettings &settings)
-{
-    mSettings = settings;
-    ++mSettingsTimestamp;
-}
-
-
-} // namespace NGraviz
+} // namespace NCommand

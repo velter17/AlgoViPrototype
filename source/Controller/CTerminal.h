@@ -47,6 +47,7 @@ public slots: // interface methods
     void lock() override;
     void unlock() override;
     void appMode() override;
+    void questionMode() override;
 
 private slots: // methods
     void tabKeyHandler();

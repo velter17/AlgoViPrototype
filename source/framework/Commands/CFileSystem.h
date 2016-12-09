@@ -28,6 +28,7 @@ public: // methods
     void changeDir(const QString& dir);
     QPair<QStringList, int> getHint(const QString& curStr);
     bool isDirectory(const QString& obj);
+    boost::filesystem::path getFullPath(const QString& path);
 
     void remove(const QString& path);
 private: // methods

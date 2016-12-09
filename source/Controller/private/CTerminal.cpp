@@ -56,6 +56,7 @@ void CTerminal::keyPressEvent(QKeyEvent *e)
         if(e->key() == Qt::Key_C && e->modifiers() == Qt::ControlModifier)
         {
             this->textCursor().insertText("^C");
+            mState = TTerminalState::CommandInput;
             lock();
             command(TTerminalCommandType::System, "^C");
             return;
@@ -101,6 +102,17 @@ void CTerminal::keyPressEvent(QKeyEvent *e)
             //QPlainTextEdit::keyPressEvent(e);
         }
         return;
+    }
+
+    if(mState == TTerminalState::Question)
+    {
+       if(e->key() >= 0x20 && e->key() <= 0x7e
+              && (e->modifiers() == Qt::NoModifier
+                  || e->modifiers() == Qt::ShiftModifier
+                  || e->modifiers() == Qt::KeypadModifier))
+         emit command(TTerminalCommandType::Application, e->text());
+
+       return;
     }
 
     /* Single character */
@@ -383,6 +395,12 @@ void CTerminal::appMode()
     qDebug () << "CTerminal> appMode";
     mStateBeforeLock = mState;
     mState = TTerminalState::InsideApp;
+}
+
+void CTerminal::questionMode()
+{
+   qDebug () << "CTerminal> questionMode";
+   mState = TTerminalState::Question;
 }
 
 } // namespace NController

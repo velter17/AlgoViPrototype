@@ -13,6 +13,7 @@
 
 #include "graviz/CGravizSystem.h"
 #include "framework/Commands/system/CCompiler.h"
+#include "graviz/settings/CSolverSettings.h"
 
 namespace NGraviz
 {
@@ -20,63 +21,55 @@ namespace NGraviz
 CGravizSystem::CGravizSystem(std::shared_ptr<NController::CSystemController> controll)
    : mView(new NView::CGraphicView())
    , mController(controll)
-   , mMode(TSystemMode::Interaction)
+   , mMode(TSystemMode::Default)
    , mCommandHandler(new CCommandHandler(this))
-   , mProblemSolver(new CProblemSolver())
-   , mProblemCompiler(new CProblemCompiler())
+   , mCompilerHandler(new NCommand::CCompilerHandler())
+   , mProblemSolver(nullptr)
+   , mTestProvider(new NCommand::CTestProvider())
 {
     mController->setModel(std::shared_ptr<CGravizSystem>(this));
     mController->setView(mView);
-    connect(mCommandHandler.get(), &CCommandHandler::endCommand,
-            [this]{mController->unlock();});
-    connect(mCommandHandler.get(), &CCommandHandler::log,
-            [this](QString msg){mController->handleLog(msg);});
-    connect(mCommandHandler.get(), &CCommandHandler::error,
-            [this](QString msg){mController->handleError(msg);});
 
-    QThread *thread = new QThread();
-    mProblemSolver->moveToThread(thread);
+    CSolverSettings::getInstance()
+            .setTimeLimit(100000)
+            .setType(TProblemSolverType::Interactive);
 
-    connect(mProblemSolver.get(), SIGNAL(out(QString)),
-            mController.get(), SLOT(handleLog(QString)));
-    connect(mProblemSolver.get(), SIGNAL(err(QString)),
-            mController.get(), SLOT(handleError(QString)));
-    connect(mProblemSolver.get(), &CProblemSolver::finished,
-            [this](int code, QString checkerMsg)
-    {
-        qDebug () << "ProblemSolver thread was finished";
-        QMetaObject::invokeMethod(mController.get(), "handleLog", Qt::QueuedConnection,
-                                  Q_ARG(QString, QString("---------------------------------------\n") +
-                                        " [ Info ] Exit status: " + QString::number(code) +
-                                        "\n [ Info ] Checker message: " + checkerMsg +
-                                        "\n---------------------------------------\n"));
-        QMetaObject::invokeMethod(mController.get(), "unlock", Qt::QueuedConnection);
-        this->setMode(TSystemMode::Interaction);
+    connect(&NCommand::CFileSystem::getInstance(), &NCommand::CFileSystem::error, [this](const QString &msg){
+        mController->handleError(msg);
     });
 
-    thread->start();
-
-
-    mSourceCodeFileInfo.setFile("/home/dsadovyi/Coding/code.cpp");
-    mLastModified = QDateTime();
+    QThread* compilerHandlerThread = new QThread();
+    mCompilerHandler->moveToThread(compilerHandlerThread);
+    connect(mCompilerHandler.get(), &NCommand::CCompilerHandler::out, [this](const QString& msg){
+        mController->handleLog(msg);
+    });
+    connect(mCompilerHandler.get(), &NCommand::CCompilerHandler::err, [this](const QString& msg){
+        mController->handleError(msg);
+    });
+    connect(mCompilerHandler.get(), SIGNAL(destroyed(QObject*)), compilerHandlerThread, SLOT(deleteLater()));
+    compilerHandlerThread->start();
 }
 
 void CGravizSystem::handleCommand(NController::TTerminalCommandType type, const QString &cmd)
 {
     qDebug () << "CGravizSystem> handleCommand " << cmd;
-    if(mMode == TSystemMode::Execution)
+    if(mMode == TSystemMode::InProcess)
     {
-        assert(0 != mProblemSolver);
         qDebug () << "append data " << cmd;
         if(cmd == "^C")
         {
-            QMetaObject::invokeMethod(mProblemSolver.get(),"terminate", Qt::QueuedConnection);
+            QMetaObject::invokeMethod(mProblemSolver,"terminate", Qt::QueuedConnection);
         }
         else
         {
-            QMetaObject::invokeMethod(mProblemSolver.get(),"appendData", Qt::QueuedConnection,
+            mInputBuffer += cmd + "\n";
+            QMetaObject::invokeMethod(mProblemSolver,"appendData", Qt::QueuedConnection,
                                       Q_ARG(QString, cmd));
         }
+    }
+    else if(mMode == TSystemMode::WaitForAnswer)
+    {
+        mQuestioner->appendData(cmd);
     }
     else
     {
@@ -84,51 +77,217 @@ void CGravizSystem::handleCommand(NController::TTerminalCommandType type, const 
     }
 }
 
-void CGravizSystem::runSolver(QString inputData)
-{
-    mProblemSolver->setSettings(CSolverSettings()
-                        .setSolverAppPath("/home/dsadovyi/Coding/app")
-                        .setTimeLimit(10000000)
-                        .setType(TProblemSolverType::Interactive));
-    setMode(TSystemMode::Execution);
-
-    mSourceCodeFileInfo.refresh();
-    if(mLastModified.toTime_t() != mSourceCodeFileInfo.lastModified().toTime_t())
-    {
-        mController->handleLog(" [ Info ] Source code was modified\n"
-                               " [ Info ] Compiling...\n");
-        mLastModified = mSourceCodeFileInfo.lastModified();
-
-        std::shared_ptr<QMetaObject::Connection> pconn(new QMetaObject::Connection);
-        QMetaObject::Connection &conn = *pconn;
-        conn = connect(mCommandHandler.get(), &CCommandHandler::endSystemCommand,
-                       [this, inputData, pconn, &conn](){
-            mController->handleLog(" [ Info ] Ready\n");
-            mController->setAppMode();
-            QMetaObject::invokeMethod(mProblemSolver.get(), "solve", Qt::QueuedConnection,
-                                      Q_ARG(QString, inputData));
-            disconnect(conn);
-        });
-        compileSourceCode(mSourceCodeFileInfo.absoluteFilePath());
-    }
-    else
-    {
-        mController->setAppMode();
-        QMetaObject::invokeMethod(mProblemSolver.get(), "solve", Qt::QueuedConnection,
-                                  Q_ARG(QString, inputData));
-    }
-}
 
 void CGravizSystem::setMode(TSystemMode mode)
 {
     mMode = mode;
 }
 
-void CGravizSystem::compileSourceCode(const QString &path)
+
+template <TGravizCommand command>
+void CGravizSystem::handleFuncRegistrator()
 {
-    qDebug () << path << " was changed";
-    NCommand::CFileSystem::getInstance().remove("/home/dsadovyi/Coding/app");
-    mCommandHandler->handle("compile -s " + path, true);
+    mCommandHandlers[(size_t)command] = &CGravizSystem::handle<command>;
+    handleFuncRegistrator<(TGravizCommand)((size_t)command+1)>();
+}
+
+template <>
+void CGravizSystem::handleFuncRegistrator<TGravizCommand::Total>()
+{
+
+}
+
+template <>
+void CGravizSystem::handle<TGravizCommand::RunSolver>(const QStringList &args)
+{
+    qDebug () << "CGravizSystem> RunSolver " << args;
+    setMode(TSystemMode::InProcess);
+    //mProblemSolver.reset(new NCommand::CProblemSolver(args));
+    mProblemSolver = new NCommand::CProblemSolver(args);
+    connect(mProblemSolver, &NCommand::CProblemSolver::log, [this](const QString& log){
+        //mController->handleLog(log);
+        QMetaObject::invokeMethod(mController.get(), "handleLog", Qt::QueuedConnection,
+                                  Q_ARG(QString, log));
+        mOutputBuffer += log;
+    });
+    connect(mProblemSolver, &NCommand::CProblemSolver::error, [this](const QString& log){
+        //mController->handleError(log);
+        QMetaObject::invokeMethod(mController.get(), "handleError", Qt::QueuedConnection,
+                                  Q_ARG(QString, log));
+    });
+    if(!mProblemSolver->init())
+    {
+        mProblemSolver->deleteLater();
+        QMetaObject::invokeMethod(mController.get(), "unlock", Qt::QueuedConnection);
+        setMode(TSystemMode::Default);
+        return;
+    }
+
+    auto questionRunner = [this]()
+    {
+       qDebug () << "CGravizSystem> RunSolver> questionRunner";
+       this->setMode(TSystemMode::WaitForAnswer);
+       mQuestioner.reset(new NCommand::CQuestioner(QStringList()
+          << "-q" << "Save test to local test-list?"
+          << "-o" << "y - Yes"
+          << "-o" << "n - No"));
+       connect(mQuestioner.get(), &NCommand::CQuestioner::log, [this](const QString& msg){
+          //mController->handleLog(msg);
+          QMetaObject::invokeMethod(mController.get(), "handleLog", Qt::QueuedConnection,
+                                    Q_ARG(QString, msg));
+       });
+       connect(mQuestioner.get(), &NCommand::CQuestioner::finished, [this](int code){
+          char ans = code;
+          if(ans == 'y')
+          {
+             mController->handleLog("Saved\n");
+             mTestProvider->addTest(NCommand::STest(mInputBuffer, mOutputBuffer));
+          }
+          else if(ans == 'n')
+             mController->handleLog("Not saved\n");
+          else
+             mController->handleLog("What??? O_o\n");
+          mQuestioner->deleteLater();
+          for(int i = 0; i < mTestProvider->size(); ++i)
+             mController->handleLog(mTestProvider->getFormatted(i));
+          mController->unlock();
+          this->setMode(TSystemMode::Default);
+       });
+       mController->setQuestionMode();
+       mQuestioner->run();
+    };
+
+    auto solverRunner = [this, questionRunner]()
+    {
+        QThread* solverThread = new QThread();
+        mProblemSolver->moveToThread(solverThread);
+        connect(solverThread, SIGNAL(started()), mProblemSolver, SLOT(run()));
+        connect(solverThread, SIGNAL(finished()), solverThread, SLOT(deleteLater()));
+        connect(solverThread, SIGNAL(finished()), mProblemSolver, SLOT(deleteLater()));
+        connect(mProblemSolver, &NCommand::CProblemSolver::finished, [this, solverThread](int code)
+        {
+            qDebug () << "ProblemSolver thread was finished";
+            QMetaObject::invokeMethod(mController.get(), "handleLog", Qt::QueuedConnection,
+                                      Q_ARG(QString, QString(
+                                            " [ Info ] Exit status: " + QString::number(code) +
+                                          "\n [ Info ] Checker message: " + "No checker" + "\n")));
+//            QMetaObject::invokeMethod(mController.get(), "unlock", Qt::QueuedConnection);
+//            this->setMode(TSystemMode::Default);
+            solverThread->quit();
+        });
+        connect(solverThread, &QThread::finished, [this, questionRunner](){
+           qDebug () << "Input: " << mInputBuffer;
+           qDebug () << "Output: " << mOutputBuffer;
+            questionRunner();
+        });
+        mInputBuffer.clear();
+        mOutputBuffer.clear();
+        solverThread->start();
+    };
+
+    QString sourceCodePath = NCommand::CFileSystem::getInstance().getFullPath(mProblemSolver->getSourceCodePath()).c_str();
+    if(!mCompilerHandler->isSourceCode(sourceCodePath))
+    {
+        mCompilerHandler->addSourceCodePath(sourceCodePath);
+    }
+
+    if(mCompilerHandler->isNeededCompilation(sourceCodePath))
+    {
+        qDebug () << "neededCompilation";
+        std::shared_ptr<QMetaObject::Connection> pconn(new QMetaObject::Connection);
+        QMetaObject::Connection &conn = *pconn;
+        conn = connect(mCompilerHandler.get(), &NCommand::CCompilerHandler::finished,
+                       [this, pconn, &conn, solverRunner](int code){
+            QMetaObject::invokeMethod(mController.get(), "handleLog", Qt::QueuedConnection,
+                                      Q_ARG(QString, " [ Info ] Ready\n"));
+            QMetaObject::invokeMethod(mController.get(), "setAppMode", Qt::QueuedConnection);
+            solverRunner();
+
+            disconnect(conn);
+        });
+        mCompilerHandler->performCompilation(mProblemSolver->getSourceCodePath(), mProblemSolver->getCompilationFlags());
+    }
+    else
+    {
+        mController->setAppMode();
+        solverRunner();
+    }
+}
+
+template <>
+void CGravizSystem::handle<TGravizCommand::System>(const QStringList &args)
+{
+    qDebug () << "CGravizSystem> SystemCommand " << args;
+    NCommand::CSystemCmd* cmd = new NCommand::CSystemCmd(QStringList() << *args.begin());
+    cmd->setTime(60*60*3);
+    connect(cmd, &NCommand::CSystemCmd::error, [this](const QString& msg){
+        mController->handleError(msg);
+    });
+    connect(cmd, &NCommand::CSystemCmd::log, [this](const QString& msg){
+        mController->handleLog(msg);
+    });
+    connect(cmd, &NCommand::CSystemCmd::finished, [this, cmd](int code){
+//        mController->handleLog(" [ Info ] Finished with code " + QString::number(code) + "\n");
+        mController->unlock();
+        cmd->deleteLater();
+    });
+    cmd->setWorkingDir(NCommand::CFileSystem::getInstance().getCurrentPath());
+    cmd->run();
+}
+
+template <>
+void CGravizSystem::handle<TGravizCommand::TerminateProcess>(const QStringList &args)
+{
+    qDebug () << "CGravizSystem> terminate " << args;
+    mProblemSolver->terminate();
+}
+
+template <>
+void CGravizSystem::handle<TGravizCommand::Compile>(const QStringList &args)
+{
+    qDebug () << "CGravizSystem> Compile " << args;
+    NCommand::CCompiler* compiler = new NCommand::CCompiler(args);
+    connect(compiler, SIGNAL(finished()), compiler, SLOT(deleteLater()));
+    connect(compiler, &NCommand::CCompiler::error, [this](QString msg){
+        mController->handleError(msg);
+    });
+    connect(compiler, &NCommand::CCompiler::log, [this](QString msg){
+        mController->handleLog(msg);
+    });
+    connect(compiler, &NCommand::CCompiler::finished, [this](int code){
+        mController->handleLog(" [ Info ] Finished with code " + QString::number(code) + "\n");
+        mController->unlock();
+    });
+    compiler->run();
+}
+
+template <>
+void CGravizSystem::handle<TGravizCommand::ChangeDirectory>(const QStringList &args)
+{
+    qDebug () << "CGravizSystem> ChangeDirectory " << args;
+    NCommand::CFileSystem::getInstance().changeDir(*args.begin());
+    mController->unlock();
+}
+
+template <>
+void CGravizSystem::handle<TGravizCommand::Unknown>(const QStringList &args)
+{
+    qDebug () << "CGravizSystem> Unknown " << args;
+    mController->handleError(QString(" [ Error ] ") + *args.begin() + " - No such command\n");
+    mController->unlock();
+}
+
+template <>
+void CGravizSystem::handle<TGravizCommand::Empty>(const QStringList &args)
+{
+    qDebug () << "CGravizSystem> Empty " << args;
+    mController->unlock();
+}
+
+template <>
+void CGravizSystem::handle<TGravizCommand::Total>(const QStringList &args)
+{
+    // nothing...
 }
 
 } // namespace NGraviz

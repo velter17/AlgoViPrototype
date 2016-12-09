@@ -12,7 +12,6 @@
 #include "framework/Commands/CFileSystem.h"
 #include "../CCommandHandler.h"
 
-#include "graviz/ProblemSolver/CProblemSolver.h"
 
 namespace NGraviz
 {
@@ -23,8 +22,46 @@ CCommandHandler::CCommandHandler(CGravizSystem *parent)
 
 }
 
-void CCommandHandler::handle(const QString& commandStr, bool system)
+void CCommandHandler::handle(const QString& commandStr)
 {
+    //mParent->setMode(TSystemMode::InProcess);
+    qDebug () << "CCommandHandler> handle " << commandStr;
+    QStringList args = commandStr.split(QRegExp("\\s+"), QString::SkipEmptyParts);
+    if(args.empty())
+    {
+        mParent->handle<TGravizCommand::Empty>(args);
+        return;
+    }
+
+    QString command = *args.begin();
+    args.erase(args.begin());
+    if(command == "compile")
+    {
+        mParent->handle<TGravizCommand::Compile>(args);
+    }
+    else if(command == "cd")
+    {
+        mParent->handle<TGravizCommand::ChangeDirectory>(args);
+    }
+    else if(command == "run")
+    {
+        mParent->handle<TGravizCommand::RunSolver>(args);
+    }
+    else if(sysCommand(command))
+    {
+        command = *commandStr.split(QRegExp("\\s+"), QString::SkipEmptyParts).begin();
+        for(const QString& str : args)
+        {
+            command += " " + str;
+        }
+        mParent->handle<TGravizCommand::System>(QStringList() << command);
+    }
+    else
+    {
+        mParent->handle<TGravizCommand::Unknown>(QStringList() << command << args);
+    }
+
+    /*
     qDebug () << "CCommandHandler> handle " << commandStr;
     QStringList args = commandStr.split(QRegExp("\\s+"), QString::SkipEmptyParts);
     if(args.empty())
@@ -38,18 +75,16 @@ void CCommandHandler::handle(const QString& commandStr, bool system)
         args.erase(args.begin());
         NCommand::CCompiler* compiler = new NCommand::CCompiler(args);
         connect(compiler, SIGNAL(finished()), compiler, SLOT(deleteLater()));
+        connect(compiler, SIGNAL(error(QString)), this, SLOT(handleError(QString)));
+        connect(compiler, SIGNAL(log(QString)), this, SLOT(handleLog(QString)));
         if(!system)
         {
-            connect(compiler, SIGNAL(error(QString)), this, SLOT(handleError(QString)));
-            connect(compiler, SIGNAL(log(QString)), this, SLOT(handleLog(QString)));
             connect(compiler, SIGNAL(finished()), this, SLOT(handleEndCommand()));
         }
         else
         {
             connect(compiler, &NCommand::CCompiler::finished, [this](){emit endSystemCommand();});
         }
-        //compiler->setWorkingDir(NCommand::CFileSystem::getInstance().getCurrentPath());
-        compiler->setWorkingDir("/home/dsadovyi/Coding");
         compiler->start();
         //compiler->wait();
         //mController->setSolutionPath(mFileSystem.getCurrentPath() + "/app");
@@ -59,7 +94,7 @@ void CCommandHandler::handle(const QString& commandStr, bool system)
         NCommand::CFileSystem::getInstance().changeDir(*(args.begin()+1));
         emit endCommand();
     }
-    else if(command == "exec")
+    else if(command == "run")
     {
         mParent->runSolver("");
     }
@@ -71,15 +106,16 @@ void CCommandHandler::handle(const QString& commandStr, bool system)
         connect(cmd, SIGNAL(log(QString)), this, SLOT(handleLog(QString)));
         connect(cmd, SIGNAL(finished()), this, SLOT(handleEndCommand()));
         cmd->setWorkingDir(NCommand::CFileSystem::getInstance().getCurrentPath());
-        cmd->start();
+        cmd->sta)rt();
     }
     else
     {
         emit error("Error. " + command + ": unknown command");
         handleEndCommand();
     }
+    */
 }
-
+/*
 void CCommandHandler::handleLog(QString msg)
 {
     emit log(msg);
@@ -94,6 +130,7 @@ void CCommandHandler::handleEndCommand()
 {
     emit endCommand();
 }
+*/
 
 bool CCommandHandler::sysCommand(const QString &command)
 {

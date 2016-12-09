@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <memory>
 #include "framework/Commands/ITerminalCommand.h"
 
 namespace NCommand
@@ -18,8 +19,11 @@ class CSystemCmd : public ITerminalCommand
 public:
     CSystemCmd(QStringList args = QStringList());
 
-protected:
+public slots:
     void run() override;
+    void terminate() override;
+private:
+    QProcess* mProc;
 };
 
 } // NCommand

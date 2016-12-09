@@ -9,6 +9,7 @@
 #pragma once
 
 #include "graviz/CGravizSystem.h"
+#include "graviz/Types.h"
 
 namespace NGraviz
 {
@@ -21,8 +22,8 @@ class CCommandHandler : public QObject
 public: // methods
     CCommandHandler(CGravizSystem* parent);
 
-    void handle(const QString &commandStr, bool system = false);
-
+    void handle(const QString &commandStr);
+/*
 signals:
     void log(QString msg);
     void error(QString msg);
@@ -32,8 +33,8 @@ private slots:
     void handleLog(QString msg);
     void handleError(QString msg);
     void handleEndCommand();
-
-private:
+*/
+private: // methods
     bool sysCommand(const QString& command);
 
 private: // fields

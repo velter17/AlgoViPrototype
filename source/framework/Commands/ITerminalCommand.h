@@ -18,7 +18,7 @@
 namespace NCommand
 {
 
-class ITerminalCommand : public QThread
+class ITerminalCommand : public QObject
 {
     Q_OBJECT
 public: // methods
@@ -29,18 +29,43 @@ public: // methods
 
     void setWorkingDir(const QString& dir);
 
+    /*
+     * set maxTime of execution
+    */
+    void setTime(int msecs);
+
+
+public slots:
+
+    /*
+     * Start point of command
+    */
+    virtual void run() = 0;
+
+    /*
+     * Method for communication with process
+    */
+    virtual void appendData(const QString& data);
+
+    virtual void terminate() = 0;
+
 signals:
     void log(QString msg);
     void error(QString msg);
     void logHtml(QString msg);
+    void started();
+    void finished(int code);
 protected: // methods
    QString getOptionsHelp();
-   bool readOptions(const QStringList &args, boost::program_options::variables_map &vm);
+   bool readOptions(const QStringList &args, boost::program_options::variables_map& vm);
+   bool operateOptions();
+
 
 protected: // fields
    QString mDirectory;
    boost::program_options::options_description mOptions;
    QStringList mArgs;
+   int mTime;
 };
 
 } // namespace NCommand
