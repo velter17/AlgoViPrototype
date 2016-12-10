@@ -44,10 +44,10 @@ CGravizSystem::CGravizSystem(std::shared_ptr<NController::CSystemController> con
     QThread* compilerHandlerThread = new QThread();
     mCompilerHandler->moveToThread(compilerHandlerThread);
     connect(mCompilerHandler.get(), &NCommand::CCompilerHandler::out, [this](const QString& msg){
-        mController->handleLog(msg);
+        QMetaObject::invokeMethod(mController.get(), "handleLog", Qt::QueuedConnection, Q_ARG(QString, msg));
     });
     connect(mCompilerHandler.get(), &NCommand::CCompilerHandler::err, [this](const QString& msg){
-        mController->handleError(msg);
+        QMetaObject::invokeMethod(mController.get(), "handleError", Qt::QueuedConnection, Q_ARG(QString, msg));
     });
     connect(mCompilerHandler.get(), SIGNAL(destroyed(QObject*)), compilerHandlerThread, SLOT(deleteLater()));
     compilerHandlerThread->start();
