@@ -66,7 +66,7 @@ QString CTestProvider::getFormatted(int i) const
       maxLen[0] = std::max(maxLen[0], str.length());
    for(const QString& str : outputList)
       maxLen[1] = std::max(maxLen[1], str.length());
-   QString ret = "+";
+   QString ret = " +";
    for(int i = 0; i < maxLen[0]+2; ++i)
       ret.append('-');
    ret.append('+');
@@ -74,6 +74,7 @@ QString CTestProvider::getFormatted(int i) const
       ret.append('-');
    ret.append('+');
    ret.append('\n');
+   ret.append(' ');
    ret.append('|');
    for(int i = 0; i < (maxLen[0]-3) / 2; ++i)
       ret.append(' ');
@@ -86,7 +87,7 @@ QString CTestProvider::getFormatted(int i) const
    ret += "output";
    for(int i = 0; i < maxLen[1]+2 - (maxLen[1]-4) / 2 - 6; ++i)
       ret.append(' ');
-   ret += "|\n";
+   ret += "|\n ";
    ret.append('+');
    for(int i = 0; i < maxLen[0]+2; ++i)
       ret.append('-');
@@ -95,6 +96,7 @@ QString CTestProvider::getFormatted(int i) const
       ret.append('-');
    ret.append('+');
    ret.append('\n');
+   ret.append(' ');
    int to = std::max(inputList.size(), outputList.size());
    for(int i = 0; i < to; ++i)
    {
@@ -116,7 +118,7 @@ QString CTestProvider::getFormatted(int i) const
       {
          for(int j = 0; j < maxLen[1]+2; ++j)
             ret.append(' ');
-         ret += "|\n";
+         ret += "|\n ";
          continue;
       }
       else
@@ -125,7 +127,7 @@ QString CTestProvider::getFormatted(int i) const
          ret += outputList[i];
          for(int j = 0; j < maxLen[1] - outputList[i].length() + 1; ++j)
             ret.append(' ');
-         ret += "|\n";
+         ret += "|\n ";
       }
    }
    ret.append('+');

@@ -15,6 +15,8 @@
 #include "framework/Commands/system/CCompiler.h"
 #include "graviz/settings/CSolverSettings.h"
 #include "framework/Commands/ProblemSolver/CTestCommand.h"
+#include "framework/Commands/ProblemSolver/ProblemParser/CCodeforcesParser.h"
+#include "framework/Commands/ProblemSolver/CProblemTester.h"
 
 namespace NGraviz
 {
@@ -292,6 +294,61 @@ void CGravizSystem::handle<TGravizCommand::Test>(const QStringList &args)
     connect(testThread, SIGNAL(started()), test, SLOT(run()));
     testThread->start();
 //    test->run();
+}
+
+template <>
+void CGravizSystem::handle<TGravizCommand::Tester>(const QStringList &args)
+{
+    qDebug () << "CGravizSystem> Tester " << args;
+    QThread* testerThread = new QThread();
+    NCommand::CProblemTester* tester = new NCommand::CProblemTester(
+                args,
+                mTestProvider,
+                mCompilerHandler);
+    tester->moveToThread(testerThread);
+    connect(tester, &NCommand::CProblemTester::finished, [this, testerThread, tester](int code){
+        testerThread->quit();
+        tester->deleteLater();
+        //mController->unlock();
+        QMetaObject::invokeMethod(mController.get(), "unlock", Qt::QueuedConnection);
+    });
+    connect(testerThread, SIGNAL(finished()), testerThread, SLOT(deleteLater()));
+    connect(tester, &NCommand::CProblemTester::error, [this](QString msg){
+//        mController->handleError(msg);
+        QMetaObject::invokeMethod(mController.get(), "handleError", Qt::QueuedConnection,
+                                  Q_ARG(QString, msg));
+    });
+    connect(tester, &NCommand::CProblemTester::log, [this](QString msg){
+//        mController->handleLog(msg);
+        QMetaObject::invokeMethod(mController.get(), "handleLog", Qt::QueuedConnection,
+                                  Q_ARG(QString, msg));
+    });
+    connect(testerThread, SIGNAL(started()), tester, SLOT(run()));
+    testerThread->start();
+//    test->run();
+}
+
+template <>
+void CGravizSystem::handle<TGravizCommand::ParseSite>(const QStringList &args)
+{
+    qDebug () << "CGravizSystem> ParseSite " << args;
+    NCommand::CCodeforcesParser* parser = new NCommand::CCodeforcesParser(args);
+    connect(parser, &NCommand::CCodeforcesParser::finished, [this, parser](int code){
+        parser->deleteLater();
+    });
+    connect(parser, &NCommand::CCodeforcesParser::error, [this](QString msg){
+        mController->handleError(msg);
+    });
+    connect(parser, &NCommand::CCodeforcesParser::log, [this](QString msg){
+        mController->handleLog(msg);
+    });
+    connect(parser, &NCommand::CCodeforcesParser::finished, [this, parser](int code){
+        //mController->handleLog(" [ Info ] Finished with code " + QString::number(code) + "\n");
+        for(const NCommand::STest& test : parser->tests())
+            mTestProvider->addTest(test);
+        mController->unlock();
+    });
+    parser->run();
 }
 
 template <>

@@ -31,7 +31,9 @@ enum class TGravizCommand
 {
     System,             // should be redirect to system
     RunSolver,          // start application
+    ParseSite,          // parse site to get data
     Test,               // test commands
+    Tester,             // launch tester
     TerminateProcess,   // stop application
     Compile,            // compile source code
     ChangeDirectory,    // change working directory

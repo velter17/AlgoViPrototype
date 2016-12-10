@@ -19,13 +19,13 @@ namespace NCommand
 
 CCompiler::CCompiler(QStringList args)
     : ITerminalCommand(args)
-    , mFlags({"std=c++11", "O2", "DVELTER"})
+    , mFlags({"std=c++11", "O2"})
 {
     mOptions.add_options()
         ("input,i", boost::program_options::value<std::string>()->required(), "path to source file")
         //("lang,l", boost::program_options::value<std::string>()->default_value("c++"), "language")
         ("output,o,", boost::program_options::value<std::string>()->required(), "destination path")
-        ("flag,f", boost::program_options::value<std::vector<std::string> >(&mFlags)->multitoken(),
+        ("flag,f", boost::program_options::value<std::vector<std::string> >()->multitoken(),
             "compilation flags\n(for c++ -DVAL you should use -f VAL");
 }
 
@@ -42,6 +42,13 @@ void CCompiler::run()
     QString src = QString::fromStdString(vm["input"].as<std::string>());
     QString compilerCommand = QString("g++ -o ") +
             CFileSystem::getInstance().getFullPath(QString::fromStdString(vm["output"].as<std::string>())).c_str();
+    if(vm.count("flag"))
+    {
+        for(const std::string& f : vm["flag"].as<std::vector<std::string>>())
+        {
+            mFlags.push_back(f);
+        }
+    }
     for(const std::string& f : mFlags)
     {
         compilerCommand += QString(" -") + f.c_str();

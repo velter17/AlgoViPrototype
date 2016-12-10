@@ -12,6 +12,7 @@
 #include <QDebug>
 #include <QTimer>
 #include <QScrollBar>
+#include <QClipboard>
 
 #include "Controller/CTerminal.h"
 #include "framework/Commands/system/CSystemCmd.h"
@@ -123,6 +124,11 @@ void CTerminal::keyPressEvent(QKeyEvent *e)
                 //QPlainTextEdit::keyPressEvent(e);
     {
         this->textCursor().insertHtml(preprocessMsg(e->text()));
+    }
+    if(e->key() == 0x56 && e->modifiers() == (Qt::ShiftModifier | Qt::ControlModifier))
+    {
+        QClipboard *clipboard = QApplication::clipboard();
+        this->textCursor().insertHtml(clipboard->text());
     }
 
     /* Delete one character by backspace key */

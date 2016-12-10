@@ -43,7 +43,9 @@ bool ITerminalCommand::readOptions(const QStringList& args, boost::program_optio
         std::vector <std::string> vargs;
         for(const QString str : args)
             vargs.push_back(str.toStdString());
-        boost::program_options::parsed_options parser = boost::program_options::command_line_parser(vargs).options(mOptions).run();
+        boost::program_options::parsed_options parser =
+                boost::program_options::command_line_parser(vargs)
+                .options(mOptions)/*.positional(mOptionsPositional)*/.run();
         boost::program_options::store(parser, vm);
     }
     catch(const boost::program_options::error& e)

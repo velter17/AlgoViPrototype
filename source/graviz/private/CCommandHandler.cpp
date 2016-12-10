@@ -55,6 +55,14 @@ void CCommandHandler::handle(const QString& commandStr)
     {
         mParent->handle<TGravizCommand::Test>(args);
     }
+    else if(command == "parse")
+    {
+        mParent->handle<TGravizCommand::ParseSite>(args);
+    }
+    else if(command == "tester")
+    {
+        mParent->handle<TGravizCommand::Tester>(args);
+    }
     else if(sysCommand(command))
     {
         command = *commandStr.split(QRegExp("\\s+"), QString::SkipEmptyParts).begin();

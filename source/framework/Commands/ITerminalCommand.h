@@ -14,6 +14,7 @@
 #include <QProcess>
 #include <sstream>
 #include <QThread>
+#include <QDebug>
 
 namespace NCommand
 {
@@ -64,6 +65,7 @@ protected: // methods
 protected: // fields
    QString mDirectory;
    boost::program_options::options_description mOptions;
+   boost::program_options::positional_options_description mOptionsPositional;
    QStringList mArgs;
    int mTime;
 };
