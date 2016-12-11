@@ -90,6 +90,11 @@ bool CProblemSolver::saveTestFlag()
     return mVarMap["test-save"].as<bool>();
 }
 
+void CProblemSolver::setAppPath(const QString &path)
+{
+    mAppPath = path;
+}
+
 void CProblemSolver::run()
 {
     qDebug () << "solve " << getSourceCodePath();
@@ -112,7 +117,7 @@ void CProblemSolver::run()
         qDebug () << "QProcess::finished";
         emit finished(exitCode);
     });
-    mApp->start(QString("stdbuf -o 0 ") + "/home/dsadovyi/Coding/app", QProcess::Unbuffered | QProcess::ReadWrite);
+    mApp->start(QString("stdbuf -o 0 ") + mAppPath, QProcess::Unbuffered | QProcess::ReadWrite);
     mApp->waitForStarted();
     if(mTestToExecuteFlag)
     {

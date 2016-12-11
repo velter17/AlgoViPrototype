@@ -199,6 +199,7 @@ void CGravizSystem::handle<TGravizCommand::RunSolver>(const QStringList &args)
     {
         mCompilerHandler->addSourceCodePath(sourceCodePath);
     }
+    mProblemSolver->setAppPath(mCompilerHandler->getAppPath(sourceCodePath));
 
     if(mCompilerHandler->isNeededCompilation(sourceCodePath))
     {

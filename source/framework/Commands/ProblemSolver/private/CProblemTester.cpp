@@ -146,6 +146,7 @@ void CProblemTester::run()
         QMetaObject::Connection &conn = *pconn;
         conn = connect(mCompilerHandler.get(), &CCompilerHandler::finished,
                        [this, pconn, &conn](int code){
+            qDebug () << "compilation was finished";
             if(code == 0)
             {
                 testRunner(mTestFrom);
@@ -190,6 +191,7 @@ void CProblemTester::testRunner(int test)
                 QStringList()
                     << "-s" << mSourceCodePath, mTestProvider);
     problemSolver->init();
+    problemSolver->setAppPath(mCompilerHandler->getAppPath(mSourceCodePath));
     connect(problemSolver, &CProblemSolver::started, [this, test, problemSolver](){
         qDebug () << "Testing of " << test+1 << " test was started";
         mOutputBuffer.clear();

@@ -12,6 +12,7 @@
 #include <QStringList>
 #include <QFileInfo>
 #include <QDateTime>
+#include <QTemporaryDir>
 #include <QDebug>
 
 #include "framework/Commands/CFileSystem.h"
@@ -24,12 +25,12 @@ struct SFileInfo
 {
     QFileInfo mFileInfo;
     QDateTime mLastModified;
+    QString mBinaryFilePath;
 
     SFileInfo();
-    SFileInfo(const QString& path);
+    SFileInfo(const QString& path, const QString& binaryPath);
 
     bool isModified();
-
     void setUpToDate();
 };
 
@@ -43,6 +44,7 @@ public: // methods
     bool isSourceCode(const QString& path);
     bool isNeededCompilation(const QString& path);
     void performCompilation(const QString &path, const QStringList& args);
+    QString getAppPath(const QString& codePath);
 
     void clear();
 
@@ -57,6 +59,8 @@ signals:
 
 private: // methods
     std::map<QString, SFileInfo> mSourceCodeFileMap;
+    QTemporaryDir mTempDir;
+    int mAppIdx;
 };
 
 } // namespace NCommand

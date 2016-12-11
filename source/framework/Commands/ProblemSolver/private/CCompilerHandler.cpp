@@ -12,14 +12,16 @@ namespace NCommand
 {
 
 CCompilerHandler::CCompilerHandler()
+    : mAppIdx(1)
 {
-
+    mTempDir.setAutoRemove(true);
 }
 
 void CCompilerHandler::addSourceCodePath(const QString &path)
 {
     QString fullPath = QString::fromStdString(CFileSystem::getInstance().getFullPath(path).generic_string());
-    mSourceCodeFileMap[fullPath] = SFileInfo(fullPath);
+    QString appName = mTempDir.path() + "/" + QString("app%1").arg(mAppIdx++);
+    mSourceCodeFileMap[fullPath] = SFileInfo(fullPath, appName);
 }
 
 bool CCompilerHandler::isSourceCode(const QString &path)
@@ -40,7 +42,7 @@ void CCompilerHandler::performCompilation(const QString& path, const QStringList
 
     CCompiler* compiler = new CCompiler(
                 QStringList() << "-i" << fullPath
-                              << "-o" << "/home/dsadovyi/Coding/app"
+                              << "-o" << getAppPath(fullPath)
                               << args);
     compiler->setTime(60*60*10);
     connect(compiler, &CCompiler::finished, [this, compiler, fullPath](int code)
@@ -64,22 +66,15 @@ void CCompilerHandler::performCompilation(const QString& path, const QStringList
     compiler->run();
 }
 
+QString CCompilerHandler::getAppPath(const QString &codePath)
+{
+    return mSourceCodeFileMap[codePath].mBinaryFilePath;
+}
+
 void CCompilerHandler::clear()
 {
     mSourceCodeFileMap.clear();
 }
-
-//QString CCompilerHandler::getPathFromArgs(const QStringList &args)
-//{
-//    std::vector <std::string> vargs;
-//    for(const QString& str : args)
-//        vargs.push_back(str.toStdString());
-//    boost::program_options::variables_map;
-//    boost::program_options::parsed_options parser = boost::program_options::command_line_parser(vargs).options(mOptions).run();
-//    boost::program_options::store(parser, vm);
-//    if(vm.count['input'])
-
-//}
 
 
 
@@ -88,10 +83,11 @@ SFileInfo::SFileInfo()
 
 }
 
-SFileInfo::SFileInfo(const QString &path)
+SFileInfo::SFileInfo(const QString &path, const QString &binaryPath)
 {
     mLastModified = QDateTime();
     mFileInfo.setFile(path);
+    mBinaryFilePath = binaryPath;
 }
 
 bool SFileInfo::isModified()

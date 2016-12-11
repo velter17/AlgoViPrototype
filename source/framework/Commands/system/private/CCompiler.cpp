@@ -38,6 +38,7 @@ void CCompiler::run()
         emit finished(0);
         return;
     }
+    qDebug () << "inside compiler";
 
     QString src = QString::fromStdString(vm["input"].as<std::string>());
     QString compilerCommand = QString("g++ -o ") +

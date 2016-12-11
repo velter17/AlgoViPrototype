@@ -31,6 +31,7 @@ public: // methods
 
     bool init();
     bool saveTestFlag();
+    void setAppPath(const QString& path);
 
 public slots:
     void run() override;
@@ -44,6 +45,7 @@ private: // fields
     QProcess* mApp;
     std::vector<std::string> mFlagParsed;
     QStringList mFlags;
+    QString mAppPath;
     bool mTestSaveFlag;
 
     int mTestToExecute;
