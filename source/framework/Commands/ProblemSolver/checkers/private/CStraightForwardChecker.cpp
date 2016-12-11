@@ -27,8 +27,41 @@ TCheckerResult CStraightForwardChecker::check()
     QString ans = QString::fromStdString(mVarMap["answer"].as<std::string>());
     QStringList dataList = data.split(QRegExp("\\s+"), QString::SkipEmptyParts);
     QStringList ansList = ans.split(QRegExp("\\s+"), QString::SkipEmptyParts);
-    qDebug () << "dataList : " << dataList;
-    qDebug () << "ansList : " << ansList;
+    if(dataList == ansList)
+    {
+        if(dataList.size() == 1)
+        {
+            mCheckerMessage = " ( " + *dataList.begin() + " == " + *ansList.begin() + " )";
+        }
+        else
+        {
+            mCheckerMessage = " ( Ok, Ok, results are equal )";
+        }
+        return TCheckerResult::Success;
+    }
+    else
+    {
+        if(dataList.size() != ansList.size())
+        {
+            mCheckerMessage = " ( data.size() != ans.size() -> " +
+                    QString::number(dataList.size()) + " != " + QString::number(ansList.size()) + " )";
+        }
+        else
+        {
+            int i = 1;
+            auto ansitr = ansList.begin();
+            for(auto itr = dataList.begin(); itr != dataList.end(); ++itr, ++i, ++ansitr)
+            {
+                if(*itr != *ansitr)
+                {
+                    mCheckerMessage += " ( in " + QString::number(i) +
+                            "-th value, expected = " + *ansitr + ", found " + *itr + " )";
+                    break;
+                }
+            }
+        }
+        return TCheckerResult::Fail;
+    }
     return dataList == ansList ? TCheckerResult::Success : TCheckerResult::Fail;
 }
 

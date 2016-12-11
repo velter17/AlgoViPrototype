@@ -77,6 +77,11 @@ void CGravizWinMain::handleError(QString msg)
     ui->mTerminal->appendError(msg);
 }
 
+void CGravizWinMain::handleLogHtml(QString msg)
+{
+    ui->mTerminal->appendOutputHtml(msg);
+}
+
 void CGravizWinMain::init()
 {
 }

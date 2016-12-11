@@ -42,6 +42,7 @@ private: // methods
 
 public slots: // interface methods
     void appendOutput(const QString& str) override;
+    void appendOutputHtml(const QString& str) override;
     void appendError(const QString& str) override;
     void question(const QString& str, const std::vector <QString> &answers) override;
     void lock() override;

@@ -19,7 +19,7 @@ namespace NCommand
 
 CCompiler::CCompiler(QStringList args)
     : ITerminalCommand(args)
-    , mFlags({"std=c++11", "O2"})
+    , mFlags({"std=c++11", "O2", "w"})
 {
     mOptions.add_options()
         ("input,i", boost::program_options::value<std::string>()->required(), "path to source file")

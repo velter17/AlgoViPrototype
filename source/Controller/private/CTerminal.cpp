@@ -82,6 +82,15 @@ void CTerminal::keyPressEvent(QKeyEvent *e)
             this->verticalScrollBar()->setValue(verticalScrollBar()->maximum());
         }
 
+        if(e->key() == 0x56 && e->modifiers() == (Qt::ShiftModifier | Qt::ControlModifier))
+        {
+            QClipboard *clipboard = QApplication::clipboard();
+            //this->textCursor().insertHtml(clipboard->text());
+            mLastWriter = 0;
+            this->textCursor().insertHtml(preprocessMsg(clipboard->text()));
+            this->verticalScrollBar()->setValue(verticalScrollBar()->maximum());
+        }
+
         if(e->key() == Qt::Key_Backspace
                && e->modifiers() == Qt::NoModifier
                && textCursor().positionInBlock() > 0
@@ -209,9 +218,15 @@ void CTerminal::keyPressEvent(QKeyEvent *e)
             && (e->modifiers() == Qt::NoModifier
                 || e->modifiers() == Qt::KeypadModifier))
     {
+        QTextCursor cursor = textCursor();
+        cursor.movePosition(QTextCursor::EndOfLine);
+        this->setTextCursor(cursor);
         QString cmdStr = this->textCursor().block().text().mid(mPromptStringLen);
         qDebug () << "execute command : " << cmdStr;
-        mHistory.append(cmdStr);
+        if(!cmdStr.isEmpty())
+        {
+            mHistory.append(cmdStr);
+        }
         mHistoryItr = mHistory.end();
         this->textCursor().insertBlock();
         mLastWriter = 1;
@@ -363,6 +378,20 @@ void CTerminal::appendOutput(const QString &str)
     }
     mLastWriter = 1;
     appendString("<font color=" + Colors::Output.name() + ">" + preprocessMsg(str) + "</font>");
+}
+
+void CTerminal::appendOutputHtml(const QString &str)
+{
+    if(mLastWriter == 0 && textCursor().positionInBlock() > 0)
+    {
+        this->textCursor().insertBlock();
+    }
+    else if(textCursor().positionInBlock() > 0 && mNewLineFlag)
+    {
+        this->textCursor().deletePreviousChar();
+    }
+    mLastWriter = 1;
+    appendString("<font color=" + Colors::Output.name() + ">" + str + "</font>");
 }
 
 void CTerminal::appendError(const QString &str)

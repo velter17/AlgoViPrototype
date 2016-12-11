@@ -128,6 +128,17 @@ bool CFileSystem::isDirectory(const QString& obj)
     return boost::filesystem::is_directory(p);
 }
 
+bool CFileSystem::isFile(const QString &obj)
+{
+    boost::filesystem::path p;
+    if(obj[0] != '/')
+        p = mCurrentPath / obj.toStdString();
+    else
+        p = obj.toStdString();
+    qDebug () << "CFileSystem> isFile (" << obj << ") -> " << p.c_str();
+    return boost::filesystem::is_regular_file(p);
+}
+
 boost::filesystem::path CFileSystem::getFullPath(const QString &path)
 {
     boost::filesystem::path p;

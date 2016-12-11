@@ -39,6 +39,11 @@ void IProblemChecker::terminate()
 
 }
 
+QString IProblemChecker::details()
+{
+    return mCheckerMessage;
+}
+
 TCheckerResult IProblemChecker::getResult()
 {
     return mResultCode;

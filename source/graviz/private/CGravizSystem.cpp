@@ -118,6 +118,11 @@ void CGravizSystem::handle<TGravizCommand::RunSolver>(const QStringList &args)
         QMetaObject::invokeMethod(mController.get(), "handleError", Qt::QueuedConnection,
                                   Q_ARG(QString, log));
     });
+    connect(mProblemSolver, &NCommand::CProblemSolver::logHtml, [this](const QString& log){
+        //mController->handleError(log);
+        QMetaObject::invokeMethod(mController.get(), "handleLogHtml", Qt::QueuedConnection,
+                                  Q_ARG(QString, log));
+    });
     if(!mProblemSolver->init())
     {
         mProblemSolver->deleteLater();
@@ -230,6 +235,9 @@ void CGravizSystem::handle<TGravizCommand::System>(const QStringList &args)
     connect(cmd, &NCommand::CSystemCmd::log, [this](const QString& msg){
         mController->handleLog(msg);
     });
+    connect(cmd, &NCommand::CSystemCmd::logHtml, [this](QString msg){
+        mController->handleLogHtml(msg);
+    });
     connect(cmd, &NCommand::CSystemCmd::finished, [this, cmd](int code){
 //        mController->handleLog(" [ Info ] Finished with code " + QString::number(code) + "\n");
         mController->unlock();
@@ -321,6 +329,11 @@ void CGravizSystem::handle<TGravizCommand::Tester>(const QStringList &args)
     connect(tester, &NCommand::CProblemTester::log, [this](QString msg){
 //        mController->handleLog(msg);
         QMetaObject::invokeMethod(mController.get(), "handleLog", Qt::QueuedConnection,
+                                  Q_ARG(QString, msg));
+    });
+    connect(tester, &NCommand::CProblemTester::logHtml, [this](QString msg){
+//        mController->handleLog(msg);
+        QMetaObject::invokeMethod(mController.get(), "handleLogHtml", Qt::QueuedConnection,
                                   Q_ARG(QString, msg));
     });
     connect(testerThread, SIGNAL(started()), tester, SLOT(run()));

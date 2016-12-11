@@ -7,8 +7,10 @@
  */
 
 #include <QDebug>
+#include <fstream>
 
 #include "../CTestCommand.h"
+#include "framework/Commands/CFileSystem.h"
 
 namespace NCommand
 {
@@ -26,7 +28,9 @@ CTestCommand::CTestCommand(const QStringList &args, std::shared_ptr<CTestProvide
         ("clear,c", boost::program_options::bool_switch()->default_value(false),
             "delete all tests from archive")
         ("delete,d", boost::program_options::value<int>(),
-            "delete test by number");
+            "delete test by number")
+        ("from-files", boost::program_options::value<std::string>(), "read tests from directory")
+        ("to-files", boost::program_options::value<std::string>(), "write tests to files in directory[empty!]");
 }
 
 void CTestCommand::run()
@@ -128,6 +132,82 @@ void CTestCommand::run()
     {
         qDebug () << "clear test archive";
         mTestProvider->clear();
+    }
+    else if(vm.count("from-files"))
+    {
+        QString fullPath = CFileSystem::getInstance().getFullPath(
+                    QString::fromStdString(vm["from-files"].as<std::string>())).c_str();
+        if(!CFileSystem::getInstance().isDirectory(fullPath))
+        {
+            emit error(QString::fromStdString(vm["from-files"].as<std::string>()) + " is not a valid directory\n");
+            emit finished(0);
+            return;
+        }
+        int cnt = 0;
+        for(int i = 1;;++i)
+        {
+            //QString fileData = QString("%1.dat").arg(i, 3, 10, QChar('0'));
+            QString fileData = QString("%1").arg(i, 2, 10, QChar('0'));
+            //QString fileAns = QString("%1.ans").arg(i, 3, 10, QChar('0'));
+            QString fileAns = QString("%1.a").arg(i, 2, 10, QChar('0'));
+            STest test;
+            if(!CFileSystem::getInstance().isFile(fullPath+"/"+fileData)
+                    || !CFileSystem::getInstance().isFile(fullPath + "/" + fileAns))
+            {
+                break;
+            }
+            ++cnt;
+            std::ifstream file(fullPath.toStdString() + "/" + fileData.toStdString());
+            std::string s;
+            emit log("read file " + fileData + "\n");
+            while(std::getline(file, s))
+            {
+                test.input += QString::fromStdString(s) + "\n";
+            }
+            file.close();
+            file.open(fullPath.toStdString() + "/" + fileAns.toStdString());
+            emit log("read file " + fileAns + "\n");
+            while(std::getline(file, s))
+            {
+                test.output += QString::fromStdString(s) + "\n";
+            }
+            file.close();
+
+            mTestProvider->addTest(test);
+        }
+        emit log(" [ Info ] " + QString::number(cnt) + " tests were read from files\n");
+    }
+    else if(vm.count("to-files"))
+    {
+        QString fullPath = CFileSystem::getInstance().getFullPath(
+                    QString::fromStdString(vm["to-files"].as<std::string>())).c_str();
+        if(!CFileSystem::getInstance().isDirectory(fullPath))
+        {
+            emit error(QString::fromStdString(vm["to-files"].as<std::string>()) + " is not a valid directory\n");
+            emit finished(0);
+            return;
+        }
+        int cnt = 0;
+        for(int i = 0; i < mTestProvider->size(); ++i)
+        {
+            QString fileData = QString("%1.dat").arg(i+1, 3, 10, QChar('0'));
+            QString fileAns = QString("%1.ans").arg(i+1, 3, 10, QChar('0'));
+//            if(!CFileSystem::getInstance().isFile(fullPath+"/"+fileData)
+//                    || !CFileSystem::getInstance().isFile(fullPath + "/" + fileAns))
+//            {
+//                break;
+//            }
+            ++cnt;
+            std::ofstream file(fullPath.toStdString() + "/" + fileData.toStdString());
+            emit log("write file " + fullPath + "/" + fileData + "\n");
+            file << mTestProvider->get(i).input.toStdString();
+            file.close();
+            file.open(fullPath.toStdString() + "/" + fileAns.toStdString());
+            emit log("write file " + fullPath + "/" + fileAns + "\n");
+            file << mTestProvider->get(i).output.toStdString();
+            file.close();
+        }
+        emit log(" [ Info ] " + QString::number(cnt) + " tests were written to files\n");
     }
     else
     {

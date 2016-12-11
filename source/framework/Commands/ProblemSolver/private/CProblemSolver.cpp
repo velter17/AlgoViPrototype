@@ -132,7 +132,7 @@ void CProblemSolver::appendData(const QString &data)
     {
         return;
     }
-    qDebug () << "append(write) " << data;
+    //qDebug () << "append(write) " << data;
     mApp->write(data.toLocal8Bit());
     mApp->write("\n");
 }

@@ -46,6 +46,7 @@ public slots:
     void handleCommand(NController::TTerminalCommandType type, const QString& cmd);
     void handleLog(QString msg);
     void handleError(QString msg);
+    void handleLogHtml(QString msg);
     void unlock();
     void setAppMode();
     void setQuestionMode();

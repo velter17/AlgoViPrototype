@@ -22,6 +22,7 @@ class ITerminal
 public slots: // methods
     virtual void appendOutput(const QString& str) = 0;
     virtual void appendError(const QString& str) = 0;
+    virtual void appendOutputHtml(const QString& str) = 0;
     virtual void question(const QString& str, const std::vector <QString> &answers) = 0;
     virtual void lock() = 0;
     virtual void unlock() = 0;

@@ -58,6 +58,12 @@ void CSystemController::handleError(QString msg)
     mGUI->handleError(msg);
 }
 
+void CSystemController::handleLogHtml(QString msg)
+{
+    qDebug () << "CSystemController> handleError " << msg;
+    mGUI->handleLogHtml(msg);
+}
+
 void CSystemController::unlock()
 {
     mGUI->unlock();

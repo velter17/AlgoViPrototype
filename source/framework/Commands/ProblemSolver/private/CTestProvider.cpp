@@ -53,12 +53,30 @@ STest CTestProvider::get(int i) const
 
 QString CTestProvider::getFormatted(int i) const
 {
+    static const int maxStrLen = 200;
+
    QVector<QString> inputList;
-   for(const QString& str : mTests[i].input.split('\n', QString::SkipEmptyParts))
-      inputList.append(str);
+   if(mTests[i].input.length() > maxStrLen)
+   {
+       for(const QString& str : (mTests[i].input.mid(0, maxStrLen)+" ...").split('\n', QString::SkipEmptyParts))
+          inputList.append(str);
+   }
+   else
+   {
+       for(const QString& str : mTests[i].input.split('\n', QString::SkipEmptyParts))
+          inputList.append(str);
+   }
    QVector<QString> outputList;
-   for(const QString& str : mTests[i].output.split('\n', QString::SkipEmptyParts))
-      outputList.append(str);
+   if(mTests[i].output.length() > maxStrLen)
+   {
+       for(const QString& str : (mTests[i].output.mid(0, maxStrLen)+" ..").split('\n', QString::SkipEmptyParts))
+          outputList.append(str);
+   }
+   else
+   {
+       for(const QString& str : mTests[i].output.split('\n', QString::SkipEmptyParts))
+          outputList.append(str);
+   }
    qDebug () << "input : " << inputList;
    qDebug () << "output : " << outputList;
    int maxLen[2] = {5, 6};
@@ -66,6 +84,10 @@ QString CTestProvider::getFormatted(int i) const
       maxLen[0] = std::max(maxLen[0], str.length());
    for(const QString& str : outputList)
       maxLen[1] = std::max(maxLen[1], str.length());
+   if(maxLen[0] > 50 || maxLen[1] > 50 || inputList.size() > 50 || outputList.size() > 50)
+   {
+       return " Not small enough to display :(\n";
+   }
    QString ret = " +";
    for(int i = 0; i < maxLen[0]+2; ++i)
       ret.append('-');

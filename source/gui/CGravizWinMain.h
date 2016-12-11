@@ -46,6 +46,7 @@ public: // methids
     void questionMode();
     void handleLog(QString msg);
     void handleError(QString msg);
+    void handleLogHtml(QString msg);
 
 signals:
     void modeChanged(NGraviz::TSystemMode mode);

@@ -32,7 +32,7 @@ ITerminalCommand::~ITerminalCommand()
 
 QString ITerminalCommand::getManualMessage()
 {
-    return "<br>No manual message<br>"
+    return "No manual message<br>"
            "Developer is too lazy...<br>";
 }
 

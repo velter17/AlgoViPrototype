@@ -27,7 +27,7 @@ CProblemTester::CProblemTester(const QStringList &args,
             "If no param - test whole test archive\n"
             "If -t 2 -> test second test from archive\n"
             "If -t 2-5 -> test from 2 to 5 tests from archive")
-        ("--verbose", boost::program_options::bool_switch()->default_value(false), "detailed report");
+        ("verbose", boost::program_options::bool_switch()->default_value(false), "detailed report");
 }
 
 void CProblemTester::run()
@@ -132,7 +132,7 @@ void CProblemTester::run()
 
     mSourceCodePath = CFileSystem::getInstance().getFullPath(
                 QString::fromStdString(vm["src"].as<std::string>())).c_str();
-    mNeedDetails = vm["--verbose"].as<bool>();
+    mNeedDetails = vm["verbose"].as<bool>();
 
     if(!mCompilerHandler->isSourceCode(mSourceCodePath))
     {
@@ -181,7 +181,7 @@ void CProblemTester::testRunner(int test)
     qDebug () << "testRunner> " << test;
     if(test > mTestTo)
     {
-        emit log(" [ Info ] Finished\n");
+        //emit log(" [ Info ] Finished\n");
         emit finished(0);
         return;
     }
@@ -199,7 +199,7 @@ void CProblemTester::testRunner(int test)
     connect(problemSolver, &CProblemSolver::finished,
                 [this, test, problemSolver](int code){
         qDebug () << "finished with output: " << mOutputBuffer;
-        emit log(" test #" + QString::number(test+1) + ": " + checkResult(test) + "\n");
+        emit logHtml(" test #" + QString::number(test+1) + ": " + checkResult(test));
         problemSolver->deleteLater();
         testRunner(test+1);
     });
@@ -216,13 +216,25 @@ QString CProblemTester::checkResult(int test)
                 << "--data" << mOutputBuffer
                 << "--answer" << mTestProvider->get(test).output);
     checker.run();
+    QString ret;
     if(checker.getResult() == TCheckerResult::Success)
-        return "OK";
+    {
+        ret = "<font color=green>OK</font>";
+    }
     else if(checker.getResult() == TCheckerResult::Fail)
-        return "WA";
+    {
+        ret = "<font color=red>WA</font>";
+    }
     else
-        return "Check fail";
-
+    {
+        ret = "Check fail";
+    }
+    if(mNeedDetails)
+    {
+        ret += checker.details();
+    }
+    ret += "<br>";
+    return ret;
 }
 
 
