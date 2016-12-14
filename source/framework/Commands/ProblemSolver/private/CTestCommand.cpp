@@ -15,9 +15,12 @@
 namespace NCommand
 {
 
-CTestCommand::CTestCommand(const QStringList &args, std::shared_ptr<CTestProvider> testProvider)
+CTestCommand::CTestCommand(const QStringList &args,
+                           std::shared_ptr<CTestProvider> testProvider,
+                           std::shared_ptr<CCompilerHandler> compilerHandler)
     : ITerminalCommand(args)
     , mTestProvider(testProvider)
+    , mCompilerHandler(compilerHandler)
 {
     mOptions.add_options()
         ("print,p", boost::program_options::value<std::string>(),
@@ -30,7 +33,11 @@ CTestCommand::CTestCommand(const QStringList &args, std::shared_ptr<CTestProvide
         ("delete,d", boost::program_options::value<int>(),
             "delete test by number")
         ("from-files", boost::program_options::value<std::string>(), "read tests from directory")
-        ("to-files", boost::program_options::value<std::string>(), "write tests to files in directory[empty!]");
+        ("to-files", boost::program_options::value<std::string>(), "write tests to files in directory[empty!]")
+        ("create", boost::program_options::bool_switch()->default_value(false), "create test by typing")
+        ("generate", boost::program_options::value<int>(), "generate tests using test-generator")
+        ("generator", boost::program_options::value<std::string>(), "generator code")
+        ("solver", boost::program_options::value<std::string>(), "solver code");
 }
 
 void CTestCommand::run()
@@ -209,6 +216,26 @@ void CTestCommand::run()
         }
         emit log(" [ Info ] " + QString::number(cnt) + " tests were written to files\n");
     }
+    else if(vm["create"].as<bool>())
+    {
+        mCreateState = 1;
+        emit log("Input:\n");
+        return;
+    }
+    else if(vm.count("generate"))
+    {
+        QString generatorCodePath = CFileSystem::getInstance().getFullPath(
+                    QString::fromStdString(vm["generator"].as<std::string>())).c_str();
+        QString solverCodePath = CFileSystem::getInstance().getFullPath(
+                    QString::fromStdString(vm["solver"].as<std::string>())).c_str();
+        int tests = vm["generate"].as<int>();
+
+        std::vector<QString> codes {generatorCodePath, solverCodePath};
+
+        compile(codes, 0, tests);
+
+        return;
+    }
     else
     {
         qDebug () << "print all tests";
@@ -225,12 +252,119 @@ void CTestCommand::run()
 
 void CTestCommand::appendData(const QString &data)
 {
-
+    qDebug () << "CTestCommand> appendData" << data;
+    if(mCreateState == 1)
+    {
+        mCreatedTest.input = data;
+        emit log("Output:\n");
+        mCreateState = 2;
+    }
+    else
+    {
+        emit log("Saved to archive\n");
+        mCreatedTest.output = data;
+        mTestProvider->addTest(mCreatedTest);
+        emit finished(0);
+    }
 }
 
 void CTestCommand::terminate()
 {
+    emit finished(1);
+}
 
+void CTestCommand::runGenerator(const QString &appPath, const QString &solverPath, int tests)
+{
+    if(0 == tests)
+    {
+        emit finished(0);
+        return;
+    }
+    qDebug () << "runGenerator> " << appPath << " (" << tests << ")";
+
+    auto runSolver = [tests, appPath, solverPath, this]()
+    {
+        CSystemCmd* app = new CSystemCmd(QStringList() << solverPath);
+        connect(app, &CSystemCmd::log, [this](const QString& msg){
+            mCreatedTest.output += msg;
+        });
+        connect(app, &CSystemCmd::error, [this](const QString& msg){
+            emit error(msg);
+        });
+        connect(app, &CSystemCmd::finished, [this, app, appPath, solverPath, tests](int code){
+            app->deleteLater();
+            mTestProvider->addTest(mCreatedTest);
+            qDebug () << "app finished with output " << mCreatedTest.output;
+            runGenerator(appPath, solverPath, tests-1);
+        });
+        connect(app, &CSystemCmd::started, [this, app](){
+            QMetaObject::invokeMethod(app, "appendData", Qt::QueuedConnection,
+                                      Q_ARG(QString, mCreatedTest.input));
+            qDebug () << "app started";
+        });
+        app->run();
+        //app->appendData(mCreatedTest.input);
+    };
+
+    auto runGen = [tests, appPath, solverPath, this, runSolver](){
+        CSystemCmd* app = new CSystemCmd(QStringList() << (appPath + " " + QString::number(rand())));
+        connect(app, &CSystemCmd::log, [this](const QString& msg){
+            mCreatedTest.input += msg;
+        });
+        connect(app, &CSystemCmd::error, [this](const QString& msg){
+            emit error(msg);
+        });
+        connect(app, &CSystemCmd::finished, [this, app, runSolver](int code){
+            app->deleteLater();
+            runSolver();
+        });
+        app->run();
+    };
+
+    mCreatedTest = STest();
+    runGen();
+}
+
+void CTestCommand::compile(const std::vector<QString> codes, size_t code_idx, int tests)
+{
+    qDebug() << "compile> " << codes << " " << code_idx << " " << tests;
+    if(code_idx == codes.size())
+    {
+        runGenerator(mCompilerHandler->getAppPath(codes[0]),
+                     mCompilerHandler->getAppPath(codes[1]),
+                     tests);
+        return;
+    }
+    if(!mCompilerHandler->isSourceCode(codes[code_idx]))
+    {
+        mCompilerHandler->addSourceCodePath(codes[code_idx]);
+    }
+
+    if(mCompilerHandler->isNeededCompilation(codes[code_idx]))
+    {
+        qDebug () << "neededCompilation";
+        std::shared_ptr<QMetaObject::Connection> pconn(new QMetaObject::Connection);
+        QMetaObject::Connection &conn = *pconn;
+        conn = connect(mCompilerHandler.get(), &CCompilerHandler::finished,
+                       [this, pconn, &conn, code_idx, codes, tests](int code){
+            qDebug () << "compilation was finished";
+            if(code == 0)
+            {
+                compile(codes, code_idx+1, tests);
+            }
+            else
+            {
+                emit error(" [ Error ] problem with compilation. Exit.\n");
+                emit finished(code);
+            }
+            disconnect(conn);
+        });
+        mCompilerHandler->performCompilation(codes[code_idx], QStringList());
+    }
+    else
+    {
+        compile(codes, code_idx+1, tests);
+    }
 }
 
 

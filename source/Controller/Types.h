@@ -24,6 +24,7 @@ enum class TTerminalCommandType
 {
     System,         // system command to execute
     Application,    // application input
+    HintRequest
 };
 
 

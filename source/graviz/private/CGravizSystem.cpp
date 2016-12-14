@@ -41,39 +41,43 @@ CGravizSystem::CGravizSystem(std::shared_ptr<NController::CSystemController> con
         mController->handleError(msg);
     });
 
-    QThread* compilerHandlerThread = new QThread();
-    mCompilerHandler->moveToThread(compilerHandlerThread);
+    //QThread* compilerHandlerThread = new QThread();
+    //mCompilerHandler->moveToThread(compilerHandlerThread);
     connect(mCompilerHandler.get(), &NCommand::CCompilerHandler::out, [this](const QString& msg){
         QMetaObject::invokeMethod(mController.get(), "handleLog", Qt::QueuedConnection, Q_ARG(QString, msg));
     });
     connect(mCompilerHandler.get(), &NCommand::CCompilerHandler::err, [this](const QString& msg){
         QMetaObject::invokeMethod(mController.get(), "handleError", Qt::QueuedConnection, Q_ARG(QString, msg));
     });
-    connect(mCompilerHandler.get(), SIGNAL(destroyed(QObject*)), compilerHandlerThread, SLOT(deleteLater()));
-    compilerHandlerThread->start();
+    //connect(mCompilerHandler.get(), SIGNAL(destroyed(QObject*)), compilerHandlerThread, SLOT(deleteLater()));
+    //compilerHandlerThread->start();
 }
 
 void CGravizSystem::handleCommand(NController::TTerminalCommandType type, const QString &cmd)
 {
     qDebug () << "CGravizSystem> handleCommand " << cmd;
-    if(mMode == TSystemMode::InProcess)
+//    if(mMode == TSystemMode::InProcess)
+    if(mMode != TSystemMode::Default)
     {
         qDebug () << "append data " << cmd;
         if(cmd == "^C")
         {
-            QMetaObject::invokeMethod(mProblemSolver,"terminate", Qt::QueuedConnection);
+            QMetaObject::invokeMethod(mTerminalCommand,"terminate", Qt::QueuedConnection);
         }
         else
         {
-            mInputBuffer += cmd + "\n";
-            QMetaObject::invokeMethod(mProblemSolver,"appendData", Qt::QueuedConnection,
+            if(mMode == TSystemMode::InProcess)
+            {
+                mInputBuffer += cmd + "\n";
+            }
+            QMetaObject::invokeMethod(mTerminalCommand, "appendData", Qt::QueuedConnection,
                                       Q_ARG(QString, cmd));
         }
     }
-    else if(mMode == TSystemMode::WaitForAnswer)
-    {
-        mQuestioner->appendData(cmd);
-    }
+//    else if(mMode == TSystemMode::WaitForAnswer)
+//    {
+//        mQuestioner->appendData(cmd);
+//    }
     else
     {
         mCommandHandler->handle(cmd);
@@ -107,6 +111,7 @@ void CGravizSystem::handle<TGravizCommand::RunSolver>(const QStringList &args)
     setMode(TSystemMode::InProcess);
     //mProblemSolver.reset(new NCommand::CProblemSolver(args));
     mProblemSolver = new NCommand::CProblemSolver(args, mTestProvider);
+    mTerminalCommand = mProblemSolver;
     connect(mProblemSolver, &NCommand::CProblemSolver::log, [this](const QString& log){
         //mController->handleLog(log);
         QMetaObject::invokeMethod(mController.get(), "handleLog", Qt::QueuedConnection,
@@ -135,29 +140,39 @@ void CGravizSystem::handle<TGravizCommand::RunSolver>(const QStringList &args)
     {
        qDebug () << "CGravizSystem> RunSolver> questionRunner";
        this->setMode(TSystemMode::WaitForAnswer);
-       mQuestioner.reset(new NCommand::CQuestioner(QStringList()
+       mQuestioner = new NCommand::CQuestioner(QStringList()
           << "-q" << "Save test to archive?"
           << "-o" << "y - Yes"
-          << "-o" << "n - No"));
-       connect(mQuestioner.get(), &NCommand::CQuestioner::log, [this](const QString& msg){
+          << "-o" << "n - No");
+       mTerminalCommand = mQuestioner;
+       QThread* questionerThread = new QThread();
+       mQuestioner->moveToThread(questionerThread);
+       connect(mQuestioner, &NCommand::CQuestioner::log, [this](const QString& msg){
           QMetaObject::invokeMethod(mController.get(), "handleLog", Qt::QueuedConnection,
                                     Q_ARG(QString, msg));
        });
-       connect(mQuestioner.get(), &NCommand::CQuestioner::finished, [this](int code){
+       connect(questionerThread, SIGNAL(started()), mQuestioner, SLOT(run()));
+       connect(mQuestioner, &NCommand::CQuestioner::finished, [this, questionerThread](int code){
           char ans = code;
           if(ans == 'y')
           {
-             mController->handleLog("Saved\n");
+             //mController->handleLog("Saved\n");
+              QMetaObject::invokeMethod(mController.get(), "handleLog", Qt::QueuedConnection,
+                                        Q_ARG(QString, "Saved\n"));
              mTestProvider->addTest(NCommand::STest(mInputBuffer, mOutputBuffer));
           }
-          mQuestioner->deleteLater();
+          //mQuestioner->deleteLater();
+          questionerThread->quit();
 //          for(int i = 0; i < mTestProvider->size(); ++i)
 //             mController->handleLog(mTestProvider->getFormatted(i));
-          mController->unlock();
+          //mController->unlock();
+          QMetaObject::invokeMethod(mController.get(), "unlock", Qt::QueuedConnection);
           this->setMode(TSystemMode::Default);
        });
+       connect(questionerThread, SIGNAL(finished()), mQuestioner, SLOT(deleteLater()));
+       connect(questionerThread, SIGNAL(finished()), questionerThread, SLOT(deleteLater()));
        mController->setQuestionMode();
-       mQuestioner->run();
+       questionerThread->start();
     };
 
     auto solverRunner = [this, questionRunner]()
@@ -272,7 +287,10 @@ void CGravizSystem::handle<TGravizCommand::Compile>(const QStringList &args)
     connect(compiler, &NCommand::CCompiler::finished, [this](int code){
         mController->handleLog(" [ Info ] Finished with code " + QString::number(code) + "\n");
         mController->unlock();
+        setMode(TSystemMode::Default);
     });
+    setMode(TSystemMode::InProcess);
+    mTerminalCommand = compiler;
     compiler->run();
 }
 
@@ -281,12 +299,14 @@ void CGravizSystem::handle<TGravizCommand::Test>(const QStringList &args)
 {
     qDebug () << "CGravizSystem> Test " << args;
     QThread* testThread = new QThread();
-    NCommand::CTestCommand* test = new NCommand::CTestCommand(args, mTestProvider);
+    NCommand::CTestCommand* test = new NCommand::CTestCommand(args, mTestProvider, mCompilerHandler);
+    mTerminalCommand = test;
     test->moveToThread(testThread);
     connect(test, &NCommand::CTestCommand::finished, [this, testThread, test](int code){
         testThread->quit();
         test->deleteLater();
         //mController->unlock();
+        setMode(TSystemMode::Default);
         QMetaObject::invokeMethod(mController.get(), "unlock", Qt::QueuedConnection);
     });
     connect(testThread, SIGNAL(finished()), testThread, SLOT(deleteLater()));
@@ -301,6 +321,8 @@ void CGravizSystem::handle<TGravizCommand::Test>(const QStringList &args)
                                   Q_ARG(QString, msg));
     });
     connect(testThread, SIGNAL(started()), test, SLOT(run()));
+    setMode(TSystemMode::InProcess);
+    mController->setAppMode();
     testThread->start();
 //    test->run();
 }
@@ -314,11 +336,13 @@ void CGravizSystem::handle<TGravizCommand::Tester>(const QStringList &args)
                 args,
                 mTestProvider,
                 mCompilerHandler);
+    mTerminalCommand = tester;
     tester->moveToThread(testerThread);
     connect(tester, &NCommand::CProblemTester::finished, [this, testerThread, tester](int code){
         testerThread->quit();
         tester->deleteLater();
         //mController->unlock();
+        setMode(TSystemMode::Default);
         QMetaObject::invokeMethod(mController.get(), "unlock", Qt::QueuedConnection);
     });
     connect(testerThread, SIGNAL(finished()), testerThread, SLOT(deleteLater()));
@@ -338,6 +362,7 @@ void CGravizSystem::handle<TGravizCommand::Tester>(const QStringList &args)
                                   Q_ARG(QString, msg));
     });
     connect(testerThread, SIGNAL(started()), tester, SLOT(run()));
+    setMode(TSystemMode::InProcess);
     testerThread->start();
 //    test->run();
 }

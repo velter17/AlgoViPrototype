@@ -22,6 +22,7 @@ public:
 public slots:
     void run() override;
     void terminate() override;
+    void appendData(const QString &data) override;
 private:
     QProcess* mProc;
 };

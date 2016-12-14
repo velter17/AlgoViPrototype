@@ -39,6 +39,7 @@ void CQuestioner::run()
 
 void CQuestioner::appendData(const QString &data)
 {
+   qDebug () << "CQuestioner> appendData" << data;
    emit finished(static_cast<int>(data.toStdString()[0]));
 }
 

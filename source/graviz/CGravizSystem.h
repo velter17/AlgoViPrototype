@@ -19,6 +19,7 @@
 #include "framework/Commands/ProblemSolver/CProblemSolver.h"
 #include "framework/Commands/ProblemSolver/CCompilerHandler.h"
 #include "framework/Commands/ProblemSolver/CTestProvider.h"
+#include "framework/Commands/ProblemSolver/CTestCommand.h"
 #include "framework/Commands/common/CQuestioner.h"
 
 namespace NController {
@@ -53,9 +54,12 @@ private: // fields
     std::shared_ptr<NView::CGraphicView> mView;
     std::shared_ptr<CCommandHandler> mCommandHandler;
     std::shared_ptr<NCommand::CCompilerHandler> mCompilerHandler;
-    std::shared_ptr<NCommand::CQuestioner> mQuestioner;
+    NCommand::CQuestioner* mQuestioner;
     std::shared_ptr<NCommand::CTestProvider> mTestProvider;
+    std::shared_ptr<NCommand::CTestCommand> mTestCommand;
     NCommand::CProblemSolver* mProblemSolver;
+    NCommand::ITerminalCommand* mTerminalCommand;
+
     TSystemMode mMode;
     QString mInputBuffer;
     QString mOutputBuffer;

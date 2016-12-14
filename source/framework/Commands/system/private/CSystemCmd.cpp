@@ -50,13 +50,19 @@ void CSystemCmd::run()
         emit finished(code);
         mProc->deleteLater();
     });
+    qDebug () << "bash -c " << mArgs;
     mProc->start("bash", QStringList() << "-c" << mArgs);
-    //mProc->waitForFinished();
 }
 
 void CSystemCmd::terminate()
 {
     mProc->terminate();
+}
+
+void CSystemCmd::appendData(const QString &data)
+{
+    mProc->write(data.toLocal8Bit());
+    mProc->write("\n");
 }
 
 } // namespace NCommand

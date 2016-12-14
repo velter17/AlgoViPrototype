@@ -132,6 +132,7 @@ void CProblemSolver::terminate()
 
 void CProblemSolver::appendData(const QString &data)
 {
+    qDebug () << "CProblemSolver> appendData" << data;
     assert(0 != mApp);
     if(data.isEmpty())
     {

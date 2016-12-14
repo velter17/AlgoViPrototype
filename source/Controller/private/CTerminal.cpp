@@ -91,6 +91,22 @@ void CTerminal::keyPressEvent(QKeyEvent *e)
             this->verticalScrollBar()->setValue(verticalScrollBar()->maximum());
         }
 
+        if((e->key() == Qt::Key_Enter || e->key() == Qt::Key_Return) && e->modifiers() == Qt::ControlModifier)
+        {
+            if(!(mLastWriter == 0 || textCursor().positionInBlock() == 0))
+            {
+                if(textCursor().positionInBlock() > 0)
+                {
+                    this->textCursor().deletePreviousChar();
+                }
+                this->textCursor().insertBlock();
+            }
+            mLastWriter = 0;
+            this->textCursor().insertHtml("<br>");
+            mInputBuffer += "\n";
+            this->verticalScrollBar()->setValue(verticalScrollBar()->maximum());
+        }
+
         if(e->key() == Qt::Key_Backspace
                && e->modifiers() == Qt::NoModifier
                && textCursor().positionInBlock() > 0
@@ -251,7 +267,7 @@ void CTerminal::tabKeyHandler()
     {
         QTextBlock b = this->document()->lastBlock();
         for(const QString& str : hints.first)
-            this->appendOutput(str);
+            this->appendOutput(str + "  a");
         this->appendMain(b.text());
     }
     else if(!hints.first.isEmpty())
