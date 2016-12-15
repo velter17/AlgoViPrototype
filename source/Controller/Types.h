@@ -27,5 +27,17 @@ enum class TTerminalCommandType
     HintRequest
 };
 
+enum class TCommandHintName
+{
+    SystemPath,
+    AppName,
+    Compile,
+    RunSolver,
+    Test,
+    Tester,
+
+//    Total,
+};
+
 
 } // namespace NController

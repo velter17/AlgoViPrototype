@@ -86,6 +86,16 @@ void ITerminalCommand::setTime(int msecs)
     mTime = msecs;
 }
 
+QStringList ITerminalCommand::getOptionList()
+{
+    QStringList ret;
+    for(const boost::shared_ptr<boost::program_options::option_description> itr : mOptions.options())
+    {
+        ret.append(QString::fromStdString(itr->canonical_display_name()));
+    }
+    return ret;
+}
+
 
 void ITerminalCommand::appendData(const QString &data)
 {

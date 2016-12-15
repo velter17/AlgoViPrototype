@@ -35,6 +35,8 @@ public: // methods
     */
     void setTime(int msecs);
 
+    QStringList getOptionList();
+
 
 public slots:
 

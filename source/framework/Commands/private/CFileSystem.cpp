@@ -125,6 +125,7 @@ bool CFileSystem::isDirectory(const QString& obj)
         p = mCurrentPath / obj.toStdString();
     else
         p = obj.toStdString();
+    qDebug () << p.c_str() << " is a directory?";
     return boost::filesystem::is_directory(p);
 }
 

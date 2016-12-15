@@ -18,6 +18,7 @@
 #include "framework/Commands/CFileSystem.h"
 #include "Controller/CSystemController.h"
 #include "Controller/ITerminal.h"
+#include "Controller/CHintProvider.h"
 
 namespace NController
 {
@@ -77,6 +78,8 @@ private: // fields
     int mLastWriter;
     QString mInputBuffer;
     bool mNewLineFlag;
+
+    CHintProvider mHintProvider;
 };
 
 } // namespace NController

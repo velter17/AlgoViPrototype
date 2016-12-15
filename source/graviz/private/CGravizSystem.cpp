@@ -245,6 +245,7 @@ void CGravizSystem::handle<TGravizCommand::System>(const QStringList &args)
     qDebug () << "CGravizSystem> SystemCommand " << args;
     NCommand::CSystemCmd* cmd = new NCommand::CSystemCmd(QStringList() << *args.begin());
     cmd->setTime(60*60*3);
+    mController->setAppMode();
     connect(cmd, &NCommand::CSystemCmd::error, [this](const QString& msg){
         mController->handleError(msg);
     });

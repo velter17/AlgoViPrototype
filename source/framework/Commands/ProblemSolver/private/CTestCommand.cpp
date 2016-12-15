@@ -327,7 +327,6 @@ void CTestCommand::runGenerator(const QString &appPath, const QString &solverPat
 
 void CTestCommand::compile(const std::vector<QString> codes, size_t code_idx, int tests)
 {
-    qDebug() << "compile> " << codes << " " << code_idx << " " << tests;
     if(code_idx == codes.size())
     {
         runGenerator(mCompilerHandler->getAppPath(codes[0]),

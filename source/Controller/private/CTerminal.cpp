@@ -254,20 +254,18 @@ void CTerminal::tabKeyHandler()
 {
     QString cmdStr = this->textCursor().block().text().mid(mPromptStringLen);
     std::cout << "cmdStr: " << cmdStr.toStdString() << std::endl;
-    int idx = cmdStr.length()-1;
-    while(idx >= 0 && (cmdStr[idx] != ' ' && cmdStr[idx] != 160))
-    {
-        --idx;
-    }
-    cmdStr = cmdStr.mid(idx+1);
-    QPair<QStringList, int> hints = NCommand::CFileSystem::getInstance().getHint(cmdStr);
+
+    NController::tHint hints =
+            mHintProvider.getHints(cmdStr);
     qDebug () << "hints: " << hints.first << ", tabs=" << mTabPressCount;
 
-    if(mTabPressCount > 1 && hints.first.size() > 1)
+    if(mTabPressCount > 1)
     {
         QTextBlock b = this->document()->lastBlock();
         for(const QString& str : hints.first)
-            this->appendOutput(str + "  a");
+            this->appendOutput(str + "  ");
+        if(hints.first.size() == 0)
+            this->textCursor().insertBlock();
         this->appendMain(b.text());
     }
     else if(!hints.first.isEmpty())
@@ -287,6 +285,12 @@ void CTerminal::tabKeyHandler()
         {
             QString toAppend = (*hints.first.begin()).mid(hints.second, lcp-hints.second);
             this->textCursor().insertText(toAppend);
+            int idx = cmdStr.length()-1;
+            while(idx >= 0 && (cmdStr[idx] != ' ' && cmdStr[idx] != 160))
+            {
+                --idx;
+            }
+            cmdStr = cmdStr.mid(idx+1);
             if(hints.first.size() == 1 &&
                     NCommand::CFileSystem::getInstance().isDirectory(cmdStr + toAppend))
             {
