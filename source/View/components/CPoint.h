@@ -8,24 +8,22 @@
 
 #pragma once
 
-#include <QGraphicsItem>
-#include <QPoint>
-#include <QPainter>
-#include <QStyle>
-#include <QStyleOptionGraphicsItem>
+#include "View/components/IGravizItem.h"
 
 namespace NView
 {
 
-class CPoint : public QGraphicsItem
+class CPoint : public IGravizItem
 {
 public: // methods
-    CPoint(const QPoint& p);
+    CPoint(const QString& name, const QPoint& p);
     ~CPoint();
 
-    QRectF boundingRect() const;
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
-    void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
+    QRectF boundingRect() const override;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
+    void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
+
+    QString serialize() const override;
 
 private: // fields
     static const int sPointRadius;

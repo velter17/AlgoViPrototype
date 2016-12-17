@@ -15,14 +15,13 @@
 namespace NView
 {
 
-const int CPoint::sPointRadius = 3;
+const int CPoint::sPointRadius = 4;
 
 
-CPoint::CPoint(const QPoint &p)
+CPoint::CPoint(const QString& name, const QPoint &p)
+    : IGravizItem(name, p)
 {
-    setFlag(QGraphicsItem::ItemIsMovable, true);
-    setFlag(QGraphicsItem::ItemIsSelectable, true);
-    setPos(p);
+    qDebug () << "created Point " << name << " " << p;
 }
 
 CPoint::~CPoint()
@@ -46,22 +45,23 @@ void CPoint::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QW
     Q_UNUSED(option);
     Q_UNUSED(widget);
 
+    IGravizItem::paint(painter, option, widget);
+
     QBrush br;
     br.setColor(Qt::black);
     painter->setBrush(br);
     painter->drawEllipse(QPoint(0,0), sPointRadius, sPointRadius);
-    QFont font = painter->font();
-    font.setPointSize(font.pointSize() * 0.7);
-    painter->setFont(font);
-    painter->drawText(
-            QPoint(-1, -sPointRadius), 
-            "(" + QString::number(pos().x()) + "," + QString::number(pos().y()) + ")"); 
 }
 
 void CPoint::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
-    QGraphicsItem::mouseMoveEvent(event);
+    IGravizItem::mouseMoveEvent(event);
     this->scene()->update(this->boundingRect().adjusted(-pos().x(), -pos().y(), pos().x(), pos().y()));
+}
+
+QString CPoint::serialize() const
+{
+    return QString::number(this->scenePos().x())  + " " + QString::number(this->scenePos().y());
 }
 
 } // namespace NView

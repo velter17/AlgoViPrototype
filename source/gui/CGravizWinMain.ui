@@ -51,7 +51,7 @@
           <property name="maximumSize">
            <size>
             <width>16777215</width>
-            <height>0</height>
+            <height>16777215</height>
            </size>
           </property>
           <property name="orientation">
@@ -64,72 +64,19 @@
               <property name="maximumSize">
                <size>
                 <width>16777215</width>
-                <height>0</height>
+                <height>16777215</height>
                </size>
               </property>
              </widget>
             </item>
             <item>
-             <layout class="QVBoxLayout" name="verticalLayout_6" stretch="0,0">
+             <layout class="QVBoxLayout" name="verticalLayout_6" stretch="">
               <property name="leftMargin">
                <number>0</number>
               </property>
               <property name="rightMargin">
                <number>0</number>
               </property>
-              <item>
-               <widget class="QGroupBox" name="mInputGroupBox">
-                <property name="enabled">
-                 <bool>true</bool>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>16777215</width>
-                  <height>0</height>
-                 </size>
-                </property>
-                <property name="title">
-                 <string>Input</string>
-                </property>
-                <layout class="QVBoxLayout" name="verticalLayout_7">
-                 <item>
-                  <widget class="QPlainTextEdit" name="mInputTextEdit">
-                   <property name="maximumSize">
-                    <size>
-                     <width>16777215</width>
-                     <height>0</height>
-                    </size>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </widget>
-              </item>
-              <item>
-               <widget class="QGroupBox" name="mOutputGroupBox">
-                <property name="maximumSize">
-                 <size>
-                  <width>16777215</width>
-                  <height>0</height>
-                 </size>
-                </property>
-                <property name="title">
-                 <string>GroupBox</string>
-                </property>
-                <layout class="QVBoxLayout" name="verticalLayout_8">
-                 <item>
-                  <widget class="QPlainTextEdit" name="mOutputTextEdit">
-                   <property name="maximumSize">
-                    <size>
-                     <width>16777215</width>
-                     <height>0</height>
-                    </size>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </widget>
-              </item>
              </layout>
             </item>
             <item>
@@ -140,66 +87,6 @@
              </widget>
             </item>
            </layout>
-          </widget>
-          <widget class="QTabWidget" name="mToolsPanel">
-           <property name="maximumSize">
-            <size>
-             <width>16777215</width>
-             <height>0</height>
-            </size>
-           </property>
-           <property name="styleSheet">
-            <string notr="true"/>
-           </property>
-           <property name="tabShape">
-            <enum>QTabWidget::Rounded</enum>
-           </property>
-           <property name="currentIndex">
-            <number>2</number>
-           </property>
-           <property name="elideMode">
-            <enum>Qt::ElideRight</enum>
-           </property>
-           <property name="documentMode">
-            <bool>false</bool>
-           </property>
-           <property name="movable">
-            <bool>true</bool>
-           </property>
-           <widget class="QWidget" name="Algorithm">
-            <attribute name="title">
-             <string>Algorithm</string>
-            </attribute>
-            <layout class="QVBoxLayout" name="verticalLayout_5">
-             <item>
-              <layout class="QGridLayout" name="mAlgoLayout"/>
-             </item>
-             <item>
-              <spacer name="verticalSpacer">
-               <property name="orientation">
-                <enum>Qt::Vertical</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>20</width>
-                 <height>40</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-            </layout>
-           </widget>
-           <widget class="QWidget" name="Settings">
-            <attribute name="title">
-             <string>Settings</string>
-            </attribute>
-            <layout class="QVBoxLayout" name="verticalLayout_4"/>
-           </widget>
-           <widget class="QWidget" name="Tools">
-            <attribute name="title">
-             <string>Tools</string>
-            </attribute>
-           </widget>
           </widget>
          </widget>
         </item>
@@ -291,7 +178,7 @@
      <x>0</x>
      <y>0</y>
      <width>923</width>
-     <height>25</height>
+     <height>19</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuGraviz">

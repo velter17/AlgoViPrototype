@@ -1,0 +1,32 @@
+/**
+ * Project   Graviz
+ *
+ * @file     $FILE_NAME$
+ * @author   $AUTHOR$
+ * @date     $DATE$
+ */
+
+#include "$HEADER_PATH$"
+
+$Nnamespace $NAMESPACE$
+$N{
+
+$CLASS_NAME$::$CLASS_NAME$()
+{
+
+}
+
+QString $CLASS_NAME$::serialize(const std::map<QString, IGravizItem *> &items)
+{
+    
+}
+
+void $CLASS_NAME$::realize(QString &data,
+                           QPainter *painter,
+                           const std::map <QString, IGravizItem*>& items) override;
+{
+
+}
+
+$N
+$N} // namespace $NAMESPACE$

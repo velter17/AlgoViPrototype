@@ -38,7 +38,6 @@ public: // methids
     void init();
     ~CGravizWinMain();
 
-    void setAlgoLabel(const QString& title, const QString& value);
     QGraphicsView* getGraphicsView();
     void lock();
     void unlock();

@@ -10,6 +10,7 @@
 
 #include "framework/Commands/ProblemSolver/CTestCommand.h"
 #include "framework/Commands/ProblemSolver/CProblemSolver.h"
+#include "framework/Commands/ProblemSolver/CVisualSolver.h"
 #include "framework/Commands/system/CCompiler.h"
 #include "framework/Commands/ProblemSolver/CProblemTester.h"
 #include "framework/Commands/CFileSystem.h"
@@ -28,6 +29,13 @@ template <>
 tHint CHintProvider::hints<TCommandHintName::RunSolver>(const QString& input)
 {
     NCommand::CProblemSolver solver(QStringList(), nullptr);
+    return tHint(solver.getOptionList(), 0);
+}
+
+template <>
+tHint CHintProvider::hints<TCommandHintName::RunSolverVisual>(const QString& input)
+{
+    NCommand::CVisualSolver solver(QStringList(), nullptr);
     return tHint(solver.getOptionList(), 0);
 }
 
@@ -62,12 +70,13 @@ tHint CHintProvider::hints<TCommandHintName::AppName>(const QString& input)
 CHintProvider::CHintProvider()
 {
     mFunc["run"] = &CHintProvider::hints<TCommandHintName::RunSolver>;
+    mFunc["run-visual"] = &CHintProvider::hints<TCommandHintName::RunSolverVisual>;
     mFunc["test"] = &CHintProvider::hints<TCommandHintName::Test>;
     mFunc["tester"] = &CHintProvider::hints<TCommandHintName::Tester>;
     mFunc["compile"] = &CHintProvider::hints<TCommandHintName::Compile>;
 
     // internal commands
-    mAppList << "run" << "test" << "tester" << "compile"
+    mAppList << "run" << "test" << "tester" << "compile" << "run-visual"
 
     // external commands
              << "ls" << "date" << "time" << "cd" << "pwd"

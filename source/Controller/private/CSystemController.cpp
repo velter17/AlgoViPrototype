@@ -19,10 +19,6 @@ CSystemController::CSystemController(std::shared_ptr<CGravizWinMain> GUI)
     , mView(nullptr)
     , mModel(nullptr)
 {
-    mGUI->setAlgoLabel("Algorithm",     "not specified");
-    mGUI->setAlgoLabel("Type",          "not specified");
-    mGUI->setAlgoLabel("InputType",     "not specified");
-    mGUI->setAlgoLabel("OutputType",    "not specified");
     connect(mGUI.get(), SIGNAL(newCommand(NController::TTerminalCommandType,QString)),
             this, SLOT(handleCommand(NController::TTerminalCommandType, QString)));
 }

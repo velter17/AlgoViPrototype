@@ -59,12 +59,22 @@ void CCompiler::run()
     mProc.reset(new CSystemCmd(QStringList() << compilerCommand));
     //connect(proc.get(), SIGNAL(finished()), proc.get(), SLOT(deleteLater()));
     connect(mProc.get(), &CCompiler::log,
-            [this](QString msg){emit log(msg);});
+            [this](QString msg){
+        qDebug () << "CCompiler> log " << msg;
+        emit log(msg);
+    });
     connect(mProc.get(), &CCompiler::error,
-            [this](QString msg){emit error(msg);});
-    connect(mProc.get(), &CSystemCmd::finished, [this](int code){emit finished(code);});
+            [this](QString msg){
+        qDebug () << "CCompiler> error " << msg;
+        emit error(msg);
+    });
+    connect(mProc.get(), &CSystemCmd::finished, [this](int code){
+        qDebug () << "CCompiler> finished";
+        emit finished(code);
+    });
     mProc->setWorkingDir(this->mDirectory);
     mProc->run();
+    qDebug () << "CCompiler> started";
 }
 
 void CCompiler::terminate()

@@ -33,6 +33,7 @@ enum class TCommandHintName
     AppName,
     Compile,
     RunSolver,
+    RunSolverVisual,
     Test,
     Tester,
 

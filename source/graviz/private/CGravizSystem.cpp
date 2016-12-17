@@ -17,6 +17,11 @@
 #include "framework/Commands/ProblemSolver/CTestCommand.h"
 #include "framework/Commands/ProblemSolver/ProblemParser/CCodeforcesParser.h"
 #include "framework/Commands/ProblemSolver/CProblemTester.h"
+#include "framework/Commands/ProblemSolver/CVisualSolver.h"
+#include "View/CVisualizationController.h"
+
+#include "View/problems/CConvexHullViz.h"
+#include "View/problems/CDistToCurveViz.h"
 
 namespace NGraviz
 {
@@ -41,16 +46,16 @@ CGravizSystem::CGravizSystem(std::shared_ptr<NController::CSystemController> con
         mController->handleError(msg);
     });
 
-    //QThread* compilerHandlerThread = new QThread();
-    //mCompilerHandler->moveToThread(compilerHandlerThread);
+//    QThread* compilerHandlerThread = new QThread();
+//    mCompilerHandler->moveToThread(compilerHandlerThread);
     connect(mCompilerHandler.get(), &NCommand::CCompilerHandler::out, [this](const QString& msg){
         QMetaObject::invokeMethod(mController.get(), "handleLog", Qt::QueuedConnection, Q_ARG(QString, msg));
     });
     connect(mCompilerHandler.get(), &NCommand::CCompilerHandler::err, [this](const QString& msg){
         QMetaObject::invokeMethod(mController.get(), "handleError", Qt::QueuedConnection, Q_ARG(QString, msg));
     });
-    //connect(mCompilerHandler.get(), SIGNAL(destroyed(QObject*)), compilerHandlerThread, SLOT(deleteLater()));
-    //compilerHandlerThread->start();
+//    connect(mCompilerHandler.get(), SIGNAL(destroyed(QObject*)), compilerHandlerThread, SLOT(deleteLater()));
+//    compilerHandlerThread->start();
 }
 
 void CGravizSystem::handleCommand(NController::TTerminalCommandType type, const QString &cmd)
@@ -59,13 +64,14 @@ void CGravizSystem::handleCommand(NController::TTerminalCommandType type, const 
 //    if(mMode == TSystemMode::InProcess)
     if(mMode != TSystemMode::Default)
     {
-        qDebug () << "append data " << cmd;
+        qDebug () << "CGravizSystem> terminate";
         if(cmd == "^C")
         {
             QMetaObject::invokeMethod(mTerminalCommand,"terminate", Qt::QueuedConnection);
         }
         else
         {
+            qDebug () << "append data " << cmd;
             if(mMode == TSystemMode::InProcess)
             {
                 mInputBuffer += cmd + "\n";
@@ -237,6 +243,59 @@ void CGravizSystem::handle<TGravizCommand::RunSolver>(const QStringList &args)
         mController->setAppMode();
         solverRunner();
     }
+}
+
+
+template <>
+void CGravizSystem::handle<TGravizCommand::RunSolverVisual>(const QStringList &args)
+{
+    qDebug () << "CGravizSystem> RunSolverVisual " << args;
+    NCommand::CVisualSolver* solver = new NCommand::CVisualSolver(args, mCompilerHandler);
+    mController->setAppMode();
+    setMode(TSystemMode::InProcess);
+    mTerminalCommand = solver;
+    connect(solver, &NCommand::CVisualSolver::error, [this](const QString& msg){
+//        mController->handleError(msg);
+        QMetaObject::invokeMethod(mController.get(), "handleError", Qt::QueuedConnection,
+                                  Q_ARG(QString, msg));
+    });
+    connect(solver, &NCommand::CVisualSolver::logHtml, [this](QString msg){
+//        mController->handleLogHtml(msg);
+        QMetaObject::invokeMethod(mController.get(), "handleHtml", Qt::QueuedConnection,
+                                  Q_ARG(QString, msg));
+    });
+    if(!solver->init())
+    {
+        solver->deleteLater();
+        QMetaObject::invokeMethod(mController.get(), "unlock", Qt::QueuedConnection);
+        setMode(TSystemMode::Default);
+        return;
+    }
+
+    NView::CVisualizationController* controller = new NView::CVisualizationController(
+                mView,
+                std::shared_ptr<NView::IProblemVisualizer>(new NView::CDistToCurveViz));
+    connect(controller, &NView::CVisualizationController::sceneChanged, [this, solver](const QString& data){
+        QMetaObject::invokeMethod(solver, "setInput", Qt::QueuedConnection, Q_ARG(QString, data));
+    });
+    connect(solver, SIGNAL(log(QString)), controller, SLOT(updateResult(QString)));
+
+    QThread* solverThread = new QThread();
+    solver->moveToThread(solverThread);
+    connect(solverThread, SIGNAL(started()), solver, SLOT(run()));
+    connect(solverThread, SIGNAL(finished()), solverThread, SLOT(deleteLater()));
+    connect(solverThread, SIGNAL(finished()), solver, SLOT(deleteLater()));
+    connect(solver, &NCommand::CVisualSolver::finished, [this, solver, solverThread, controller](int code){
+//        mController->handleLog(" [ Info ] Finished with code " + QString::number(code) + "\n");
+//        mController->unlock();
+        QMetaObject::invokeMethod(mController.get(), "unlock", Qt::QueuedConnection);
+        solverThread->quit();
+        controller->deleteLater();
+        setMode(TSystemMode::Default);
+    });
+
+    solverThread->start();
+
 }
 
 template <>

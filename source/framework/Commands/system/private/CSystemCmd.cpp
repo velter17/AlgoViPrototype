@@ -46,12 +46,15 @@ void CSystemCmd::run()
     connect(mProc, static_cast<void(QProcess::*)(int)>(&QProcess::finished),
             [this, timer](int code)
     {
+        qDebug () << "mProc finished";
         timer->deleteLater();
         emit finished(code);
         mProc->deleteLater();
     });
     qDebug () << "bash -c " << mArgs;
     mProc->start("bash", QStringList() << "-c" << mArgs);
+    //mProc->waitForFinished();
+    //qDebug () << "mProc finished";
 }
 
 void CSystemCmd::terminate()

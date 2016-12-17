@@ -63,6 +63,10 @@ void CCommandHandler::handle(const QString& commandStr)
     {
         mParent->handle<TGravizCommand::Tester>(args);
     }
+    else if(command == "run-visual")
+    {
+        mParent->handle<TGravizCommand::RunSolverVisual>(args);
+    }
     else if(sysCommand(command))
     {
         command = *commandStr.split(QRegExp("\\s+"), QString::SkipEmptyParts).begin();

@@ -24,7 +24,7 @@ class ITerminalCommand : public QObject
     Q_OBJECT
 public: // methods
     ITerminalCommand(QStringList args = QStringList());
-    virtual ~ITerminalCommand();
+    virtual ~ITerminalCommand() = 0;
 
     virtual QString getManualMessage();
 
