@@ -20,6 +20,7 @@ CDistToCurveViz::CDistToCurveViz()
 }
 
 QString CDistToCurveViz::serialize(const std::map<QString, IGravizItem *> &items)
+try
 {
     if(items.size() < 4)
         return "";
@@ -29,10 +30,15 @@ QString CDistToCurveViz::serialize(const std::map<QString, IGravizItem *> &items
     ret += items.at("Point#4")->serialize() + "\n";
     return ret;
 }
+catch(const std::out_of_range& error)
+{
+    qDebug () << "CDistToCurve::serialize(): exception: " << error.what();
+}
 
 void CDistToCurveViz::realize(QString &data,
                               QPainter *painter,
                               const std::map<QString, IGravizItem *> &items)
+try
 {
     if(items.size() < 4)
         return;
@@ -83,6 +89,10 @@ void CDistToCurveViz::realize(QString &data,
     qDebug () << "cur: " << items.at("Point#4")->scenePos() << ", prev = " << items.at("Point#4")->getPrevPos();
     qDebug () << "orient = " << orient;
     painter->drawLine(items.at("Point#4")->scenePos(), items.at("Point#4")->scenePos() + orient);
+}
+catch(const std::out_of_range& error)
+{
+    qDebug () << "CDistToCurve::realize(): exception: " << error.what();
 }
 
 

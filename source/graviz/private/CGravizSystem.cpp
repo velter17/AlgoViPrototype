@@ -278,18 +278,24 @@ void CGravizSystem::handle<TGravizCommand::RunSolverVisual>(const QStringList &a
     connect(controller, &NView::CVisualizationController::sceneChanged, [this, solver](const QString& data){
         QMetaObject::invokeMethod(solver, "setInput", Qt::QueuedConnection, Q_ARG(QString, data));
     });
-    connect(solver, SIGNAL(log(QString)), controller, SLOT(updateResult(QString)));
+
+    std::shared_ptr<QMetaObject::Connection> pconn(new QMetaObject::Connection);
+    QMetaObject::Connection &conn = *pconn;
+    conn = connect(solver, SIGNAL(log(QString)), controller, SLOT(updateResult(QString)));
+    connect(solver, SIGNAL(command(QString)), controller, SLOT(handleInput(QString)));
 
     QThread* solverThread = new QThread();
     solver->moveToThread(solverThread);
     connect(solverThread, SIGNAL(started()), solver, SLOT(run()));
     connect(solverThread, SIGNAL(finished()), solverThread, SLOT(deleteLater()));
     connect(solverThread, SIGNAL(finished()), solver, SLOT(deleteLater()));
-    connect(solver, &NCommand::CVisualSolver::finished, [this, solver, solverThread, controller](int code){
+    connect(solver, &NCommand::CVisualSolver::finished, [this, solver, solverThread, controller, pconn, &conn](int code){
 //        mController->handleLog(" [ Info ] Finished with code " + QString::number(code) + "\n");
 //        mController->unlock();
         QMetaObject::invokeMethod(mController.get(), "unlock", Qt::QueuedConnection);
         solverThread->quit();
+        disconnect(conn);
+        controller->finish();
         controller->deleteLater();
         setMode(TSystemMode::Default);
     });

@@ -28,8 +28,11 @@ public: // methods
                              std::shared_ptr<IProblemVisualizer> visualizer);
     ~CVisualizationController();
 
+    void finish();
+
 public slots: // methods
     void updateResult(const QString& data);
+    void handleInput(const QString& data);
 
 private slots: // methods
     void addPoint(const QPoint& p);
@@ -44,6 +47,10 @@ private: // fields
     std::shared_ptr <CGraphicView> mView;
     std::shared_ptr <IProblemVisualizer> mVisualizer;
     std::map <QString, IGravizItem*> mObjectsMap;
+    std::vector <QMetaObject::Connection> mConnections;
+
+    int mPointNum;
+    int mMode;
 };
 
 } // namespace NView

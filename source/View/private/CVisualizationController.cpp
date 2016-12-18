@@ -17,14 +17,16 @@ CVisualizationController::CVisualizationController(
         std::shared_ptr<IProblemVisualizer> visualizer)
     : mView(view)
     , mVisualizer(visualizer)
+    , mPointNum(1)
+    , mMode(1)
 {
-    connect(mView.get(), &CGraphicView::objectAdded, [this](IGravizItem* item){
+    mConnections.push_back(connect(mView.get(), &CGraphicView::objectAdded, [this](IGravizItem* item){
         mObjectsMap[item->getName()] = item;
-    });
-    connect(mView.get(), &CGraphicView::changed, [this](const QList<QRectF>& region){
+    }));
+    mConnections.push_back(connect(mView.get(), &CGraphicView::changed, [this](const QList<QRectF>& region){
         update();
-    });
-    connect(mView.get(), SIGNAL(mousePressed(QPoint)), this, SLOT(addPoint(QPoint)));
+    }));
+    mConnections.push_back(connect(mView.get(), SIGNAL(mousePressed(QPoint)), this, SLOT(addPoint(QPoint))));
     mView->setVisualizer(mVisualizer);
     mView->setObjectsMap(&mObjectsMap);
 }
@@ -35,18 +37,44 @@ CVisualizationController::~CVisualizationController()
     mView->setDataToDraw("");
 }
 
+void CVisualizationController::finish()
+{
+    for(QMetaObject::Connection& c : mConnections)
+        disconnect(c);
+}
+
 void CVisualizationController::addPoint(const QPoint &p)
 {
-    static int num = 1;
-    qDebug () << "add Point in pos " << p;
-    QString name = "Point#" + QString::number(num++);
-    mView->addGravizItem(new CPoint(name, p));
-
+    if(mMode == 1)
+    {
+        qDebug () << "add Point in pos " << p;
+        QString name = "Point#" + QString::number(mPointNum++);
+        mView->addGravizItem(new CPoint(name, p));
+    }
 }
 
 void CVisualizationController::updateResult(const QString &data)
 {
     mView->setDataToDraw(data);
+}
+
+void CVisualizationController::handleInput(const QString &data)
+{
+    qDebug () << "CVisualizerController> handleInput: " << data;
+    QStringList args = data.split(QRegExp("\\s+"), QString::SkipEmptyParts);
+    if(args.isEmpty())
+        return;
+    QString command = *args.begin();
+    args.erase(args.begin());
+    if(command == "add")
+    {
+        if(args.isEmpty())
+            return;
+        if(*args.begin() == "on")
+            mMode = 1;
+        else
+            mMode = 0;
+    }
 }
 
 void CVisualizationController::update()

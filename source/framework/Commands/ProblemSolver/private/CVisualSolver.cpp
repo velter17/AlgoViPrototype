@@ -89,7 +89,7 @@ void CVisualSolver::terminate()
 
 void CVisualSolver::appendData(const QString &data)
 {
-    emit log(data + " was handled\n");
+    emit command(data);
 }
 
 void CVisualSolver::setInput(const QString &data)

@@ -14,8 +14,8 @@
 #include "View/CGraphicView.h"
 #include "View/components/CPoint.h"
 
-#define DEFAULT_WIN_HEIGHT 1000
-#define DEFAULT_WIN_WIDTH 1000
+#define DEFAULT_WIN_HEIGHT 10000
+#define DEFAULT_WIN_WIDTH 10000
 
 namespace NView
 {
@@ -32,11 +32,7 @@ CGraphicView::~CGraphicView()
 
 void CGraphicView::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-//    this->addItem(new CPoint("name", event->scenePos().toPoint));
-    if(this->selectedItems().empty())
-    {
-        emit mousePressed(event->scenePos().toPoint());
-    }
+    emit mousePressed(event->scenePos().toPoint());
     QGraphicsScene::mousePressEvent(event);
 }
 
