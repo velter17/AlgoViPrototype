@@ -49,7 +49,8 @@ private: // fields
     std::map <QString, IGravizItem*> mObjectsMap;
     std::vector <QMetaObject::Connection> mConnections;
 
-    int mPointNum;
+    std::map <QString, int> mPointNum;
+    QString mCurrentPrefix;
     int mMode;
 };
 

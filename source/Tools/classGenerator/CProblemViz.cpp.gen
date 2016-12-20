@@ -23,7 +23,7 @@ QString $CLASS_NAME$::serialize(const std::map<QString, IGravizItem *> &items)
 
 void $CLASS_NAME$::realize(QString &data,
                            QPainter *painter,
-                           const std::map <QString, IGravizItem*>& items) override;
+                           const std::map <QString, IGravizItem*>& items)
 {
 
 }

@@ -17,8 +17,8 @@ CVisualizationController::CVisualizationController(
         std::shared_ptr<IProblemVisualizer> visualizer)
     : mView(view)
     , mVisualizer(visualizer)
-    , mPointNum(1)
     , mMode(1)
+    , mCurrentPrefix("Point")
 {
     mConnections.push_back(connect(mView.get(), &CGraphicView::objectAdded, [this](IGravizItem* item){
         mObjectsMap[item->getName()] = item;
@@ -48,7 +48,7 @@ void CVisualizationController::addPoint(const QPoint &p)
     if(mMode == 1)
     {
         qDebug () << "add Point in pos " << p;
-        QString name = "Point#" + QString::number(mPointNum++);
+        QString name = mCurrentPrefix + "#" + QString::number(++mPointNum[mCurrentPrefix]);
         mView->addGravizItem(new CPoint(name, p));
     }
 }
@@ -74,6 +74,12 @@ void CVisualizationController::handleInput(const QString &data)
             mMode = 1;
         else
             mMode = 0;
+    }
+    if(command == "set-prefix")
+    {
+        if(args.isEmpty())
+            return;
+        mCurrentPrefix = *args.begin();
     }
 }
 

@@ -17,7 +17,7 @@ ITerminalCommand::ITerminalCommand(QStringList args)
     : mDirectory("")
     , mOptions("Allowed options")
     , mArgs(args)
-    , mTime(60*60) // minute
+    , mTime(60*60*100) // minute
 
 {
     mOptions.add_options()

@@ -22,6 +22,7 @@
 
 #include "View/problems/CConvexHullViz.h"
 #include "View/problems/CDistToCurveViz.h"
+#include "View/problems/CRouteSmootherViz.h"
 
 namespace NGraviz
 {
@@ -274,7 +275,7 @@ void CGravizSystem::handle<TGravizCommand::RunSolverVisual>(const QStringList &a
 
     NView::CVisualizationController* controller = new NView::CVisualizationController(
                 mView,
-                std::shared_ptr<NView::IProblemVisualizer>(new NView::CDistToCurveViz));
+                std::shared_ptr<NView::IProblemVisualizer>(new NView::CRouteSmootherViz));
     connect(controller, &NView::CVisualizationController::sceneChanged, [this, solver](const QString& data){
         QMetaObject::invokeMethod(solver, "setInput", Qt::QueuedConnection, Q_ARG(QString, data));
     });
