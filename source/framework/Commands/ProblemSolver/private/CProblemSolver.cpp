@@ -29,8 +29,7 @@ CProblemSolver::CProblemSolver(const QStringList &args, std::shared_ptr<CTestPro
             "use c++ -DVAL like -f VAL")
         ("input,i",boost::program_options::value<std::string>(), "input file")
         ("output,o", boost::program_options::value<std::string>(), "output file")
-        ("test-save,t", boost::program_options::bool_switch()->default_value(false), "Post saving test to archive")
-        ("<", "Use to redirect input from archive-test");
+        ("test-save,t", boost::program_options::bool_switch()->default_value(false), "Post saving test to archive");
 }
 
 QString CProblemSolver::getSourceCodePath()
@@ -132,7 +131,7 @@ void CProblemSolver::terminate()
 
 void CProblemSolver::appendData(const QString &data)
 {
-    qDebug () << "CProblemSolver> appendData" << data;
+    //qDebug () << "CProblemSolver> appendData" << data;
     assert(0 != mApp);
     if(data.isEmpty())
     {

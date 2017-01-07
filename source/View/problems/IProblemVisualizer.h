@@ -24,6 +24,8 @@ public: // methods
                          QPainter *painter,
                          const std::map <QString, IGravizItem*>& items) = 0;
     virtual ~IProblemVisualizer() = 0;
+
+    virtual bool isFree() {return true;}
 };
 
 inline IProblemVisualizer::~IProblemVisualizer(){}

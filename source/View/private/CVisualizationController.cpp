@@ -9,14 +9,21 @@
 #include "../CVisualizationController.h"
 #include "View/components/CPoint.h"
 
+#include "View/problems/CConvexHullViz.h"
+#include "View/problems/CCppScriptViz.h"
+#include "View/problems/CDistToCurveViz.h"
+#include "View/problems/CSegmentCrossViz.h"
+
 namespace NView
 {
 
 CVisualizationController::CVisualizationController(
         std::shared_ptr<CGraphicView> view,
-        std::shared_ptr<IProblemVisualizer> visualizer)
+        std::shared_ptr<NCommand::CCompilerHandler> compilerHandler,
+        NCommand::CVisualSolver *visualSolver)
     : mView(view)
-    , mVisualizer(visualizer)
+    , mVisualSolver(visualSolver)
+    , mCompilerHandler(compilerHandler)
     , mMode(1)
     , mCurrentPrefix("Point")
 {
@@ -27,6 +34,9 @@ CVisualizationController::CVisualizationController(
         update();
     }));
     mConnections.push_back(connect(mView.get(), SIGNAL(mousePressed(QPoint)), this, SLOT(addPoint(QPoint))));
+
+    initVisualizer();
+
     mView->setVisualizer(mVisualizer);
     mView->setObjectsMap(&mObjectsMap);
 }
@@ -85,8 +95,22 @@ void CVisualizationController::handleInput(const QString &data)
 
 void CVisualizationController::update()
 {
-    if(mObjectsMap.size() > 2)
+    if(mObjectsMap.size() > 2 && mVisualizer->isFree())
         emit sceneChanged(mVisualizer->serialize(mObjectsMap));
+}
+
+void CVisualizationController::initVisualizer()
+{
+    QString algoPath = mVisualSolver->getAlgoScriptPath();
+    qDebug () << "algoPath = " << algoPath;
+    if(algoPath == "convex_hull")
+        mVisualizer.reset(new CConvexHullViz);
+    else if(algoPath == "segment_cross")
+        mVisualizer.reset(new CSegmentCrossViz);
+    else if(algoPath == "dist_to_curve")
+        mVisualizer.reset(new CDistToCurveViz);
+    else
+        mVisualizer.reset(new CCppScriptViz(mCompilerHandler, algoPath));
 }
 
 

@@ -37,6 +37,7 @@ public slots: //methods
     void terminate() override;
     void appendData(const QString& data) override;
     void setInput(const QString& data);
+    QString getAlgoScriptPath();
 
 signals:
     void command(const QString& cmd);
@@ -52,6 +53,7 @@ private: // fields
     boost::program_options::variables_map mVarMap;
     std::shared_ptr<CProblemSolver> mSolver;
     QString mSourceCode;
+    QString mAlgoScript;
     QString mInput;
     int mInputTimestamp;
     int mLastTimestamp;

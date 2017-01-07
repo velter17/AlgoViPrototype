@@ -21,6 +21,7 @@ CVisualSolver::CVisualSolver(const QStringList &args, std::shared_ptr<CCompilerH
 {
     mOptions.add_options()
         ("src,s", boost::program_options::value<std::string>()->required(), "source code")
+        ("algo,a", boost::program_options::value<std::string>()->required(), "algo cpp script")
         ("flag,f", boost::program_options::value<std::vector<std::string>>(&mFlagParsed),
             "compilation flags\n"
             "use c++ -DVAL like -f DVAL");
@@ -37,6 +38,9 @@ bool CVisualSolver::init()
         }
         mSourceCode = CFileSystem::getInstance().getFullPath(
                             QString::fromStdString(mVarMap["src"].as<std::string>())).c_str();
+//        mAlgoScript = CFileSystem::getInstance().getFullPath(
+//                            QString::fromStdString(mVarMap["algo"].as<std::string>())).c_str();
+        mAlgoScript = QString::fromStdString(mVarMap["algo"].as<std::string>());
         return true;
     }
     else
@@ -100,6 +104,11 @@ void CVisualSolver::setInput(const QString &data)
     {
         startSolver();
     }
+}
+
+QString CVisualSolver::getAlgoScriptPath()
+{
+    return mAlgoScript;
 }
 
 void CVisualSolver::startSolver()

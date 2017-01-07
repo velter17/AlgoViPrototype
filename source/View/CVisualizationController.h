@@ -15,7 +15,9 @@
 
 #include "View/components/IGravizItem.h"
 #include "View/CGraphicView.h"
+#include "framework/Commands/ProblemSolver/CVisualSolver.h"
 #include "View/problems/IProblemVisualizer.h"
+#include "framework/Commands/ProblemSolver/CCompilerHandler.h"
 
 namespace NView
 {
@@ -25,7 +27,8 @@ class CVisualizationController : public QObject
     Q_OBJECT
 public: // methods
     CVisualizationController(std::shared_ptr<CGraphicView> view,
-                             std::shared_ptr<IProblemVisualizer> visualizer);
+                             std::shared_ptr<NCommand::CCompilerHandler> compilerHandler,
+                             NCommand::CVisualSolver* visualSolver);
     ~CVisualizationController();
 
     void finish();
@@ -39,6 +42,7 @@ private slots: // methods
 
 private: // methods
     void update();
+    void initVisualizer();
 
 signals:
     void sceneChanged(const QString& data);
@@ -46,9 +50,10 @@ signals:
 private: // fields
     std::shared_ptr <CGraphicView> mView;
     std::shared_ptr <IProblemVisualizer> mVisualizer;
+    NCommand::CVisualSolver* mVisualSolver;
+    std::shared_ptr<NCommand::CCompilerHandler> mCompilerHandler;
     std::map <QString, IGravizItem*> mObjectsMap;
     std::vector <QMetaObject::Connection> mConnections;
-
     std::map <QString, int> mPointNum;
     QString mCurrentPrefix;
     int mMode;
