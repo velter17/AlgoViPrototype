@@ -32,9 +32,6 @@ private: // methods
 
     tHint processHints(const QStringList& list, const QString& str);
 
-//    template <TCommandHintName cmd>
-//    void hintsHandlerRegistrator();
-
 private: // fields
     typedef tHint (CHintProvider::*THintHandler)(const QString& args);
 

@@ -202,6 +202,15 @@ void CTerminal::keyPressEvent(QKeyEvent *e)
             p.movePosition(QTextCursor::EndOfBlock);
             p.insertText(*mHistoryItr);
         }
+        else
+        {
+            QTextBlock block = document()->lastBlock();
+            QTextCursor p(block);
+            p.select(QTextCursor::BlockUnderCursor);
+            p.removeSelectedText();
+            this->textCursor().insertBlock();
+            newCmdPrompt();
+        }
     }
 
     /* Move cursor left or right */
@@ -239,6 +248,10 @@ void CTerminal::keyPressEvent(QKeyEvent *e)
         this->setTextCursor(cursor);
         QString cmdStr = this->textCursor().block().text().mid(mPromptStringLen);
         qDebug () << "execute command : " << cmdStr;
+        if(mHistoryItr != mHistory.end() && cmdStr == *mHistoryItr)
+        {
+            mHistory.erase(mHistoryItr);
+        }
         if(!cmdStr.isEmpty())
         {
             mHistory.append(cmdStr);

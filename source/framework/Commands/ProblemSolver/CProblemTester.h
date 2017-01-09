@@ -34,6 +34,7 @@ private:
     std::shared_ptr<CCompilerHandler> mCompilerHandler;
     QString mOutputBuffer;
     QString mSourceCodePath;
+    QString mCheckerType;
     int mTestFrom;
     int mTestTo;
     bool mNeedDetails;

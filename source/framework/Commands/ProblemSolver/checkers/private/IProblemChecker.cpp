@@ -41,7 +41,7 @@ void IProblemChecker::terminate()
 
 QString IProblemChecker::details()
 {
-    return mCheckerMessage;
+    return " ( " + mCheckerMessage + " )";
 }
 
 TCheckerResult IProblemChecker::getResult()

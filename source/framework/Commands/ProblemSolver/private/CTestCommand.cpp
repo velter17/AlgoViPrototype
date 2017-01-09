@@ -153,10 +153,10 @@ void CTestCommand::run()
         int cnt = 0;
         for(int i = 1;;++i)
         {
-            //QString fileData = QString("%1.dat").arg(i, 3, 10, QChar('0'));
-            QString fileData = QString("%1").arg(i, 2, 10, QChar('0'));
-            //QString fileAns = QString("%1.ans").arg(i, 3, 10, QChar('0'));
-            QString fileAns = QString("%1.a").arg(i, 2, 10, QChar('0'));
+            QString fileData = QString("%1.dat").arg(i, 3, 10, QChar('0'));
+//            QString fileData = QString("%1").arg(i, 2, 10, QChar('0'));
+            QString fileAns = QString("%1.ans").arg(i, 3, 10, QChar('0'));
+//            QString fileAns = QString("%1.a").arg(i, 2, 10, QChar('0'));
             STest test;
             if(!CFileSystem::getInstance().isFile(fullPath+"/"+fileData)
                     || !CFileSystem::getInstance().isFile(fullPath + "/" + fileAns))
@@ -199,11 +199,6 @@ void CTestCommand::run()
         {
             QString fileData = QString("%1.dat").arg(i+1, 3, 10, QChar('0'));
             QString fileAns = QString("%1.ans").arg(i+1, 3, 10, QChar('0'));
-//            if(!CFileSystem::getInstance().isFile(fullPath+"/"+fileData)
-//                    || !CFileSystem::getInstance().isFile(fullPath + "/" + fileAns))
-//            {
-//                break;
-//            }
             ++cnt;
             std::ofstream file(fullPath.toStdString() + "/" + fileData.toStdString());
             emit log("write file " + fullPath + "/" + fileData + "\n");
@@ -224,6 +219,18 @@ void CTestCommand::run()
     }
     else if(vm.count("generate"))
     {
+        if(!vm.count("generator"))
+        {
+            emit error(" [ Error ] No generator was specified\n");
+            emit finished(1);
+            return;
+        }
+        if(!vm.count("solver"))
+        {
+            emit error(" [ Error ] No solver was specified\n");
+            emit finished(1);
+            return;
+        }
         QString generatorCodePath = CFileSystem::getInstance().getFullPath(
                     QString::fromStdString(vm["generator"].as<std::string>())).c_str();
         QString solverCodePath = CFileSystem::getInstance().getFullPath(

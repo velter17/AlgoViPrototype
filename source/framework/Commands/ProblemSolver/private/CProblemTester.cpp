@@ -9,6 +9,7 @@
 #include "../CProblemTester.h"
 #include "framework/Commands/ProblemSolver/CProblemSolver.h"
 #include "framework/Commands/ProblemSolver/checkers/CStraightForwardChecker.h"
+#include "framework/Commands/ProblemSolver/checkers/CTestLibChecker.h"
 
 namespace NCommand
 {
@@ -38,6 +39,11 @@ void CProblemTester::run()
     {
         emit finished(0);
         return;
+    }
+
+    if(vm.count("checker"))
+    {
+        mCheckerType = QString::fromStdString(vm["checker"].as<std::string>());
     }
 
     auto validateNum = [](const QString& str)
@@ -213,17 +219,30 @@ void CProblemTester::testRunner(int test)
 
 QString CProblemTester::checkResult(int test)
 {
-    CStraightForwardChecker checker(
-        QStringList()
+    IProblemChecker *checker = nullptr;
+    if(mCheckerType.isEmpty())
+    {
+        checker = new CStraightForwardChecker(
+            QStringList()
                 << "--data" << mOutputBuffer
                 << "--answer" << mTestProvider->get(test).output);
-    checker.run();
+    }
+    else
+    {
+        checker = new CTestLibChecker(
+                    QStringList()
+                        << "--input" << mTestProvider->get(test).input
+                        << "--output" << mTestProvider->get(test).output
+                        << "--answer" << mOutputBuffer,
+                    mCheckerType);
+    }
+    checker->run();
     QString ret;
-    if(checker.getResult() == TCheckerResult::Success)
+    if(checker->getResult() == TCheckerResult::Success)
     {
         ret = "<font color=green>OK</font>";
     }
-    else if(checker.getResult() == TCheckerResult::Fail)
+    else if(checker->getResult() == TCheckerResult::Fail)
     {
         ret = "<font color=red>WA</font>";
     }
@@ -233,7 +252,7 @@ QString CProblemTester::checkResult(int test)
     }
     if(mNeedDetails)
     {
-        ret += checker.details();
+        ret += checker->details();
     }
     ret += "<br>";
     return ret;

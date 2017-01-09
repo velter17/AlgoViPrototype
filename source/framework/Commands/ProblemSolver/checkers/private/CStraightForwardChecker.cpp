@@ -31,11 +31,11 @@ TCheckerResult CStraightForwardChecker::check()
     {
         if(dataList.size() == 1)
         {
-            mCheckerMessage = " ( " + *dataList.begin() + " == " + *ansList.begin() + " )";
+            mCheckerMessage = *dataList.begin() + " == " + *ansList.begin();
         }
         else
         {
-            mCheckerMessage = " ( Ok, Ok, results are equal )";
+            mCheckerMessage = "Ok, Ok, results are equal";
         }
         return TCheckerResult::Success;
     }
@@ -43,8 +43,8 @@ TCheckerResult CStraightForwardChecker::check()
     {
         if(dataList.size() != ansList.size())
         {
-            mCheckerMessage = " ( data.size() != ans.size() -> " +
-                    QString::number(dataList.size()) + " != " + QString::number(ansList.size()) + " )";
+            mCheckerMessage = "data.size() != ans.size() -> " +
+                    QString::number(dataList.size()) + " != " + QString::number(ansList.size());
         }
         else
         {
@@ -54,8 +54,8 @@ TCheckerResult CStraightForwardChecker::check()
             {
                 if(*itr != *ansitr)
                 {
-                    mCheckerMessage += " ( in " + QString::number(i) +
-                            "-th value, expected = " + *ansitr + ", found " + *itr + " )";
+                    mCheckerMessage += "in " + QString::number(i) +
+                            "-th value, expected = " + *ansitr + ", found " + *itr;
                     break;
                 }
             }

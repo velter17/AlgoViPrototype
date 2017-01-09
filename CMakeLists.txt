@@ -1,6 +1,6 @@
 CMAKE_MINIMUM_REQUIRED( VERSION 3.0 )
 
-PROJECT ( GraphicAlgoVizualizer )
+PROJECT ( GraphicAlgoVisualizer )
 
 SET ( INSTALL_BIN_DIR "bin" )
 SET ( INSTALL_LIB_DIR "lib" )
@@ -22,7 +22,9 @@ set(Boost_USE_STATIC_RUNTIME OFF)
 INCLUDE_DIRECTORIES ( ${Boost_INCLUDE_DIRS} )
 
 INCLUDE_DIRECTORIES ( "source" )
+INCLUDE_DIRECTORIES ( "externalLibs" )
 
 SET ( CMAKE_CXX_FLAGS "-std=c++11 -g" )
 
 ADD_SUBDIRECTORY ( source )
+ADD_SUBDIRECTORY ( externalLibs )

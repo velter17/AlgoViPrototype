@@ -57,7 +57,7 @@ void CVisualizationController::addPoint(const QPoint &p)
 {
     if(mMode == 1)
     {
-        qDebug () << "add Point in pos " << p;
+        qDebug () << "add " << mCurrentPrefix << " in pos " << p;
         QString name = mCurrentPrefix + "#" + QString::number(++mPointNum[mCurrentPrefix]);
         mView->addGravizItem(new CPoint(name, p));
     }
@@ -95,7 +95,7 @@ void CVisualizationController::handleInput(const QString &data)
 
 void CVisualizationController::update()
 {
-    if(mObjectsMap.size() > 2 && mVisualizer->isFree())
+    if(mVisualizer->isFree())
         emit sceneChanged(mVisualizer->serialize(mObjectsMap));
 }
 

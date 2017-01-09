@@ -67,13 +67,13 @@ void CVisualSolver::run()
         emit error(msg);
     });
     connect(mSolver.get(), &CProblemSolver::finished, [this](int code){
-        qDebug () << "CVisualSolver> mSolver finished";
+        qDebug () << "CVisualSolver> mSolver finished with code " << code;
         if(code == 0)
         {
             emit log(mOutput);
-            mOutput.clear();
-            mSolvedFlag = true;
         }
+        mOutput.clear();
+        mSolvedFlag = true;
         if(mLastTimestamp != mInputTimestamp)
         {
             startSolver();
@@ -98,6 +98,7 @@ void CVisualSolver::appendData(const QString &data)
 
 void CVisualSolver::setInput(const QString &data)
 {
+    qDebug () << "CVisualSolver> setInput: " << data << " " << mSolvedFlag;
     mInput = data;
     mInputTimestamp++;
     if(mSolvedFlag && mCompiledFlag && !mInput.isEmpty())
@@ -146,8 +147,6 @@ void CVisualSolver::startSolver()
         qDebug () << "no need compilation";
         runSolver();
     }
-
-    qDebug () << "CVisualSolver> end of solver";
 }
 
 void CVisualSolver::runSolver()

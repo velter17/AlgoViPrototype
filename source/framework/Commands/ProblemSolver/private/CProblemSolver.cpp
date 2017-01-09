@@ -27,8 +27,8 @@ CProblemSolver::CProblemSolver(const QStringList &args, std::shared_ptr<CTestPro
         ("flag,f", boost::program_options::value<std::vector<std::string>>(&mFlagParsed),
             "compilation flags\n"
             "use c++ -DVAL like -f VAL")
-        ("input,i",boost::program_options::value<std::string>(), "input file")
-        ("output,o", boost::program_options::value<std::string>(), "output file")
+        //("input,i",boost::program_options::value<std::string>(), "input file")
+        //("output,o", boost::program_options::value<std::string>(), "output file")
         ("test-save,t", boost::program_options::bool_switch()->default_value(false), "Post saving test to archive");
 }
 

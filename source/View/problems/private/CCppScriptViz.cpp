@@ -15,13 +15,14 @@ namespace NView
 
 CCppScriptViz::CCppScriptViz(std::shared_ptr<NCommand::CCompilerHandler> compilerHandler, QString scriptPath)
     : mCompilerHandler(compilerHandler)
-    , mScriptPath(scriptPath)
     , mProc(nullptr)
 {
-     if(!mCompilerHandler->isSourceCode(mScriptPath))
-     {
-         mCompilerHandler->addSourceCodePath(mScriptPath);
-     }
+    mScriptPath = QString::fromStdString(NCommand::CFileSystem::getInstance().getFullPath(scriptPath).c_str());
+    qDebug () << "mScriptPath = " << mScriptPath;
+    if(!mCompilerHandler->isSourceCode(mScriptPath))
+    {
+        mCompilerHandler->addSourceCodePath(mScriptPath);
+    }
 }
 
 QString CCppScriptViz::serialize(const std::map<QString, IGravizItem *> &items)
@@ -88,6 +89,7 @@ void CCppScriptViz::realize(QString &data,
     mProc->write("\n");
     mProc->waitForFinished(10000000);
     qDebug () << "realize finished";
+    mProc->deleteLater();
     mProc = nullptr;
 }
 
@@ -129,6 +131,19 @@ void CQueryHandler::queryHandler(QString query,
                 stream >> x[0] >> y[0];
                 stream >> x[1] >> y[1];
                 painter->drawLine(QPointF(x[0], y[0]), QPointF(x[1], y[1]));
+            }
+            else if(what == "circle")
+            {
+                double x, y, r;
+                stream >> x >> y >> r;
+                painter->drawEllipse(QPointF(x, y), r, r);
+            }
+            else if(what == "rect")
+            {
+                double x[2], y[2];
+                stream >> x[0] >> y[0];
+                stream >> x[1] >> y[1];
+                painter->drawRect(x[0], y[0], x[1], y[1]);
             }
         }
         else if(cmd == "color")

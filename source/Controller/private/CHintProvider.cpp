@@ -57,7 +57,7 @@ tHint CHintProvider::hints<TCommandHintName::Compile>(const QString& input)
 template <>
 tHint CHintProvider::hints<TCommandHintName::Tester>(const QString& input)
 {
-    NCommand::CTestCommand tester(QStringList(), nullptr, nullptr);
+    NCommand::CProblemTester tester(QStringList(), nullptr, nullptr);
     return tHint(tester.getOptionList(), 0);
 }
 
