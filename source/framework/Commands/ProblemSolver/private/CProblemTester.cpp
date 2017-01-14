@@ -7,7 +7,6 @@
  */
 
 #include "../CProblemTester.h"
-#include "framework/Commands/ProblemSolver/CProblemSolver.h"
 #include "framework/Commands/ProblemSolver/checkers/CStraightForwardChecker.h"
 #include "framework/Commands/ProblemSolver/checkers/CTestLibChecker.h"
 
@@ -20,6 +19,9 @@ CProblemTester::CProblemTester(const QStringList &args,
     : ITerminalCommand(args)
     , mTestProvider(testProvider)
     , mCompilerHandler(compilerHandler)
+    , mTerminateFlag(false)
+    , mAcceptedCounter(0)
+    , mProblemSolverPtr(nullptr)
 {
     mOptions.add_options()
         ("src,s", boost::program_options::value<std::string>()->required(), "Source code path")
@@ -179,16 +181,25 @@ void CProblemTester::appendData(const QString &data)
 
 void CProblemTester::terminate()
 {
-
+    qDebug () << "CProblemTester> terminate";
+    if(mProblemSolverPtr != nullptr)
+    {
+        mProblemSolverPtr->terminate();
+    }
+    mTerminateFlag = true;
 }
 
 void CProblemTester::testRunner(int test)
 {
-
     qDebug () << "testRunner> " << test;
-    if(test > mTestTo)
+    if(test > mTestTo || mTerminateFlag)
     {
-        //emit log(" [ Info ] Finished\n");
+        emit logHtml(" Result: " + QString::number(mAcceptedCounter) +
+                " / " + QString::number(mTestTo-mTestFrom+1) + " - " +
+                (mAcceptedCounter == mTestTo-mTestFrom+1 ?
+                         "<font color=\"#9FFF3F\">Tests passed</font>" :
+                         "<font color=\"#FF6F3F\">Partial solution</font>")
+                + "<br>");
         emit finished(0);
         return;
     }
@@ -196,66 +207,92 @@ void CProblemTester::testRunner(int test)
     CProblemSolver* problemSolver = new CProblemSolver(
                 QStringList()
                     << "-s" << mSourceCodePath, mTestProvider);
+    mProblemSolverPtr = problemSolver;
     problemSolver->init();
     problemSolver->setAppPath(mCompilerHandler->getAppPath(mSourceCodePath));
     connect(problemSolver, &CProblemSolver::started, [this, test, problemSolver](){
         qDebug () << "Testing of " << test+1 << " test was started";
         mOutputBuffer.clear();
+        mErrorBuffer.clear();
         QMetaObject::invokeMethod(problemSolver, "appendData", Qt::QueuedConnection,
                                   Q_ARG(QString, mTestProvider->get(test).input));
     });
     connect(problemSolver, &CProblemSolver::finished,
                 [this, test, problemSolver](int code){
         qDebug () << "finished with output: " << mOutputBuffer;
-        emit logHtml(" test #" + QString::number(test+1) + ": " + checkResult(test));
+        qDebug () << "test " << test+1 << " finished with code " << code;
+        emit logHtml(" test #" + QString::number(test+1) + ": " + checkResult(test, code));
         problemSolver->deleteLater();
+        mProblemSolverPtr = nullptr;
         testRunner(test+1);
     });
     connect(problemSolver, &CProblemSolver::log, [this](const QString& log){
         mOutputBuffer += log;
     });
+    connect(problemSolver, &CProblemSolver::error, [this](const QString& log){
+        mErrorBuffer = log;
+    });
     problemSolver->run();
 }
 
-QString CProblemTester::checkResult(int test)
+QString CProblemTester::checkResult(int test, int returnCode)
 {
-    IProblemChecker *checker = nullptr;
-    if(mCheckerType.isEmpty())
-    {
-        checker = new CStraightForwardChecker(
-            QStringList()
-                << "--data" << mOutputBuffer
-                << "--answer" << mTestProvider->get(test).output);
-    }
-    else
-    {
-        checker = new CTestLibChecker(
-                    QStringList()
-                        << "--input" << mTestProvider->get(test).input
-                        << "--answer" << mTestProvider->get(test).output
-                        << "--output" << mOutputBuffer,
-                    mCheckerType);
-    }
-    checker->run();
     QString ret;
-    if(checker->getResult() == TCheckerResult::Success)
+    if(returnCode == 0 && mErrorBuffer.isEmpty())
     {
-        ret = "<font color=green>OK</font>";
-    }
-    else if(checker->getResult() == TCheckerResult::Fail)
-    {
-        ret = "<font color=red>WA</font>";
+        IProblemChecker *checker = nullptr;
+        if(mCheckerType.isEmpty())
+        {
+            checker = new CStraightForwardChecker(
+                QStringList()
+                    << "--data" << mOutputBuffer
+                    << "--answer" << mTestProvider->get(test).output);
+        }
+        else
+        {
+            checker = new CTestLibChecker(
+                        QStringList()
+                            << "--input" << mTestProvider->get(test).input
+                            << "--answer" << mTestProvider->get(test).output
+                            << "--output" << mOutputBuffer,
+                        mCheckerType);
+        }
+        checker->run();
+        if(checker->getResult() == TCheckerResult::Success)
+        {
+            ret = "<font color=green>OK</font>";
+            ++mAcceptedCounter;
+        }
+        else if(checker->getResult() == TCheckerResult::Fail)
+        {
+            ret = "<font color=red>WA</font>";
+        }
+        else
+        {
+            ret = "Unexpected problems occured :(";
+        }
+        if(mNeedDetails)
+        {
+            ret += checker->details();
+        }
+        checker->deleteLater();
     }
     else
     {
-        ret = "Check fail";
-    }
-    if(mNeedDetails)
-    {
-        ret += checker->details();
+        ret = "<font color=\"#CF8F18\">RE</font>";
+        if(mNeedDetails)
+        {
+            if(mErrorBuffer.isEmpty())
+            {
+                ret += " ( Runtime error, exit with code " + QString::number(returnCode) + " )";
+            }
+            else
+            {
+                ret += " ( " + mErrorBuffer + " )";
+            }
+        }
     }
     ret += "<br>";
-    checker->deleteLater();
     return ret;
 }
 

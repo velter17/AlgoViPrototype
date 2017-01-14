@@ -56,7 +56,7 @@ void CTerminal::keyPressEvent(QKeyEvent *e)
     {
         if(e->key() == Qt::Key_C && e->modifiers() == Qt::ControlModifier)
         {
-            this->textCursor().insertText("^C");
+            this->textCursor().insertText("^C\n");
             mState = TTerminalState::CommandInput;
             lock();
             command(TTerminalCommandType::System, "^C");

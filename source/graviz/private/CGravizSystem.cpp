@@ -440,6 +440,7 @@ void CGravizSystem::handle<TGravizCommand::Tester>(const QStringList &args)
     });
     connect(testerThread, SIGNAL(started()), tester, SLOT(run()));
     setMode(TSystemMode::InProcess);
+    QMetaObject::invokeMethod(mController.get(), "setAppMode", Qt::QueuedConnection);
     testerThread->start();
 //    test->run();
 }

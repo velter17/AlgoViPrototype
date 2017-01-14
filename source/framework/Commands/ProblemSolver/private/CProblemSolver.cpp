@@ -107,7 +107,9 @@ void CProblemSolver::run()
 
     mApp = new QProcess();
     connect(mApp, &QProcess::readyReadStandardError, [this](){
-        emit error(mApp->readAllStandardError());
+        QString str = mApp->readAllStandardError();
+        qDebug () << "error : " << str;
+        emit error(str);
     });
     connect(mApp, &QProcess::readyReadStandardOutput, [this](){
         QString str = mApp->readAllStandardOutput();
@@ -125,8 +127,15 @@ void CProblemSolver::run()
         qDebug () << "started solver!!!";
         emit started();
     });
-    connect(mApp, static_cast<void((QProcess::*)(int))>(&QProcess::finished), [this](int exitCode){
+    connect(mApp, static_cast<void((QProcess::*)(int, QProcess::ExitStatus))>(&QProcess::finished),
+            [this](int exitCode, QProcess::ExitStatus exitStatus)
+    {
         qDebug () << "QProcess::finished";
+        if(exitStatus == QProcess::CrashExit)
+        {
+            exitCode = 1;
+            emit error(mApp->errorString());
+        }
         emit finished(exitCode);
     });
 
@@ -136,6 +145,7 @@ void CProblemSolver::run()
                     QString::fromStdString(mVarMap["output"].as<std::string>())).c_str();
         mOutputFile.open(filePath);
     }
+
 
     mApp->start(QString("stdbuf -o 0 ") + mAppPath, QProcess::Unbuffered | QProcess::ReadWrite);
     mApp->waitForStarted();

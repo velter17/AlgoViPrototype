@@ -11,6 +11,7 @@
 #include "framework/Commands/ITerminalCommand.h"
 #include "framework/Commands/ProblemSolver/CTestProvider.h"
 #include "framework/Commands/ProblemSolver/CCompilerHandler.h"
+#include "framework/Commands/ProblemSolver/CProblemSolver.h"
 
 namespace NCommand
 {
@@ -28,15 +29,19 @@ public: // methods
 
 public slots: // methods
     void testRunner(int test);
-    QString checkResult(int test);
+    QString checkResult(int test, int returnCode);
 private:
     std::shared_ptr<CTestProvider> mTestProvider;
     std::shared_ptr<CCompilerHandler> mCompilerHandler;
     QString mOutputBuffer;
+    QString mErrorBuffer;
     QString mSourceCodePath;
     QString mCheckerType;
     int mTestFrom;
     int mTestTo;
+    bool mTerminateFlag;
+    int mAcceptedCounter;
+    CProblemSolver* mProblemSolverPtr;
     bool mNeedDetails;
 };
 
