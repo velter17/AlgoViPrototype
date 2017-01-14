@@ -80,10 +80,10 @@ void CCppScriptViz::realize(QString &data,
     connect(mProc, &QProcess::readyReadStandardOutput, [this, &items, painter](){
         mQueryHandler->queryHandler(mProc->readAllStandardOutput(), items, painter);
     });
-    connect(mQueryHandler, &CQueryHandler::data, [this](const QString& data){
-        mProc->write(data.toLocal8Bit());
-        mProc->write("\n");
-    });
+//    connect(mQueryHandler, &CQueryHandler::data, [this](const QString& data){
+//        mProc->write(data.toLocal8Bit());
+//        mProc->write("\n");
+//    });
     mProc->start(mCompilerHandler->getAppPath(mScriptPath), QStringList() << "1");
     mProc->write(data.toLocal8Bit());
     mProc->write("\n");
@@ -95,7 +95,8 @@ void CCppScriptViz::realize(QString &data,
 
 bool CCppScriptViz::isFree()
 {
-    return mProc == nullptr;
+//    return mProc == nullptr;
+    return true;
 }
 
 void CQueryHandler::queryHandler(QString query,

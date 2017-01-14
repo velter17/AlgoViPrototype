@@ -12,6 +12,8 @@
 #include <QThread>
 #include <QDebug>
 
+
+#include "framework/Commands/CFileSystem.h"
 #include "../CProblemSolver.h"
 
 namespace NCommand
@@ -27,8 +29,8 @@ CProblemSolver::CProblemSolver(const QStringList &args, std::shared_ptr<CTestPro
         ("flag,f", boost::program_options::value<std::vector<std::string>>(&mFlagParsed),
             "compilation flags\n"
             "use c++ -DVAL like -f VAL")
-        //("input,i",boost::program_options::value<std::string>(), "input file")
-        //("output,o", boost::program_options::value<std::string>(), "output file")
+        ("input,i",boost::program_options::value<std::string>(), "input file")
+        ("output,o", boost::program_options::value<std::string>(), "output file")
         ("test-save,t", boost::program_options::bool_switch()->default_value(false), "Post saving test to archive");
 }
 
@@ -76,6 +78,11 @@ bool CProblemSolver::init()
         {
             mFlags << "-f" << QString::fromStdString(f);
         }
+        if(mTestToExecuteFlag && mVarMap.count("input"))
+        {
+            emit error(" [ Error ] Input-file and test in same time is incorrect");
+            return false;
+        }
         return true;
     }
     else
@@ -105,8 +112,14 @@ void CProblemSolver::run()
     connect(mApp, &QProcess::readyReadStandardOutput, [this](){
         QString str = mApp->readAllStandardOutput();
         qDebug () << "output : " << str;
-        //emit out(mApp->readAllStandardOutput());
-        emit log(str);
+        if(mVarMap.count("output"))
+        {
+            mOutputFile << str.toStdString();
+        }
+        else
+        {
+            emit log(str);
+        }
     });
     connect(mApp, &QProcess::started, [this](){
         qDebug () << "started solver!!!";
@@ -116,11 +129,30 @@ void CProblemSolver::run()
         qDebug () << "QProcess::finished";
         emit finished(exitCode);
     });
+
+    if(mVarMap.count("output"))
+    {
+        std::string filePath = CFileSystem::getInstance().getFullPath(
+                    QString::fromStdString(mVarMap["output"].as<std::string>())).c_str();
+        mOutputFile.open(filePath);
+    }
+
     mApp->start(QString("stdbuf -o 0 ") + mAppPath, QProcess::Unbuffered | QProcess::ReadWrite);
     mApp->waitForStarted();
     if(mTestToExecuteFlag)
     {
         this->appendData(mTestProvider->get(mTestToExecute).input);
+    }
+    else if(mVarMap.count("input"))
+    {
+        std::string filePath = CFileSystem::getInstance().getFullPath(
+                    QString::fromStdString(mVarMap["input"].as<std::string>())).c_str();
+        std::ifstream  file(filePath);
+        std::string buffer;
+        while(std::getline(file, buffer))
+        {
+            this->appendData(QString::fromStdString(buffer) + "\n");
+        }
     }
 }
 
@@ -131,13 +163,11 @@ void CProblemSolver::terminate()
 
 void CProblemSolver::appendData(const QString &data)
 {
-    //qDebug () << "CProblemSolver> appendData" << data;
     assert(0 != mApp);
     if(data.isEmpty())
     {
         return;
     }
-    //qDebug () << "append(write) " << data;
     mApp->write(data.toLocal8Bit());
     mApp->write("\n");
 }

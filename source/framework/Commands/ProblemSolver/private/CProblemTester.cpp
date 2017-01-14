@@ -232,8 +232,8 @@ QString CProblemTester::checkResult(int test)
         checker = new CTestLibChecker(
                     QStringList()
                         << "--input" << mTestProvider->get(test).input
-                        << "--output" << mTestProvider->get(test).output
-                        << "--answer" << mOutputBuffer,
+                        << "--answer" << mTestProvider->get(test).output
+                        << "--output" << mOutputBuffer,
                     mCheckerType);
     }
     checker->run();
@@ -255,6 +255,7 @@ QString CProblemTester::checkResult(int test)
         ret += checker->details();
     }
     ret += "<br>";
+    checker->deleteLater();
     return ret;
 }
 

@@ -39,6 +39,7 @@ void CCompilerHandler::performCompilation(const QString& path, const QStringList
 {
     qDebug () << "CCompilerHandler> performCompilation: " << path << " " << args;
     QString fullPath = QString::fromStdString(CFileSystem::getInstance().getFullPath(path).generic_string());
+    NCommand::CFileSystem::getInstance().remove(getAppPath(fullPath));
 
     CCompiler* compiler = new CCompiler(
                 QStringList() << "-i" << fullPath

@@ -126,6 +126,7 @@ void CVisualSolver::startSolver()
             qDebug () << "compilation was finished";
             if(code == 0)
             {
+                mCompiledFlag = true;
                 runSolver();
             }
             else
@@ -134,7 +135,6 @@ void CVisualSolver::startSolver()
                 mInputTimestamp = -1;
                 emit finished(1);
             }
-            mCompiledFlag = true;
             disconnect(conn);
         });
         qDebug () << "Run compilation";

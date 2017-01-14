@@ -195,8 +195,7 @@ void CGravizSystem::handle<TGravizCommand::RunSolver>(const QStringList &args)
             qDebug () << "ProblemSolver thread was finished";
             QMetaObject::invokeMethod(mController.get(), "handleLog", Qt::QueuedConnection,
                                       Q_ARG(QString, QString(
-                                            " [ Info ] Exit status: " + QString::number(code) +
-                                          "\n [ Info ] Checker message: " + "No checker" + "\n")));
+                                            " [ Info ] Exit status: " + QString::number(code) + "\n")));
             if(!mProblemSolver->saveTestFlag())
             {
                 QMetaObject::invokeMethod(mController.get(), "unlock", Qt::QueuedConnection);
@@ -231,10 +230,19 @@ void CGravizSystem::handle<TGravizCommand::RunSolver>(const QStringList &args)
         QMetaObject::Connection &conn = *pconn;
         conn = connect(mCompilerHandler.get(), &NCommand::CCompilerHandler::finished,
                        [this, pconn, &conn, solverRunner](int code){
-            QMetaObject::invokeMethod(mController.get(), "handleLog", Qt::QueuedConnection,
-                                      Q_ARG(QString, " [ Info ] Ready\n"));
-            QMetaObject::invokeMethod(mController.get(), "setAppMode", Qt::QueuedConnection);
-            solverRunner();
+            if(code == 0)
+            {
+                QMetaObject::invokeMethod(mController.get(), "handleLog", Qt::QueuedConnection,
+                                          Q_ARG(QString, " [ Info ] Ready\n"));
+                QMetaObject::invokeMethod(mController.get(), "setAppMode", Qt::QueuedConnection);
+                solverRunner();
+            }
+            else
+            {
+                QMetaObject::invokeMethod(mController.get(), "unlock", Qt::QueuedConnection);
+                this->setMode(TSystemMode::Default);
+                mProblemSolver->deleteLater();
+            }
 
             disconnect(conn);
         });

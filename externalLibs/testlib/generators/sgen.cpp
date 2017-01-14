@@ -9,7 +9,7 @@
  * It is typical behaviour of testlib generator to setup randseed by command line.
  */
 
-#include "testlib.h"
+#include "../testlib.h"
 #include <iostream>
 
 using namespace std;
@@ -18,7 +18,7 @@ int main(int argc, char* argv[])
 {
     registerGen(argc, argv, 1);
 
-    cout << rnd.next("[a-zA-Z0-9]{1,1000}") << endl;
+    cout << rnd.next("[a-zA-Z0-9]{1,20}") << endl;
 
     return 0;
 }

@@ -13,6 +13,7 @@
 #include <QDebug>
 #include <vector>
 #include <string>
+#include <fstream>
 
 #include "framework/Commands/ProblemSolver/CCompilerHandler.h"
 #include "framework/Commands/ITerminalCommand.h"
@@ -47,6 +48,7 @@ private: // fields
     QStringList mFlags;
     QString mAppPath;
     bool mTestSaveFlag;
+    std::ofstream mOutputFile;
 
     int mTestToExecute;
     bool mTestToExecuteFlag;

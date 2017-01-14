@@ -225,16 +225,16 @@ void CTestCommand::run()
             emit finished(1);
             return;
         }
-        if(!vm.count("solver"))
-        {
-            emit error(" [ Error ] No solver was specified\n");
-            emit finished(1);
-            return;
-        }
+//        if(!vm.count("solver"))
+//        {
+//            emit error(" [ Error ] No solver was specified\n");
+//            emit finished(1);
+//            return;
+//        }
         QString generatorCodePath = CFileSystem::getInstance().getFullPath(
                     QString::fromStdString(vm["generator"].as<std::string>())).c_str();
-        QString solverCodePath = CFileSystem::getInstance().getFullPath(
-                    QString::fromStdString(vm["solver"].as<std::string>())).c_str();
+        QString solverCodePath = vm.count("solver") ? CFileSystem::getInstance().getFullPath(
+                    QString::fromStdString(vm["solver"].as<std::string>())).c_str() : "";
         int tests = vm["generate"].as<int>();
 
         std::vector<QString> codes {generatorCodePath, solverCodePath};
@@ -291,6 +291,13 @@ void CTestCommand::runGenerator(const QString &appPath, const QString &solverPat
 
     auto runSolver = [tests, appPath, solverPath, this]()
     {
+        if(solverPath.isEmpty())
+        {
+            mCreatedTest.output = "[ Without output ]";
+            mTestProvider->addTest(mCreatedTest);
+            runGenerator(appPath, solverPath, tests-1);
+            return;
+        }
         CSystemCmd* app = new CSystemCmd(QStringList() << solverPath);
         connect(app, &CSystemCmd::log, [this](const QString& msg){
             mCreatedTest.output += msg;
@@ -323,6 +330,11 @@ void CTestCommand::runGenerator(const QString &appPath, const QString &solverPat
         });
         connect(app, &CSystemCmd::finished, [this, app, runSolver](int code){
             app->deleteLater();
+            if(code != 0)
+            {
+                emit error("Generator was finished with code " + QString::number(code));
+                return;
+            }
             runSolver();
         });
         app->run();
@@ -341,12 +353,12 @@ void CTestCommand::compile(const std::vector<QString> codes, size_t code_idx, in
                      tests);
         return;
     }
-    if(!mCompilerHandler->isSourceCode(codes[code_idx]))
+    if(!codes[code_idx].isEmpty() && !mCompilerHandler->isSourceCode(codes[code_idx]))
     {
         mCompilerHandler->addSourceCodePath(codes[code_idx]);
     }
 
-    if(mCompilerHandler->isNeededCompilation(codes[code_idx]))
+    if(!codes[code_idx].isEmpty() && mCompilerHandler->isNeededCompilation(codes[code_idx]))
     {
         qDebug () << "neededCompilation";
         std::shared_ptr<QMetaObject::Connection> pconn(new QMetaObject::Connection);

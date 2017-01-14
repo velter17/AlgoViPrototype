@@ -23,7 +23,7 @@
  * generate off-center random distribution.
  */
 
-#include "testlib.h"
+#include "../testlib.h"
 #include <iostream>
 
 using namespace std;
