@@ -15,16 +15,16 @@ FIND_PACKAGE ( Qt5Core REQUIRED )
 FIND_PACKAGE ( Qt5Network REQUIRED )
 FIND_PACKAGE ( Boost REQUIRED COMPONENTS filesystem system program_options )
 
-set(Boost_USE_STATIC_LIBS OFF)
+set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_MULTITHREADED ON)
-set(Boost_USE_STATIC_RUNTIME OFF)
+#set(Boost_USE_STATIC_RUNTIME ON)
 
 INCLUDE_DIRECTORIES ( ${Boost_INCLUDE_DIRS} )
 
 INCLUDE_DIRECTORIES ( "source" )
 INCLUDE_DIRECTORIES ( "externalLibs" )
 
-SET ( CMAKE_CXX_FLAGS "-std=c++11 -g" )
+SET ( CMAKE_CXX_FLAGS "-std=c++11" )
 
 ADD_SUBDIRECTORY ( source )
-ADD_SUBDIRECTORY ( externalLibs )
+#ADD_SUBDIRECTORY ( externalLibs )

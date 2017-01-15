@@ -142,7 +142,7 @@ void CProblemSolver::run()
     if(mVarMap.count("output"))
     {
         std::string filePath = CFileSystem::getInstance().getFullPath(
-                    QString::fromStdString(mVarMap["output"].as<std::string>())).c_str();
+                    QString::fromStdString(mVarMap["output"].as<std::string>())).string();
         mOutputFile.open(filePath);
     }
 
@@ -156,7 +156,7 @@ void CProblemSolver::run()
     else if(mVarMap.count("input"))
     {
         std::string filePath = CFileSystem::getInstance().getFullPath(
-                    QString::fromStdString(mVarMap["input"].as<std::string>())).c_str();
+                    QString::fromStdString(mVarMap["input"].as<std::string>())).string();
         std::ifstream  file(filePath);
         std::string buffer;
         while(std::getline(file, buffer))

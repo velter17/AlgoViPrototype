@@ -138,8 +138,8 @@ void CProblemTester::run()
         mTestTo = mTestProvider->size()-1;
     }
 
-    mSourceCodePath = CFileSystem::getInstance().getFullPath(
-                QString::fromStdString(vm["src"].as<std::string>())).c_str();
+    mSourceCodePath = QString::fromStdString(CFileSystem::getInstance().getFullPath(
+                QString::fromStdString(vm["src"].as<std::string>())).string());
     mNeedDetails = vm["verbose"].as<bool>();
 
     if(!mCompilerHandler->isSourceCode(mSourceCodePath))

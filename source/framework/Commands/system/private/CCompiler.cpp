@@ -42,7 +42,8 @@ void CCompiler::run()
 
     QString src = QString::fromStdString(vm["input"].as<std::string>());
     QString compilerCommand = QString("g++ -o ") +
-            CFileSystem::getInstance().getFullPath(QString::fromStdString(vm["output"].as<std::string>())).c_str();
+            QString::fromStdString(CFileSystem::getInstance().getFullPath(
+			QString::fromStdString(vm["output"].as<std::string>())).string());
     if(vm.count("flag"))
     {
         for(const std::string& f : vm["flag"].as<std::vector<std::string>>())
@@ -54,7 +55,7 @@ void CCompiler::run()
     {
         compilerCommand += QString(" -") + f.c_str();
     }
-    compilerCommand += QString(" ") + CFileSystem::getInstance().getFullPath(src).c_str();
+    compilerCommand += QString(" ") + CFileSystem::getInstance().getFullPath(src).string().c_str();
     qDebug () << "compiler command is " << compilerCommand;
     mProc.reset(new CSystemCmd(QStringList() << compilerCommand));
     //connect(proc.get(), SIGNAL(finished()), proc.get(), SLOT(deleteLater()));

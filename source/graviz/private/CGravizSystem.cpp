@@ -216,7 +216,7 @@ void CGravizSystem::handle<TGravizCommand::RunSolver>(const QStringList &args)
         solverThread->start();
     };
 
-    QString sourceCodePath = NCommand::CFileSystem::getInstance().getFullPath(mProblemSolver->getSourceCodePath()).c_str();
+    QString sourceCodePath = NCommand::CFileSystem::getInstance().getFullPath(mProblemSolver->getSourceCodePath()).string().c_str();
     if(!mCompilerHandler->isSourceCode(sourceCodePath))
     {
         mCompilerHandler->addSourceCodePath(sourceCodePath);

@@ -44,14 +44,14 @@ QStringList CFileSystem::getDirList()
         const boost::filesystem::directory_entry& entry = *itr;
         if(entry.path().filename().c_str()[0] == '.')
             continue;
-        ret.append(QString::fromLocal8Bit(entry.path().filename().c_str()));
+        ret.append(QString::fromLocal8Bit((char*)entry.path().filename().c_str()));
     }
     return ret;
 }
 
 QString CFileSystem::getCurrentPath()
 {
-    return QString(mCurrentPath.c_str());
+    return QString::fromStdString(mCurrentPath.string());
 }
 
 void CFileSystem::changeDir(const QString &dir)
@@ -92,7 +92,7 @@ QPair<QStringList, int> CFileSystem::getHint(const QString &curStr)
     else
         p = curStr.toStdString();
     p.normalize();
-    QString file_name = QString::fromLocal8Bit(p.filename().c_str());
+    QString file_name = QString::fromLocal8Bit((char*)p.filename().c_str());
     if(file_name == ".")
         file_name.clear();
     p = p.parent_path();
@@ -111,9 +111,9 @@ QPair<QStringList, int> CFileSystem::getHint(const QString &curStr)
         if(entry.path().filename().c_str()[0] == '.')
             continue;
         if(!file_name.isEmpty() &&
-                strncmp(entry.path().filename().c_str(), file_name.toLocal8Bit(), file_name.length()))
+                strncmp((char*)entry.path().filename().c_str(), file_name.toLocal8Bit(), file_name.length()))
             continue;
-        ret.append(QString::fromLocal8Bit(entry.path().filename().c_str()));
+        ret.append(QString::fromLocal8Bit((char*)entry.path().filename().c_str()));
     }
     return QPair<QStringList, int>(ret, file_name.length());
 }

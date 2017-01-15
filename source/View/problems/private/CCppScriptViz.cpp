@@ -17,7 +17,7 @@ CCppScriptViz::CCppScriptViz(std::shared_ptr<NCommand::CCompilerHandler> compile
     : mCompilerHandler(compilerHandler)
     , mProc(nullptr)
 {
-    mScriptPath = QString::fromStdString(NCommand::CFileSystem::getInstance().getFullPath(scriptPath).c_str());
+    mScriptPath = QString::fromStdString(NCommand::CFileSystem::getInstance().getFullPath(scriptPath).string());
     qDebug () << "mScriptPath = " << mScriptPath;
     if(!mCompilerHandler->isSourceCode(mScriptPath))
     {

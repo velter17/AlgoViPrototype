@@ -36,8 +36,8 @@ bool CVisualSolver::init()
         {
             mFlags << "-f" << QString::fromStdString(f);
         }
-        mSourceCode = CFileSystem::getInstance().getFullPath(
-                            QString::fromStdString(mVarMap["src"].as<std::string>())).c_str();
+        mSourceCode = QString::fromStdString(CFileSystem::getInstance().getFullPath(
+                            QString::fromStdString(mVarMap["src"].as<std::string>())).string());
 //        mAlgoScript = CFileSystem::getInstance().getFullPath(
 //                            QString::fromStdString(mVarMap["algo"].as<std::string>())).c_str();
         mAlgoScript = QString::fromStdString(mVarMap["algo"].as<std::string>());

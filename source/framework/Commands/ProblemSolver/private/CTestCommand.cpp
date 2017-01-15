@@ -142,8 +142,8 @@ void CTestCommand::run()
     }
     else if(vm.count("from-files"))
     {
-        QString fullPath = CFileSystem::getInstance().getFullPath(
-                    QString::fromStdString(vm["from-files"].as<std::string>())).c_str();
+        QString fullPath = QString::fromStdString(CFileSystem::getInstance().getFullPath(
+                    QString::fromStdString(vm["from-files"].as<std::string>())).string());
         if(!CFileSystem::getInstance().isDirectory(fullPath))
         {
             emit error(QString::fromStdString(vm["from-files"].as<std::string>()) + " is not a valid directory\n");
@@ -186,8 +186,8 @@ void CTestCommand::run()
     }
     else if(vm.count("to-files"))
     {
-        QString fullPath = CFileSystem::getInstance().getFullPath(
-                    QString::fromStdString(vm["to-files"].as<std::string>())).c_str();
+        QString fullPath = QString::fromStdString(CFileSystem::getInstance().getFullPath(
+                    QString::fromStdString(vm["to-files"].as<std::string>())).string());
         if(!CFileSystem::getInstance().isDirectory(fullPath))
         {
             emit error(QString::fromStdString(vm["to-files"].as<std::string>()) + " is not a valid directory\n");
@@ -231,10 +231,10 @@ void CTestCommand::run()
 //            emit finished(1);
 //            return;
 //        }
-        QString generatorCodePath = CFileSystem::getInstance().getFullPath(
-                    QString::fromStdString(vm["generator"].as<std::string>())).c_str();
-        QString solverCodePath = vm.count("solver") ? CFileSystem::getInstance().getFullPath(
-                    QString::fromStdString(vm["solver"].as<std::string>())).c_str() : "";
+        QString generatorCodePath = QString::fromStdString(CFileSystem::getInstance().getFullPath(
+                    QString::fromStdString(vm["generator"].as<std::string>())).string());
+        QString solverCodePath = vm.count("solver") ? QString::fromStdString(CFileSystem::getInstance().getFullPath(
+                    QString::fromStdString(vm["solver"].as<std::string>())).string()) : "";
         int tests = vm["generate"].as<int>();
 
         std::vector<QString> codes {generatorCodePath, solverCodePath};

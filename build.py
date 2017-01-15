@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/d/Programs/Python/python.exe
 
 import subprocess
 import sys
@@ -8,8 +8,8 @@ import os
 
 
 srcPath = os.path.dirname(os.path.realpath(__file__))
-buildPath = srcPath + '/build'
-installPath = srcPath + '/gravizApp/'
+buildPath = srcPath + '\\build'
+installPath = srcPath + '\\gravizApp\\'
 
 parser = argparse.ArgumentParser(description='Graviz build script')
 parser.add_argument('-c', '--clean_build', action='store_const', const=True, default=False, help='Make clean build')
@@ -23,11 +23,16 @@ if args.clean_build and os.path.exists(buildPath):
 
 cmakeArgs = [
     'cmake',
+	'-G',
+	'MinGW Makefiles',
+	#'-DBoost_DEBUG=ON',
+	'-DBoost_USE_STATIC_LIBS=ON',
     srcPath,
     '-DCMAKE_INSTALL_PREFIX=' + installPath,
 ]
 makeArgs = [
-    'make',
+     'mingw32-make.exe',
+	 #'make.exe',
      args.makeargs
 ]
 
