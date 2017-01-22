@@ -116,7 +116,7 @@ void CTestCommand::run()
                     {
                         for(size_t i = from-1; i < to; ++i)
                         {
-                            QString toEmit = " * Test #" + QString::number(i+1) + "\n";
+                            QString toEmit = "&nbsp;* Test #" + QString::number(i+1) + "<br>";
                             toEmit += mTestProvider->getFormatted(i);
                             emit log(toEmit);
                         }
@@ -248,9 +248,9 @@ void CTestCommand::run()
         qDebug () << "print all tests";
         for(size_t i = 0; i < mTestProvider->size(); ++i)
         {
-            QString toEmit = " * Test #" + QString::number(i+1) + "\n";
+            QString toEmit = "&nbsp;* Test #" + QString::number(i+1) + "<br>";
             toEmit += mTestProvider->getFormatted(i);
-            emit log(toEmit);
+            emit logHtml(toEmit);
         }
     }
 

@@ -445,6 +445,10 @@ void CGravizSystem::handle<TGravizCommand::Test>(const QStringList &args)
         QMetaObject::invokeMethod(mController.get(), "handleLog", Qt::QueuedConnection,
                                   Q_ARG(QString, msg));
     });
+    connect(test, &NCommand::CTestCommand::logHtml, [this](QString msg){
+        QMetaObject::invokeMethod(mController.get(), "handleLogHtml", Qt::QueuedConnection,
+                                  Q_ARG(QString, msg));
+    });
     connect(testThread, SIGNAL(started()), test, SLOT(run()));
     setMode(TSystemMode::InProcess);
     mController->setAppMode();

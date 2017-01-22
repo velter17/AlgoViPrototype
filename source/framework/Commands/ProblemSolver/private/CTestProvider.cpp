@@ -88,78 +88,73 @@ QString CTestProvider::getFormatted(int i) const
    {
        return " Not small enough to display :(\n";
    }
-   QString ret = " +";
-   for(int i = 0; i < maxLen[0]+2; ++i)
-      ret.append('-');
-   ret.append('+');
-   for(int i = 0; i < maxLen[1]+2; ++i)
-      ret.append('-');
-   ret.append('+');
-   ret.append('\n');
-   ret.append(' ');
-   ret.append('|');
-   for(int i = 0; i < (maxLen[0]-3) / 2; ++i)
-      ret.append(' ');
-   ret += "input";
-   for(int i = 0; i < maxLen[0]+2 - (maxLen[0]-3) / 2 - 5; ++i)
-      ret.append(' ');
-   ret.append('|');
-   for(int i = 0; i < (maxLen[1]-4) / 2; ++i)
-      ret.append(' ');
-   ret += "output";
-   for(int i = 0; i < maxLen[1]+2 - (maxLen[1]-4) / 2 - 6; ++i)
-      ret.append(' ');
-   ret += "|\n ";
-   ret.append('+');
-   for(int i = 0; i < maxLen[0]+2; ++i)
-      ret.append('-');
-   ret.append('+');
-   for(int i = 0; i < maxLen[1]+2; ++i)
-      ret.append('-');
-   ret.append('+');
-   ret.append('\n');
-   ret.append(' ');
+
+   const QString borderColor = "#A0A0A0";
+   const QString inputTitleColor = "#BFA8FF";
+   const QString outputTitleColor = "#FF9999";
+
+   QString ret = "&nbsp;<font color=" + borderColor + ">&#x250c;";
+   ret += QString("&#x2500;").repeated(maxLen[0]+2);
+   //ret.append('+');
+   ret += "&#x252c;";
+   ret += QString("&#x2500;").repeated(maxLen[1]+2);
+   ret += "&#x2510;<br>&nbsp;&#x2502;";
+   ret += QString("&nbsp;").repeated((maxLen[0]-3) / 2);
+   ret += "</font><font color=" + inputTitleColor + ">input</font><font color=" + borderColor + ">";
+   ret += QString("&nbsp;").repeated(maxLen[0]+2 - (maxLen[0]-3) / 2 - 5);
+   //ret.append('|');
+   ret += "&#x2502;";
+   ret += QString("&nbsp;").repeated((maxLen[1]-4) / 2);
+   ret += "</font><font color=" + outputTitleColor + ">output</font><font color=" + borderColor + ">";
+   ret += QString("&nbsp;").repeated(maxLen[1]+2 - (maxLen[1]-4) / 2 - 6);
+   ret += "&#x2502;<br>&nbsp;";
+   //ret.append('+');
+   ret += "&#x251c;";
+   ret += QString("&#x2500;").repeated(maxLen[0]+2);
+   //ret.append('+');
+   ret += "&#x253c;";
+   ret += QString("&#x2500;").repeated(maxLen[1]+2);
+   ret += "&#x2524;<br>&nbsp;";
    int to = std::max(inputList.size(), outputList.size());
    for(int i = 0; i < to; ++i)
    {
-      ret.append('|');
+      //ret.append('|');
+       ret += "&#x2502;";
       if(inputList.size() <= i)
       {
-         for(int j = 0; j < maxLen[0]+2; ++j)
-            ret.append(' ');
+         ret += QString("&nbsp;").repeated(maxLen[0]+2);
       }
       else
       {
-         ret.append(' ');
+         ret += "&nbsp;</font>";
          ret += inputList[i];
-         for(int j = 0; j < maxLen[0] - inputList[i].length() + 1; ++j)
-            ret.append(' ');
+         ret += "<font color=" + borderColor + ">";
+         ret += QString("&nbsp;").repeated(maxLen[0] - inputList[i].length() + 1);
       }
-      ret.append('|');
+      //ret.append('|');
+      ret += "&#x2502;";
       if(outputList.size() <= i)
       {
-         for(int j = 0; j < maxLen[1]+2; ++j)
-            ret.append(' ');
-         ret += "|\n ";
+         ret += QString("&nbsp;").repeated(maxLen[1]+2);
+         ret += "&#x2502;<br>&nbsp;";
          continue;
       }
       else
       {
-         ret.append(' ');
-         ret += outputList[i];
-         for(int j = 0; j < maxLen[1] - outputList[i].length() + 1; ++j)
-            ret.append(' ');
-         ret += "|\n ";
+          ret += "&nbsp;</font>";
+          ret += outputList[i];
+          ret += "<font color=" + borderColor + ">";
+          ret += QString("&nbsp;").repeated(maxLen[1] - outputList[i].length() + 1);
+          ret += "&#x2502;<br>&nbsp;";
       }
    }
-   ret.append('+');
-   for(int i = 0; i < maxLen[0]+2; ++i)
-      ret.append('-');
-   ret.append('+');
-   for(int i = 0; i < maxLen[1]+2; ++i)
-      ret.append('-');
-   ret.append('+');
-   ret.append('\n');
+   //ret.append('+');
+   ret += "&#x2514;";
+   ret += QString("&#x2500;").repeated(maxLen[0]+2);
+   //ret.append('+');
+   ret += "&#x2534;";
+   ret += QString("&#x2500;").repeated(maxLen[1]+2);
+   ret += "&#x2518;<br></font>";
    return ret;
 }
 
