@@ -343,28 +343,55 @@ void CGravizSystem::handle<TGravizCommand::System>(const QStringList &args)
 template <>
 void CGravizSystem::handle<TGravizCommand::Python>(const QStringList &args)
 {
-    qDebug () << "CGravizSystem> Python command " << args;
-    NCommand::CSystemCmd* cmd = new NCommand::CSystemCmd(QStringList() << "D:\\Programs\\Python\\python.exe");
-    cmd->setTime(60*60*60);
-    mController->setAppMode();
-    connect(cmd, &NCommand::CSystemCmd::error, [this](const QString& msg){
-        mController->handleError(msg);
+    qDebug () << "CGravizSystem> Python " << args;
+    setMode(TSystemMode::InProcess);
+    mProblemSolver = new NCommand::CProblemSolver(QStringList() << args << "-s" << "Vika<3", mTestProvider);
+    mTerminalCommand = mProblemSolver;
+    connect(mProblemSolver, &NCommand::CProblemSolver::log, [this](const QString& log){
+        //mController->handleLog(log);
+        QMetaObject::invokeMethod(mController.get(), "handleLog", Qt::QueuedConnection,
+                                  Q_ARG(QString, log));
     });
-    connect(cmd, &NCommand::CSystemCmd::log, [this](const QString& msg){
-        mController->handleLog(msg);
+    connect(mProblemSolver, &NCommand::CProblemSolver::error, [this](const QString& log){
+        QMetaObject::invokeMethod(mController.get(), "handleError", Qt::QueuedConnection,
+                                  Q_ARG(QString, log));
     });
-    connect(cmd, &NCommand::CSystemCmd::logHtml, [this](QString msg){
-        mController->handleLogHtml(msg);
+    connect(mProblemSolver, &NCommand::CProblemSolver::logHtml, [this](const QString& log){
+        QMetaObject::invokeMethod(mController.get(), "handleLogHtml", Qt::QueuedConnection,
+                                  Q_ARG(QString, log));
     });
-    connect(cmd, &NCommand::CSystemCmd::finished, [this, cmd](int code){
-//        mController->handleLog(" [ Info ] Finished with code " + QString::number(code) + "\n");
-        mController->unlock();
-        cmd->deleteLater();
-    });
-    cmd->setWorkingDir(NCommand::CFileSystem::getInstance().getCurrentPath());
-    cmd->run();
-}
+    if(!mProblemSolver->init())
+    {
+        mProblemSolver->deleteLater();
+        QMetaObject::invokeMethod(mController.get(), "unlock", Qt::QueuedConnection);
+        setMode(TSystemMode::Default);
+        return;
+    }
 
+#ifdef WIN_TARGET
+    mProblemSolver->setAppPath("D:\\Programs\\Python\\python.exe");
+#else
+    mProblemSolver->setAppPath("/usr/bin/python -i");
+#endif
+
+    QThread* solverThread = new QThread();
+    mProblemSolver->moveToThread(solverThread);
+    connect(solverThread, SIGNAL(started()), mProblemSolver, SLOT(run()));
+    connect(solverThread, SIGNAL(finished()), solverThread, SLOT(deleteLater()));
+    connect(solverThread, SIGNAL(finished()), mProblemSolver, SLOT(deleteLater()));
+    connect(mProblemSolver, &NCommand::CProblemSolver::finished, [this, solverThread](int code)
+    {
+        qDebug () << "ProblemSolver thread was finished";
+        QMetaObject::invokeMethod(mController.get(), "handleLog", Qt::QueuedConnection,
+                                  Q_ARG(QString, QString(
+                                        " [ Info ] Exit status: " + QString::number(code) + "\n")));
+        QMetaObject::invokeMethod(mController.get(), "unlock", Qt::QueuedConnection);
+        this->setMode(TSystemMode::Default);
+        solverThread->quit();
+    });
+    mController->setAppMode();
+    solverThread->start();
+}
 
 template <>
 void CGravizSystem::handle<TGravizCommand::TerminateProcess>(const QStringList &args)
@@ -421,6 +448,10 @@ void CGravizSystem::handle<TGravizCommand::Test>(const QStringList &args)
     connect(test, &NCommand::CTestCommand::log, [this](QString msg){
 //        mController->handleLog(msg);
         QMetaObject::invokeMethod(mController.get(), "handleLog", Qt::QueuedConnection,
+                                  Q_ARG(QString, msg));
+    });
+    connect(test, &NCommand::CTestCommand::logHtml, [this](QString msg){
+        QMetaObject::invokeMethod(mController.get(), "handleLogHtml", Qt::QueuedConnection,
                                   Q_ARG(QString, msg));
     });
     connect(testThread, SIGNAL(started()), test, SLOT(run()));
@@ -489,6 +520,7 @@ void CGravizSystem::handle<TGravizCommand::ParseSite>(const QStringList &args)
         //mController->handleLog(" [ Info ] Finished with code " + QString::number(code) + "\n");
         for(const NCommand::STest& test : parser->tests())
             mTestProvider->addTest(test);
+        mController->handleLog(" [ Info ] " + QString::number(parser->tests().size()) + " tests were parsed\n");
         mController->unlock();
     });
     parser->run();
