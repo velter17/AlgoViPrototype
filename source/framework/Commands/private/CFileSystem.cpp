@@ -31,7 +31,6 @@ CFileSystem &CFileSystem::getInstance()
 
 QStringList CFileSystem::getDirList()
 {
-
     QStringList ret;
     if(!boost::filesystem::exists(mCurrentPath))
     {
@@ -44,7 +43,7 @@ QStringList CFileSystem::getDirList()
         const boost::filesystem::directory_entry& entry = *itr;
         if(entry.path().filename().c_str()[0] == '.')
             continue;
-        ret.append(QString::fromLocal8Bit((char*)entry.path().filename().c_str()));
+        ret.append(QString::fromStdString(entry.path().filename().generic_string()));
     }
     return ret;
 }
@@ -59,7 +58,11 @@ void CFileSystem::changeDir(const QString &dir)
     std::string toDir = dir.toStdString();
     if(toDir.size() > 1 && toDir.back() == '/')
         toDir.pop_back();
+#ifdef WIN_TARGET
+    if(toDir.length() > 1 && toDir[1] == ':')
+#else
     if(toDir.front() == '/')
+#endif
     {
         if(!boost::filesystem::exists(toDir))
         {
@@ -87,12 +90,16 @@ void CFileSystem::changeDir(const QString &dir)
 QPair<QStringList, int> CFileSystem::getHint(const QString &curStr)
 {
     boost::filesystem::path p;
-    if(curStr[0] != '/')
+#ifdef WIN_TARGET
+    if(!(curStr.length() > 1 && curStr[1] == ':'))
+#else
+    if(curStr.front() != '/')
+#endif
         p = (mCurrentPath / curStr.toStdString());
     else
         p = curStr.toStdString();
     p.normalize();
-    QString file_name = QString::fromLocal8Bit((char*)p.filename().c_str());
+    QString file_name = QString::fromStdString(p.filename().generic_string());
     if(file_name == ".")
         file_name.clear();
     p = p.parent_path();
@@ -113,7 +120,7 @@ QPair<QStringList, int> CFileSystem::getHint(const QString &curStr)
         if(!file_name.isEmpty() &&
                 strncmp((char*)entry.path().filename().c_str(), file_name.toLocal8Bit(), file_name.length()))
             continue;
-        ret.append(QString::fromLocal8Bit((char*)entry.path().filename().c_str()));
+        ret.append(QString::fromStdString(entry.path().filename().string()));
     }
     return QPair<QStringList, int>(ret, file_name.length());
 }
@@ -121,7 +128,11 @@ QPair<QStringList, int> CFileSystem::getHint(const QString &curStr)
 bool CFileSystem::isDirectory(const QString& obj)
 {
     boost::filesystem::path p;
-    if(obj[0] != '/')
+#ifdef WIN_TARGET
+    if(!(obj.length() > 1 && obj[1] == ':'))
+#else
+    if(obj.front() != '/')
+#endif
         p = mCurrentPath / obj.toStdString();
     else
         p = obj.toStdString();
@@ -132,7 +143,11 @@ bool CFileSystem::isDirectory(const QString& obj)
 bool CFileSystem::isFile(const QString &obj)
 {
     boost::filesystem::path p;
-    if(obj[0] != '/')
+#ifdef WIN_TARGET
+    if(!(obj.length() > 1 && obj[1] == ':'))
+#else
+    if(obj.front() != '/')
+#endif
         p = mCurrentPath / obj.toStdString();
     else
         p = obj.toStdString();
@@ -143,10 +158,15 @@ bool CFileSystem::isFile(const QString &obj)
 boost::filesystem::path CFileSystem::getFullPath(const QString &path)
 {
     boost::filesystem::path p;
-    if(path[0] != '/')
+#ifdef WIN_TARGET
+    if(!(path.length() > 1 && path[1] == ':'))
+#else
+    if(path.front() != '/')
+#endif
         p = mCurrentPath / path.toStdString();
     else
         p = path.toStdString();
+    p.normalize();
     return boost::filesystem::complete(p);
 }
 

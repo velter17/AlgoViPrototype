@@ -31,13 +31,14 @@ enum class TGravizCommand
 {
     System,             // should be redirect to system
     RunSolver,          // start application
-    RunSolverVisual,     // visual solver
+    RunSolverVisual,    // visual solver
     ParseSite,          // parse site to get data
     Test,               // test commands
     Tester,             // launch tester
     TerminateProcess,   // stop application
     Compile,            // compile source code
     ChangeDirectory,    // change working directory
+    Python,             // Run python interpreter
     Exit,               // Exit from system
     Unknown,            // unknown command name
     Empty,              // no command

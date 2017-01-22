@@ -98,7 +98,7 @@ void CVisualSolver::appendData(const QString &data)
 
 void CVisualSolver::setInput(const QString &data)
 {
-    qDebug () << "CVisualSolver> setInput: " << data << " " << mSolvedFlag;
+    //qDebug () << "CVisualSolver> setInput: " << data << " " << mSolvedFlag;
     mInput = data;
     mInputTimestamp++;
     if(mSolvedFlag && mCompiledFlag && !mInput.isEmpty())

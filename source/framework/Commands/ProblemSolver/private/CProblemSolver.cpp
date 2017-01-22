@@ -146,8 +146,12 @@ void CProblemSolver::run()
         mOutputFile.open(filePath);
     }
 
-
+#ifdef WIN_TARGET
+    mApp->start(mAppPath, QProcess::Unbuffered | QProcess::ReadWrite);
+#else
     mApp->start(QString("stdbuf -o 0 ") + mAppPath, QProcess::Unbuffered | QProcess::ReadWrite);
+#endif
+
     mApp->waitForStarted();
     if(mTestToExecuteFlag)
     {

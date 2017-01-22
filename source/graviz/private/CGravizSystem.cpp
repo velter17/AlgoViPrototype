@@ -319,7 +319,7 @@ template <>
 void CGravizSystem::handle<TGravizCommand::System>(const QStringList &args)
 {
     qDebug () << "CGravizSystem> SystemCommand " << args;
-    NCommand::CSystemCmd* cmd = new NCommand::CSystemCmd(QStringList() << *args.begin());
+    NCommand::CSystemCmd* cmd = new NCommand::CSystemCmd(args);
     cmd->setTime(60*60*3);
     mController->setAppMode();
     connect(cmd, &NCommand::CSystemCmd::error, [this](const QString& msg){
@@ -339,6 +339,32 @@ void CGravizSystem::handle<TGravizCommand::System>(const QStringList &args)
     cmd->setWorkingDir(NCommand::CFileSystem::getInstance().getCurrentPath());
     cmd->run();
 }
+
+template <>
+void CGravizSystem::handle<TGravizCommand::Python>(const QStringList &args)
+{
+    qDebug () << "CGravizSystem> Python command " << args;
+    NCommand::CSystemCmd* cmd = new NCommand::CSystemCmd(QStringList() << "D:\\Programs\\Python\\python.exe");
+    cmd->setTime(60*60*60);
+    mController->setAppMode();
+    connect(cmd, &NCommand::CSystemCmd::error, [this](const QString& msg){
+        mController->handleError(msg);
+    });
+    connect(cmd, &NCommand::CSystemCmd::log, [this](const QString& msg){
+        mController->handleLog(msg);
+    });
+    connect(cmd, &NCommand::CSystemCmd::logHtml, [this](QString msg){
+        mController->handleLogHtml(msg);
+    });
+    connect(cmd, &NCommand::CSystemCmd::finished, [this, cmd](int code){
+//        mController->handleLog(" [ Info ] Finished with code " + QString::number(code) + "\n");
+        mController->unlock();
+        cmd->deleteLater();
+    });
+    cmd->setWorkingDir(NCommand::CFileSystem::getInstance().getCurrentPath());
+    cmd->run();
+}
+
 
 template <>
 void CGravizSystem::handle<TGravizCommand::TerminateProcess>(const QStringList &args)

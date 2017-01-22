@@ -80,7 +80,8 @@ CHintProvider::CHintProvider()
 
     // external commands
              << "ls" << "date" << "time" << "cd" << "pwd"
-             << "exit";
+             << "exit" << "cat" << "mkdir" << "printf"
+             << "echo" << "rm";
 }
 
 tHint CHintProvider::getHints(const QString& input)

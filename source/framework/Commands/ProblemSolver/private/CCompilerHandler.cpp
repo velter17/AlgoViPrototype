@@ -19,14 +19,17 @@ CCompilerHandler::CCompilerHandler()
 
 void CCompilerHandler::addSourceCodePath(const QString &path)
 {
+    qDebug () << "addSourceCodePath "  << path;
     QString fullPath = QString::fromStdString(CFileSystem::getInstance().getFullPath(path).generic_string());
     QString appName = mTempDir.path() + "/" + QString("app%1").arg(mAppIdx++);
+    qDebug () << "fullPath = " << fullPath << ", appName = " << appName;
     mSourceCodeFileMap[fullPath] = SFileInfo(fullPath, appName);
 }
 
 bool CCompilerHandler::isSourceCode(const QString &path)
 {
-    return mSourceCodeFileMap.find(path) != mSourceCodeFileMap.end();
+    QString fullPath = QString::fromStdString(CFileSystem::getInstance().getFullPath(path).generic_string());
+    return mSourceCodeFileMap.find(fullPath) != mSourceCodeFileMap.end();
 }
 
 bool CCompilerHandler::isNeededCompilation(const QString &path)
@@ -69,7 +72,10 @@ void CCompilerHandler::performCompilation(const QString& path, const QStringList
 
 QString CCompilerHandler::getAppPath(const QString &codePath)
 {
-    return mSourceCodeFileMap[codePath].mBinaryFilePath;
+    QString fullPath = QString::fromStdString(CFileSystem::getInstance().getFullPath(codePath).generic_string());
+    qDebug () << "getAppPath " << codePath;
+    qDebug () << "return " << mSourceCodeFileMap[fullPath].mBinaryFilePath;
+    return mSourceCodeFileMap[fullPath].mBinaryFilePath;
 }
 
 void CCompilerHandler::clear()

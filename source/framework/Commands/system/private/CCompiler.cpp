@@ -26,7 +26,7 @@ CCompiler::CCompiler(QStringList args)
         //("lang,l", boost::program_options::value<std::string>()->default_value("c++"), "language")
         ("output,o,", boost::program_options::value<std::string>()->required(), "destination path")
         ("flag,f", boost::program_options::value<std::vector<std::string> >()->multitoken(),
-            "compilation flags\n(for c++ -DVAL you should use -f VAL");
+            "compilation flags\n(for c++ -DVAL you should use -f DVAL");
 }
 
 void CCompiler::run()
@@ -41,9 +41,13 @@ void CCompiler::run()
     qDebug () << "inside compiler";
 
     QString src = QString::fromStdString(vm["input"].as<std::string>());
-    QString compilerCommand = QString("g++ -o ") +
-            QString::fromStdString(CFileSystem::getInstance().getFullPath(
-			QString::fromStdString(vm["output"].as<std::string>())).string());
+    QStringList compilerCommand;
+    compilerCommand << "g++";
+    compilerCommand << "-o" << QString::fromStdString(CFileSystem::getInstance().getFullPath(
+                               QString::fromStdString(vm["output"].as<std::string>())).string());
+//    QString compilerCommand = QString("-o ") +
+//            QString::fromStdString(CFileSystem::getInstance().getFullPath(
+//			QString::fromStdString(vm["output"].as<std::string>())).string());
     if(vm.count("flag"))
     {
         for(const std::string& f : vm["flag"].as<std::vector<std::string>>())
@@ -53,11 +57,13 @@ void CCompiler::run()
     }
     for(const std::string& f : mFlags)
     {
-        compilerCommand += QString(" -") + f.c_str();
+        compilerCommand << QString("-") + f.c_str();
+        //compilerCommand += QString(" -") + f.c_str();
     }
-    compilerCommand += QString(" ") + CFileSystem::getInstance().getFullPath(src).string().c_str();
+    //compilerCommand += QString(" ") + CFileSystem::getInstance().getFullPath(src).string().c_str();
+    compilerCommand << CFileSystem::getInstance().getFullPath(src).string().c_str();
     qDebug () << "compiler command is " << compilerCommand;
-    mProc.reset(new CSystemCmd(QStringList() << compilerCommand));
+    mProc.reset(new CSystemCmd(compilerCommand));
     //connect(proc.get(), SIGNAL(finished()), proc.get(), SLOT(deleteLater()));
     connect(mProc.get(), &CCompiler::log,
             [this](QString msg){

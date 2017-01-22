@@ -67,14 +67,18 @@ void CCommandHandler::handle(const QString& commandStr)
     {
         mParent->handle<TGravizCommand::RunSolverVisual>(args);
     }
+    else if(command == "python")
+    {
+        mParent->handle<TGravizCommand::Python>(QStringList());
+    }
     else if(sysCommand(command))
     {
         command = *commandStr.split(QRegExp("\\s+"), QString::SkipEmptyParts).begin();
-        for(const QString& str : args)
-        {
-            command += " " + str;
-        }
-        mParent->handle<TGravizCommand::System>(QStringList() << command);
+//        for(const QString& str : args)
+//        {
+//            command += " " + str;
+//        }
+        mParent->handle<TGravizCommand::System>(QStringList() << command << args);
     }
     else
     {
@@ -154,7 +158,7 @@ void CCommandHandler::handleEndCommand()
 
 bool CCommandHandler::sysCommand(const QString &command)
 {
-    static QSet <QString> availableCommands {"date", "time", "pwd", "ls" };
+    static QSet <QString> availableCommands {"date", "time", "pwd", "ls", "cat", "mkdir", "cp", "rm", "echo", "printf" };
     return availableCommands.find(command) != availableCommands.end();
 }
 

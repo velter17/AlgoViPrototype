@@ -24,11 +24,11 @@ void CSystemCmd::run()
     emit started();
 
     boost::program_options::variables_map vm;
-    if(!readOptions(mArgs, vm))
-    {
-        emit finished(-1);
-        return;
-    }
+//    if(!readOptions(mArgs, vm))
+//    {
+//        emit finished(-1);
+//        return;
+//    }
 
     mProc = new QProcess();
     connect(mProc, &QProcess::readyReadStandardError, [this](){
@@ -51,10 +51,19 @@ void CSystemCmd::run()
         emit finished(code);
         mProc->deleteLater();
     });
-    qDebug () << "bash -c " << mArgs;
+    QString app = *mArgs.begin();
+    mArgs.erase(mArgs.begin());
+//    qDebug () << "C:\\MinGW\\msys\\1.0\\bin\\" << app << ".exe" << mArgs;
+#ifdef WIN_TARGET
+//    qDebug () << "winapp\\" << app << ".exe" << mArgs;
+    //mProc->start("winapp\\" + app + ".exe", QStringList() << mArgs);
+    qDebug () << app << " " << mArgs;
+    mProc->start(app, QStringList() << mArgs);
+#else
     mProc->start("bash", QStringList() << "-c" << mArgs);
-    //mProc->waitForFinished();
-    //qDebug () << "mProc finished";
+#endif
+//    mProc->waitForFinished();
+//    qDebug () << "mProc finished";
 }
 
 void CSystemCmd::terminate()
