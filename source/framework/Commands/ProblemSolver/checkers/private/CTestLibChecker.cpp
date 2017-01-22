@@ -10,6 +10,7 @@
 #include <QProcess>
 #include <fstream>
 
+#include "framework/Commands/CFileSystem.h"
 #include "../CTestLibChecker.h"
 
 namespace NCommand
@@ -29,6 +30,11 @@ CTestLibChecker::CTestLibChecker(const QStringList &args, const QString &type)
 
 TCheckerResult CTestLibChecker::check()
 {
+    if(!boost::filesystem::exists(boost::filesystem::path(mPathToChecker.toStdString())))
+    {
+        mCheckerMessage = mPathToChecker.mid(9) + " checker is invalid, see --help";
+        return TCheckerResult::None;
+    }
     QTemporaryDir dir;
     std::ofstream file((dir.path() + "input.txt").toStdString());
     file << mVarMap["input"].as<std::string>();

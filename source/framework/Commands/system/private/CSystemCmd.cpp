@@ -60,7 +60,9 @@ void CSystemCmd::run()
     qDebug () << app << " " << mArgs;
     mProc->start(app, QStringList() << mArgs);
 #else
-    mProc->start("bash", QStringList() << "-c" << mArgs);
+    for(QString &s : mArgs)
+        app += " " + s;
+    mProc->start("bash", QStringList() << "-c" << app);
 #endif
 //    mProc->waitForFinished();
 //    qDebug () << "mProc finished";

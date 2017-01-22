@@ -419,6 +419,9 @@ void CGravizSystem::handle<TGravizCommand::Compile>(const QStringList &args)
         mController->unlock();
         setMode(TSystemMode::Default);
     });
+    connect(compiler, &NCommand::CCompiler::logHtml, [this](QString msg){
+        mController->handleLogHtml(msg);
+    });
     setMode(TSystemMode::InProcess);
     mTerminalCommand = compiler;
     compiler->run();

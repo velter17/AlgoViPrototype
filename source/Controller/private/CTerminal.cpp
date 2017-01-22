@@ -42,7 +42,11 @@ CTerminal::CTerminal(QWidget *parent)
     mPalette.setColor(QPalette::Text, Colors::Main);
     setPalette(mPalette);
 
+#ifdef WIN_TARGET
     QFont font("consolas");
+#else
+    QFont font("monospace");
+#endif
     this->setFont(font);
 
     newCmdPrompt();

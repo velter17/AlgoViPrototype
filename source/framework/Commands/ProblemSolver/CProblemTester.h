@@ -27,6 +27,8 @@ public: // methods
     void appendData(const QString& data) override;
     void terminate() override;
 
+    QString getManualMessage() override;
+
 public slots: // methods
     void testRunner(int test);
     QString checkResult(int test, int returnCode);

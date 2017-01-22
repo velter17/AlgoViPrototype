@@ -61,7 +61,7 @@ void CFileSystem::changeDir(const QString &dir)
 #ifdef WIN_TARGET
     if(toDir.length() > 1 && toDir[1] == ':')
 #else
-    if(toDir.front() == '/')
+    if(toDir[0] == '/')
 #endif
     {
         if(!boost::filesystem::exists(toDir))
@@ -93,7 +93,7 @@ QPair<QStringList, int> CFileSystem::getHint(const QString &curStr)
 #ifdef WIN_TARGET
     if(!(curStr.length() > 1 && curStr[1] == ':'))
 #else
-    if(curStr.front() != '/')
+    if(curStr[0] != '/')
 #endif
         p = (mCurrentPath / curStr.toStdString());
     else
@@ -131,7 +131,7 @@ bool CFileSystem::isDirectory(const QString& obj)
 #ifdef WIN_TARGET
     if(!(obj.length() > 1 && obj[1] == ':'))
 #else
-    if(obj.front() != '/')
+    if(obj[0] != '/')
 #endif
         p = mCurrentPath / obj.toStdString();
     else
@@ -146,7 +146,7 @@ bool CFileSystem::isFile(const QString &obj)
 #ifdef WIN_TARGET
     if(!(obj.length() > 1 && obj[1] == ':'))
 #else
-    if(obj.front() != '/')
+    if(obj[0] != '/')
 #endif
         p = mCurrentPath / obj.toStdString();
     else
@@ -155,13 +155,28 @@ bool CFileSystem::isFile(const QString &obj)
     return boost::filesystem::is_regular_file(p);
 }
 
+bool CFileSystem::exists(const QString &path)
+{
+    boost::filesystem::path p;
+#ifdef WIN_TARGET
+    if(!(path.length() > 1 && path[1] == ':'))
+#else
+    if(path[0] != '/')
+#endif
+        p = mCurrentPath / path.toStdString();
+    else
+        p = path.toStdString();
+    qDebug () << "CFileSystem> exists (" << path << ") -> " << p.c_str();
+    return boost::filesystem::exists(p);
+}
+
 boost::filesystem::path CFileSystem::getFullPath(const QString &path)
 {
     boost::filesystem::path p;
 #ifdef WIN_TARGET
     if(!(path.length() > 1 && path[1] == ':'))
 #else
-    if(path.front() != '/')
+    if(path[0] != '/')
 #endif
         p = mCurrentPath / path.toStdString();
     else

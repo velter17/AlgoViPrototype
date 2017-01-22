@@ -25,7 +25,11 @@ CProblemTester::CProblemTester(const QStringList &args,
 {
     mOptions.add_options()
         ("src,s", boost::program_options::value<std::string>()->required(), "Source code path")
-        ("checker,c", boost::program_options::value<std::string>(), "Checker type")
+        ("checker,c", boost::program_options::value<std::string>(),
+            "Checker types:\n"
+            "* No argument - default system checker\n"
+            "* [testlib builtin checker] - see --manual for more details\n"
+            "* Path to checker code\n")
         ("test,t", boost::program_options::value<std::string>(),
             "If no param - test whole test archive\n"
             "If -t 2 -> test second test from archive\n"
@@ -189,6 +193,28 @@ void CProblemTester::terminate()
     mTerminateFlag = true;
 }
 
+QString CProblemTester::getManualMessage()
+{
+    return "<br><font color=yellow>Problem tester</font><br><br> \
+            Test your solution on test archive<br> \
+            &nbsp;&nbsp;Allowed checkers:<br> \
+            &nbsp;&#x27a4;&nbsp;<font color=#9787c6>Default checker</font> - System checker, which compare two sequences of tokens<br> \
+            &nbsp;&#x27a4;&nbsp;<font color=#9787c6>Custom checker</font> - path to checker code<br> \
+            &nbsp;&#x27a4;&nbsp;<font color=#9787c6>Testlib builtin checker</font>:<br> \
+            &nbsp;&nbsp;&nbsp;&nbsp;&#x21b3;&nbsp;<font color=#aefa29>wcmp</font> - compare sequences of tokens<br> \
+            &nbsp;&nbsp;&nbsp;&nbsp;&#x21b3;&nbsp;<font color=#aefa29>hcmp</font> - compare two huge signed integers<br> \
+            &nbsp;&nbsp;&nbsp;&nbsp;&#x21b3;&nbsp;<font color=#aefa29>icmp</font> - compare two signed integers<br> \
+            &nbsp;&nbsp;&nbsp;&nbsp;&#x21b3;&nbsp;<font color=#aefa29>lcmp</font> - compare file as sequence of tokens in lines<br> \
+            &nbsp;&nbsp;&nbsp;&nbsp;&#x21b3;&nbsp;<font color=#aefa29>ncmp</font> - compare ordered sequences of signed integers<br> \
+            &nbsp;&nbsp;&nbsp;&nbsp;&#x21b3;&nbsp;<font color=#aefa29>rcmp</font> - compare two doubles<br> \
+            &nbsp;&nbsp;&nbsp;&nbsp;&#x21b3;&nbsp;<font color=#aefa29>rcmp4</font> - compare two doubles, eps = 1e-4<br> \
+            &nbsp;&nbsp;&nbsp;&nbsp;&#x21b3;&nbsp;<font color=#aefa29>rcmp6</font> - compare two doubles, eps = 1e-6<br> \
+            &nbsp;&nbsp;&nbsp;&nbsp;&#x21b3;&nbsp;<font color=#aefa29>rcmp9</font> - compare two doubles, eps = 1e-9<br> \
+            &nbsp;&nbsp;&nbsp;&nbsp;&#x21b3;&nbsp;<font color=#aefa29>uncmp</font> - compare unordered sequences of integers<br> \
+            &nbsp;&nbsp;&nbsp;&nbsp;&#x21b3;&nbsp;<font color=#aefa29>yesno</font> - compare yes/no messages<br> \
+            <br>";
+}
+
 void CProblemTester::testRunner(int test)
 {
     qDebug () << "testRunner> " << test;
@@ -269,7 +295,7 @@ QString CProblemTester::checkResult(int test, int returnCode)
         }
         else
         {
-            ret = "Unexpected problems occured :(";
+            ret = "<font color=\"#CF8FA8\">Fail</font>";
         }
         if(mNeedDetails)
         {

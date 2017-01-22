@@ -29,6 +29,7 @@ public: // methods
     QPair<QStringList, int> getHint(const QString& curStr);
     bool isDirectory(const QString& obj);
     bool isFile(const QString& obj);
+    bool exists(const QString &path);
     boost::filesystem::path getFullPath(const QString& path);
 
     void remove(const QString& path);
