@@ -67,6 +67,10 @@ void CCommandHandler::handle(const QString& commandStr)
     {
         mParent->handle<TGravizCommand::RunSolverVisual>(args);
     }
+    else if(command == "python")
+    {
+        mParent->handle<TGravizCommand::Python>(QStringList() << "stdbuf -o 0 python");
+    }
     else if(sysCommand(command))
     {
         command = *commandStr.split(QRegExp("\\s+"), QString::SkipEmptyParts).begin();

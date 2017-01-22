@@ -341,6 +341,54 @@ void CGravizSystem::handle<TGravizCommand::System>(const QStringList &args)
 }
 
 template <>
+void CGravizSystem::handle<TGravizCommand::Python>(const QStringList &args)
+{
+    qDebug () << "CGravizSystem> Python " << args;
+    setMode(TSystemMode::InProcess);
+    mProblemSolver = new NCommand::CProblemSolver(QStringList() << args << "-s" << "Vika<3", mTestProvider);
+    mTerminalCommand = mProblemSolver;
+    connect(mProblemSolver, &NCommand::CProblemSolver::log, [this](const QString& log){
+        //mController->handleLog(log);
+        QMetaObject::invokeMethod(mController.get(), "handleLog", Qt::QueuedConnection,
+                                  Q_ARG(QString, log));
+    });
+    connect(mProblemSolver, &NCommand::CProblemSolver::error, [this](const QString& log){
+        QMetaObject::invokeMethod(mController.get(), "handleError", Qt::QueuedConnection,
+                                  Q_ARG(QString, log));
+    });
+    connect(mProblemSolver, &NCommand::CProblemSolver::logHtml, [this](const QString& log){
+        QMetaObject::invokeMethod(mController.get(), "handleLogHtml", Qt::QueuedConnection,
+                                  Q_ARG(QString, log));
+    });
+    if(!mProblemSolver->init())
+    {
+        mProblemSolver->deleteLater();
+        QMetaObject::invokeMethod(mController.get(), "unlock", Qt::QueuedConnection);
+        setMode(TSystemMode::Default);
+        return;
+    }
+    mProblemSolver->setAppPath("/usr/bin/python -i");
+
+    QThread* solverThread = new QThread();
+    mProblemSolver->moveToThread(solverThread);
+    connect(solverThread, SIGNAL(started()), mProblemSolver, SLOT(run()));
+    connect(solverThread, SIGNAL(finished()), solverThread, SLOT(deleteLater()));
+    connect(solverThread, SIGNAL(finished()), mProblemSolver, SLOT(deleteLater()));
+    connect(mProblemSolver, &NCommand::CProblemSolver::finished, [this, solverThread](int code)
+    {
+        qDebug () << "ProblemSolver thread was finished";
+        QMetaObject::invokeMethod(mController.get(), "handleLog", Qt::QueuedConnection,
+                                  Q_ARG(QString, QString(
+                                        " [ Info ] Exit status: " + QString::number(code) + "\n")));
+        QMetaObject::invokeMethod(mController.get(), "unlock", Qt::QueuedConnection);
+        this->setMode(TSystemMode::Default);
+        solverThread->quit();
+    });
+    mController->setAppMode();
+    solverThread->start();
+}
+
+template <>
 void CGravizSystem::handle<TGravizCommand::TerminateProcess>(const QStringList &args)
 {
     qDebug () << "CGravizSystem> terminate " << args;
@@ -463,6 +511,7 @@ void CGravizSystem::handle<TGravizCommand::ParseSite>(const QStringList &args)
         //mController->handleLog(" [ Info ] Finished with code " + QString::number(code) + "\n");
         for(const NCommand::STest& test : parser->tests())
             mTestProvider->addTest(test);
+        mController->handleLog(" [ Info ] " + QString::number(parser->tests().size()) + " tests were parsed\n");
         mController->unlock();
     });
     parser->run();

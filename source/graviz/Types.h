@@ -38,6 +38,7 @@ enum class TGravizCommand
     TerminateProcess,   // stop application
     Compile,            // compile source code
     ChangeDirectory,    // change working directory
+    Python,
     Exit,               // Exit from system
     Unknown,            // unknown command name
     Empty,              // no command
