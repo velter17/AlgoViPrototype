@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Terminal>
+	<HomeDir>$HOME</HomeDir>
+	<Title>graviz</Title>
+	<Colors>
+		<Background>#000000</Background>
+		<Main>#00FF00</Main>
+		<Output>#FFFFFF</Output>
+		<Error>#FF1464</Error>
+	</Colors>
+	<Font>monospace</Font>
+</Terminal>
