@@ -10,13 +10,24 @@
 #include <sstream>
 
 #include "framework/Commands/CFileSystem.h"
+#include "framework/settings/CTerminalSettings.h"
 
 namespace NCommand
 {
 
 CFileSystem::CFileSystem()
-    : mCurrentPath(boost::filesystem::path(getenv("HOME")))
+    : mCurrentPath(boost::filesystem::current_path())
 {
+    QString homeDir = NSettings::CTerminalSettings::getInstance().getHomeDir();
+    qDebug () << "homeDir = " << homeDir;
+    if(!homeDir.isEmpty() && homeDir[0] == '$')
+    {
+        mCurrentPath = boost::filesystem::path(getenv(homeDir.mid(1, homeDir.length()-1).toLocal8Bit()));
+    }
+    else
+    {
+        mCurrentPath = homeDir.toStdString();
+    }
 }
 
 CFileSystem::CFileSystem(const CFileSystem &)

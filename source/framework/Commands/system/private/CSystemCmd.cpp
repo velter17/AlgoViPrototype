@@ -9,6 +9,7 @@
 #include <QTimer>
 
 #include "framework/Commands/system/CSystemCmd.h"
+#include "framework/settings/CCommandSettings.h"
 
 namespace NCommand
 {
@@ -53,10 +54,13 @@ void CSystemCmd::run()
     });
     QString app = *mArgs.begin();
     mArgs.erase(mArgs.begin());
-//    qDebug () << "C:\\MinGW\\msys\\1.0\\bin\\" << app << ".exe" << mArgs;
+    if(NSettings::CCommandSettings::getInstance().isCommand(app))
+    {
+        qDebug () << "old app is " << app;
+        app = NSettings::CCommandSettings::getInstance().getCommand(app);
+        qDebug () << "new app = " << app;
+    }
 #ifdef WIN_TARGET
-//    qDebug () << "winapp\\" << app << ".exe" << mArgs;
-    //mProc->start("winapp\\" + app + ".exe", QStringList() << mArgs);
     qDebug () << app << " " << mArgs;
     mProc->start(app, QStringList() << mArgs);
 #else

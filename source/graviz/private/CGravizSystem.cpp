@@ -13,17 +13,12 @@
 
 #include "graviz/CGravizSystem.h"
 #include "framework/Commands/system/CCompiler.h"
-#include "graviz/settings/CSolverSettings.h"
 #include "framework/Commands/ProblemSolver/CTestCommand.h"
 #include "framework/Commands/ProblemSolver/ProblemParser/CCodeforcesParser.h"
 #include "framework/Commands/ProblemSolver/CProblemTester.h"
 #include "framework/Commands/ProblemSolver/CVisualSolver.h"
 #include "View/CVisualizationController.h"
 
-#include "View/problems/CConvexHullViz.h"
-#include "View/problems/CDistToCurveViz.h"
-#include "View/problems/CRouteSmootherViz.h"
-#include "View/problems/CCppScriptViz.h"
 
 namespace NGraviz
 {
@@ -39,10 +34,6 @@ CGravizSystem::CGravizSystem(std::shared_ptr<NController::CSystemController> con
 {
     mController->setModel(std::shared_ptr<CGravizSystem>(this));
     mController->setView(mView);
-
-    CSolverSettings::getInstance()
-            .setTimeLimit(100000)
-            .setType(TProblemSolverType::Interactive);
 
     connect(&NCommand::CFileSystem::getInstance(), &NCommand::CFileSystem::error, [this](const QString &msg){
         mController->handleError(msg);

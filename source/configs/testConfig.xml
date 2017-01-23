@@ -3,61 +3,28 @@
 	<TestProvider>
 		<MaxTestLen>50</MaxTestLen>  <!-- do not display test with more than maxTestLen symbols -->
 		<Colors>
-			<Border>#A0A0A0</Border>
-			<InputTitle>#BFA8FF</InputTitle>
-			<OutputTitle>#FF9999</OutputTitle>
+            <Color name = "border">#A0A0A0</Color>          <!-- color of test border -->
+            <Color name = "input_title">#BFA8FF</Color>     <!-- color of word "Input" -->
+            <Color name = "output_title">#FF9999</Color>    <!-- color of word "Output" -->
 		</Colors>
 	</TestProvider>
 	<Tester>
-		<TestlibChecker>
-			<Path>checkers/wcmp</Path>
-			<Description>compare sequences of tokens</Description>
-		</TestlibChecker>
-		<TestlibChecker>
-			<Path>checkers/hcmp</Path>
-			<Description>compare two huge signed integers</Description>
-		</TestlibChecker>
-		<TestlibChecker>
-			<Path>checkers/icmp</Path>
-			<Description>compare two signed integers</Description>
-		</TestlibChecker>
-		<TestlibChecker>
-			<Path>checkers/lcmp</Path>
-			<Description>compare file as sequence of tokens in lines</Description>
-		</TestlibChecker>
-		<TestlibChecker>
-			<Path>checkers/ncmp</Path>
-			<Description>compare ordered sequences of signed integers</Description>
-		</TestlibChecker>
-		<TestlibChecker>
-			<Path>checkers/rcmp</Path>
-			<Description>compare two doubles</Description>
-		</TestlibChecker>
-		<TestlibChecker>
-			<Path>checkers/rcmp4</Path>
-			<Description>compare two doubles, eps = 1e-4</Description>
-		</TestlibChecker>
-		<TestlibChecker>
-			<Path>checkers/rcmp6</Path>
-			<Description>compare two doubles, eps = 1e-6</Description>
-		</TestlibChecker>
-		<TestlibChecker>
-			<Path>checkers/rcmp9</Path>
-			<Description>compare two doubles, eps = 1e-9</Description>
-		</TestlibChecker>
-		<TestlibChecker>
-			<Path>checkers/uncmp</Path>
-			<Description>compare unordered sequences of integers</Description>
-		</TestlibChecker>
-		<TestlibChecker>
-			<Path>checkers/yesno</Path>
-			<Description>compare yes/no messages</Description>
-		</TestlibChecker>
+		<Checker path="checkers/wcmp">compare sequences of tokens</Checker>
+		<Checker path="checkers/hcmp">compare two huge signed integers</Checker>
+		<Checker path="checkers/icmp">compare two signed integers</Checker>
+		<Checker path="checkers/lcmp">compare file as sequence of tokens in lines</Checker>
+		<Checker path="checkers/ncmp">compare ordered sequences of signed integers</Checker>
+		<Checker path="checkers/rcmp">compare two doubles</Checker>
+		<Checker path="checkers/rcmp4">compare two doubles, eps = 1e-4</Checker>
+		<Checker path="checkers/rcmp6">compare two doubles, eps = 1e-6</Checker>
+		<Checker path="checkers/rcmp9">compare two doubles, eps = 1e-9</Checker>
+		<Checker path="checkers/uncmp">compare unordered sequences of integers</Checker>
+		<Checker path="checkers/yesno">compare yes/no messages</Checker>
 		<Colors>
-			<Accepted>#00FF00</Accepted>
-			<WrongAnswer>#FF0000</WrongAnswer>
-			<RuntimeError>#CF8F18</RuntimeError>
-			<CheckFailed>#CF8F18</CheckFailed>
+			<Color name = "accepted">#00FF00</Color>
+			<Color name = "wrong_answer">#FF0000</Color>
+			<Color name = "runtime_error">#CF8F18</Color>
+			<Color name = "check_failed">#CF8F18</Color>
 		</Colors>
 	</Tester>
 </TestSettings>

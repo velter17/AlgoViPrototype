@@ -18,18 +18,23 @@
 #include "framework/Commands/system/CSystemCmd.h"
 #include "framework/Commands/CFileSystem.h"
 #include "framework/Commands/system/CCompiler.h"
+#include "framework/settings/CTerminalSettings.h"
 
 namespace NController
 {
 
-QColor CTerminal::Colors::Background = QColor(0,0,0);
-QColor CTerminal::Colors::Main = QColor(0,255,0);
-QColor CTerminal::Colors::Error = QColor(255,20,100);
-QColor CTerminal::Colors::Output = QColor(255,255,255);
+QColor CTerminal::Colors::Background =
+        QColor(NSettings::CTerminalSettings::getInstance().getColor("background"));
+QColor CTerminal::Colors::Main =
+        QColor(NSettings::CTerminalSettings::getInstance().getColor("main"));
+QColor CTerminal::Colors::Error =
+        QColor(NSettings::CTerminalSettings::getInstance().getColor("error"));
+QColor CTerminal::Colors::Output =
+        QColor(NSettings::CTerminalSettings::getInstance().getColor("output"));
 
 CTerminal::CTerminal(QWidget *parent)
     : QPlainTextEdit(parent)
-    , mPromptString("graviz")
+    , mPromptString(NSettings::CTerminalSettings::getInstance().getTitle())
     , mTabPressCount(0)
     , mLastWriter(1)
     , mNewLineFlag(false)
@@ -41,12 +46,15 @@ CTerminal::CTerminal(QWidget *parent)
     mPalette.setColor(QPalette::Base, Colors::Background);
     mPalette.setColor(QPalette::Text, Colors::Main);
     setPalette(mPalette);
-
+/*
 #ifdef WIN_TARGET
     QFont font("consolas");
 #else
     QFont font("monospace");
 #endif
+*/
+    QFont font(NSettings::CTerminalSettings::getInstance().getFont());
+    font.setPixelSize(NSettings::CTerminalSettings::getInstance().getFontSize());
     this->setFont(font);
 
     newCmdPrompt();

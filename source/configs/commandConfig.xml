@@ -1,19 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<CommandsSettings>
-	<Commands> 
-		<!-- external commands
-			name - will be used in terminal
-			value - path to executable file
-		-->
-		<Command name="ls">ls</Command>
-		<Command name="cat">cat</Command>
-		<Command name="mkdir">mkdir</Command>
-		<Command name="rm">rm</Command>
-		<Command name="pwd">pwd</Command>
-		<Command name="time">time</Command>
-		<Command name="date">date</Command>
-		<Command name="cp">cp</Command>
-		<Command name="mv">mv</Command>
-	</Commands>
-	<PythonInterpreter param="on">/usr/bin/python -i</PythonInterpreter>
-</CommandsSettings>
+<CommandSettings>
+    <!-- external commands
+        name - will be used in terminal
+        value - path to executable file
+    -->
+    <Command name = "ls">ls</Command>
+    <Command name = "cat">cat</Command>
+    <Command name = "mkdir">mkdir</Command>
+    <Command name = "rm">rm</Command>
+    <Command name = "pwd">pwd</Command>
+    <Command name = "time">time</Command>
+    <Command name = "date">date</Command>
+    <Command name = "cp">cp</Command>
+    <Command name = "mv">mv</Command>
+    <Command name = "python">/usr/bin/python -i</Command>
+</CommandSettings>

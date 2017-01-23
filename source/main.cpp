@@ -4,6 +4,8 @@
 #include <QThread>
 #include <QApplication>
 
+#include "framework/settings/CCommandSettings.h"
+
 
 int main(int argc, char *argv[])
 {
@@ -16,6 +18,8 @@ int main(int argc, char *argv[])
     std::shared_ptr<NGraviz::CGravizSystem> gravizApp(
                 new NGraviz::CGravizSystem(controller));
     gui->show();
+
+    NSettings::CCommandSettings::getInstance();
 
     return a.exec();
 }

@@ -10,6 +10,7 @@
 
 #include "framework/Commands/system/CCompiler.h"
 #include "framework/Commands/CFileSystem.h"
+#include "framework/settings/CCommandSettings.h"
 #include "../CCommandHandler.h"
 
 
@@ -158,8 +159,7 @@ void CCommandHandler::handleEndCommand()
 
 bool CCommandHandler::sysCommand(const QString &command)
 {
-    static QSet <QString> availableCommands {"date", "time", "pwd", "ls", "cat", "mkdir", "cp", "rm", "echo", "printf" };
-    return availableCommands.find(command) != availableCommands.end();
+    return NSettings::CCommandSettings::getInstance().isCommand(command);
 }
 
 

@@ -1,1 +1,2 @@
 ADD_SUBDIRECTORY ( Commands )
+ADD_SUBDIRECTORY ( settings )

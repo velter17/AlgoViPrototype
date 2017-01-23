@@ -3,10 +3,12 @@
 	<HomeDir>$HOME</HomeDir>
 	<Title>graviz</Title>
 	<Colors>
-		<Background>#000000</Background>
-		<Main>#00FF00</Main>
-		<Output>#FFFFFF</Output>
-		<Error>#FF1464</Error>
+		<Color name = "background">#000000</Color>
+		<Color name = "main">#00FF00</Color>
+		<Color name = "output">#FFFFFF</Color>
+		<Color name = "error">#FF1464</Color>
 	</Colors>
 	<Font>monospace</Font>
+    <FontSize>12</FontSize>
+    <HistorySize>500</HistorySize>
 </Terminal>

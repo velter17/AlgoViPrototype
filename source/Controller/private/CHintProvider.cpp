@@ -14,6 +14,7 @@
 #include "framework/Commands/system/CCompiler.h"
 #include "framework/Commands/ProblemSolver/CProblemTester.h"
 #include "framework/Commands/CFileSystem.h"
+#include "framework/settings/CCommandSettings.h"
 #include "../CHintProvider.h"
 
 namespace NController
@@ -76,12 +77,8 @@ CHintProvider::CHintProvider()
     mFunc["compile"] = &CHintProvider::hints<TCommandHintName::Compile>;
 
     // internal commands
-    mAppList << "run" << "test" << "tester" << "compile" << "run-visual"
-
-    // external commands
-             << "ls" << "date" << "time" << "cd" << "pwd"
-             << "exit" << "cat" << "mkdir" << "printf"
-             << "echo" << "rm";
+    mAppList << "run" << "test" << "tester" << "compile" << "run-visual";
+    mAppList << NSettings::CCommandSettings::getInstance().getCommandList();
 }
 
 tHint CHintProvider::getHints(const QString& input)
@@ -107,7 +104,7 @@ tHint CHintProvider::processHints(const QStringList &list, const QString &str)
 {
     tHint ret;
     ret.second = str.length();
-    for(const QString s : list)
+    for(const QString &s : list)
     {
         if(s.length() >= str.length() && s.mid(0, str.length()) == str)
             ret.first << s;
