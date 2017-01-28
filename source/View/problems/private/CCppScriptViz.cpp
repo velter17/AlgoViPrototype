@@ -59,8 +59,7 @@ QString CCppScriptViz::serialize(const std::map<QString, IGravizItem *> &items)
     mProc->start(mCompilerHandler->getAppPath(mScriptPath), QStringList() << "0");
     mProc->waitForFinished(10000000);
     qDebug () << "serialization finished: " << mBuffer;
-    mProc->deleteLater();
-    mMutex.unlock();
+    delete mProc;
     return mBuffer;
 }
 
@@ -89,14 +88,16 @@ void CCppScriptViz::realize(QString &data,
     mProc->write("\n");
     mProc->waitForFinished(10000000);
     qDebug () << "realize finished";
-    mProc->deleteLater();
+    //mProc->deleteLater();
+    delete mProc;
     mProc = nullptr;
+    mMutex.unlock();
 }
 
 bool CCppScriptViz::isFree()
 {
-//    return mProc == nullptr;
-    return true;
+    return mProc == nullptr;
+//    return true;
 }
 
 void CQueryHandler::queryHandler(QString query,
@@ -138,6 +139,18 @@ void CQueryHandler::queryHandler(QString query,
                 double x, y, r;
                 stream >> x >> y >> r;
                 painter->drawEllipse(QPointF(x, y), r, r);
+            }
+            else if(what == "ellipse")
+            {
+                painter->save();
+                double x, y, rx, ry, angle;
+                stream >> x >> y >> rx >> ry >> angle;
+                angle = angle / acos(-1) * 180.0;
+                painter->translate(QPointF(x, y));
+                painter->rotate(angle);
+                painter->translate(QPointF(-x, -y));
+                painter->drawEllipse(QPointF(x, y), rx, ry);
+                painter->restore();
             }
             else if(what == "rect")
             {
