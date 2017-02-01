@@ -127,7 +127,7 @@ QString CTestProvider::getFormatted(int i) const
       else
       {
          ret += "&nbsp;</font>";
-         ret += inputList[i];
+         ret += inputList[i].toHtmlEscaped();
          ret += "<font color=" + borderColor + ">";
          ret += QString("&nbsp;").repeated(maxLen[0] - inputList[i].length() + 1);
       }
@@ -142,7 +142,7 @@ QString CTestProvider::getFormatted(int i) const
       else
       {
           ret += "&nbsp;</font>";
-          ret += outputList[i];
+          ret += outputList[i].toHtmlEscaped();
           ret += "<font color=" + borderColor + ">";
           ret += QString("&nbsp;").repeated(maxLen[1] - outputList[i].length() + 1);
           ret += "&#x2502;<br>&nbsp;";

@@ -77,7 +77,7 @@ void CTestCommand::run()
                 }
                 else
                 {
-                    emit log(" * Test #" + QString::number(test) + "\n" + mTestProvider->getFormatted(test-1));
+                    emit logHtml("&nbsp;* Test #" + QString::number(test) + "<br>" + mTestProvider->getFormatted(test-1));
                 }
             }
             else
@@ -118,7 +118,7 @@ void CTestCommand::run()
                         {
                             QString toEmit = "&nbsp;* Test #" + QString::number(i+1) + "<br>";
                             toEmit += mTestProvider->getFormatted(i);
-                            emit log(toEmit);
+                            emit logHtml(toEmit);
                         }
                     }
                 }
