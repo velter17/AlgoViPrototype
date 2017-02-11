@@ -1,5 +1,5 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
  * @file     CHintProvider.cpp
  * @author   Dmytro Sadovyi

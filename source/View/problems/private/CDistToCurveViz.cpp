@@ -1,5 +1,5 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
  * @file     CDistToCurveViz.cpp
  * @author   Dmytro Sadovyi
@@ -9,7 +9,7 @@
 #include <QDebug>
 
 #include "../CDistToCurveViz.h"
-#include "View/components/IGravizItem.h"
+#include "View/components/IAlgoViItem.h"
 
 namespace NView
 {
@@ -19,7 +19,7 @@ CDistToCurveViz::CDistToCurveViz()
 
 }
 
-QString CDistToCurveViz::serialize(const std::map<QString, IGravizItem *> &items)
+QString CDistToCurveViz::serialize(const std::map<QString, IAlgoViItem *> &items)
 try
 {
     if(items.size() < 4)
@@ -37,7 +37,7 @@ catch(const std::out_of_range& error)
 
 void CDistToCurveViz::realize(QString &data,
                               QPainter *painter,
-                              const std::map<QString, IGravizItem *> &items)
+                              const std::map<QString, IAlgoViItem *> &items)
 try
 {
     if(items.size() < 4)

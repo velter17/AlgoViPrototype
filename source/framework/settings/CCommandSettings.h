@@ -1,5 +1,5 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
  * @file     CCommandSettings.h
  * @author   Dmytro Sadovyi

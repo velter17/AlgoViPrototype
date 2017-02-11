@@ -1,7 +1,7 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
- * @file     CGravizSystem.h
+ * @file     CAlgoViSystem.h
  * @author   Dmytro Sadovyi
  * @date     03.11.2016
  */
@@ -14,8 +14,8 @@
 #include <QDateTime>
 
 #include "Controller/CSystemController.h"
-#include "graviz/CCommandHandler.h"
-#include "graviz/Types.h"
+#include "algovi/CCommandHandler.h"
+#include "algovi/Types.h"
 #include "framework/Commands/ProblemSolver/CProblemSolver.h"
 #include "framework/Commands/ProblemSolver/CCompilerHandler.h"
 #include "framework/Commands/ProblemSolver/CTestProvider.h"
@@ -26,24 +26,24 @@ namespace NController {
 class CSystemController;
 }
 
-namespace NGraviz
+namespace NAlgoVi
 {
 
 class CCommandHandler;
 
-class CGravizSystem : public QObject
+class CAlgoViSystem : public QObject
 {
     Q_OBJECT
 public: // methods
-    CGravizSystem(std::shared_ptr<NController::CSystemController> controll);
+    CAlgoViSystem(std::shared_ptr<NController::CSystemController> controll);
 
     void handleCommand(NController::TTerminalCommandType type, const QString& cmd);
 
-    template <TGravizCommand command>
+    template <TAlgoViCommand command>
     void handle(const QStringList& args);
 
 private: // methods
-    template <TGravizCommand command>
+    template <TAlgoViCommand command>
     void handleFuncRegistrator();
 
 public slots: // methods
@@ -64,9 +64,9 @@ private: // fields
     QString mInputBuffer;
     QString mOutputBuffer;
 
-    typedef void (CGravizSystem::*THandler)(const QString& args);
+    typedef void (CAlgoViSystem::*THandler)(const QString& args);
 
-    THandler mCommandHandlers[(size_t)TGravizCommand::Total];
+    THandler mCommandHandlers[(size_t)TAlgoViCommand::Total];
 };
 
-} // namespace NGraviz
+} // namespace NAlgoVi

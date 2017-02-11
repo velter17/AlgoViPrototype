@@ -1,5 +1,5 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
  * @file     CStraightForwardChecker.h
  * @author   Dmytro Sadovyi

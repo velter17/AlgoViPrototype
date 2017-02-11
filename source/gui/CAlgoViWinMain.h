@@ -1,7 +1,7 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
- * @file     CGravizWinMain.h
+ * @file     CAlgoViWinMain.h
  * @author   Dmytro Sadovyi
  * @date     03.11.2016
  */
@@ -16,7 +16,7 @@
 #include "View/CGraphicView.h"
 #include "Controller/CSystemController.h"
 #include "Controller/CTerminal.h"
-#include "graviz/Types.h"
+#include "algovi/Types.h"
 #include "Controller/Types.h"
 
 
@@ -26,17 +26,17 @@ enum class TTerminalCommandType;
 }
 
 namespace Ui {
-class CGravizWinMain;
+class CAlgoViWinMain;
 }
 
-class CGravizWinMain : public QMainWindow
+class CAlgoViWinMain : public QMainWindow
 {
     Q_OBJECT
 
 public: // methids
-    explicit CGravizWinMain(QWidget *parent = 0);
+    explicit CAlgoViWinMain(QWidget *parent = 0);
     void init();
-    ~CGravizWinMain();
+    ~CAlgoViWinMain();
 
     QGraphicsView* getGraphicsView();
     void lock();
@@ -48,11 +48,11 @@ public: // methids
     void handleLogHtml(QString msg);
 
 signals:
-    void modeChanged(NGraviz::TSystemMode mode);
+    void modeChanged(NAlgoVi::TSystemMode mode);
     void newCommand(NController::TTerminalCommandType type, const QString& cmd);
 
 private: //fields
-    Ui::CGravizWinMain *ui;
+    Ui::CAlgoViWinMain *ui;
 
     QMap<QString, std::shared_ptr<QLabel>> mAlgoLabels;
 };

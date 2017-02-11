@@ -1,5 +1,5 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
  * @file     CConvexHullViz.h
  * @author   Dmytro Sadovyi
@@ -18,10 +18,10 @@ class CConvexHullViz : public IProblemVisualizer
 public: // methods
     CConvexHullViz();
 
-    QString serialize(const std::map<QString, IGravizItem *> &items) override;
+    QString serialize(const std::map<QString, IAlgoViItem *> &items) override;
     void realize(QString &data,
                  QPainter *painter,
-                 const std::map <QString, IGravizItem*>& items) override;
+                 const std::map <QString, IAlgoViItem*>& items) override;
 };
 
 } // namespace NView

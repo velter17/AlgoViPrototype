@@ -1,5 +1,5 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
  * @file     CProblemTester.cpp
  * @author   Dmytro Sadovyi

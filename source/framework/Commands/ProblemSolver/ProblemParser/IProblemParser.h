@@ -1,5 +1,5 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
  * @file     IProblemParser.h
  * @author   Dmytro Sadovyi

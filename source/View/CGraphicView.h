@@ -1,5 +1,5 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
  * @file     CGraphicView.h
  * @author   Dmytro Sadovyi
@@ -14,7 +14,7 @@
 #include <fstream>
 #include <memory>
 
-#include "View/components/IGravizItem.h"
+#include "View/components/IAlgoViItem.h"
 #include "View/problems/IProblemVisualizer.h"
 
 namespace NView
@@ -31,19 +31,19 @@ public: // methods
     void drawForeground(QPainter *painter, const QRectF &rect);
 
     void setVisualizer(std::shared_ptr<IProblemVisualizer> visualizer);
-    void setObjectsMap(std::map <QString, IGravizItem*>* objectsMap);
+    void setObjectsMap(std::map <QString, IAlgoViItem*>* objectsMap);
 
 public slots:
-    void addGravizItem(IGravizItem *item);
+    void addAlgoViItem(IAlgoViItem *item);
     void setDataToDraw(const QString& data);
 
 signals:
     void mousePressed(const QPoint& p);
-    void objectAdded(IGravizItem* item);
+    void objectAdded(IAlgoViItem* item);
 
 private: // fields
     std::shared_ptr<IProblemVisualizer> mVisualizer;
-    std::map <QString, IGravizItem*>* mObjectsMap;
+    std::map <QString, IAlgoViItem*>* mObjectsMap;
     QString mDataToDraw;
 };
 

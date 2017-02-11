@@ -1,5 +1,5 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
  * @file     ITerminalCommand.h
  * @author   Dmytro Sadovyi

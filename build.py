@@ -15,7 +15,7 @@ targetOptions = [
     "win32"
 ]
 
-parser = argparse.ArgumentParser(description='Graviz build script')
+parser = argparse.ArgumentParser(description='AlgoVi build script')
 parser.add_argument('-c', '--clean_build', action='store_const', const=True, default=False, help='Make clean build')
 parser.add_argument('-d', '--debug', action='store_const', const=True, default=False, help='Debug mode build')
 parser.add_argument('-t', '--target', default="linux", choices=targetOptions, help="operation system target = { linux, win }")
@@ -25,7 +25,7 @@ args = parser.parse_args()
 
 buildType = 'Debug' if args.debug else 'Release'
 buildPath = buildPath + '/' + args.target + '-' + buildType
-installPath = srcPath+'/gravizApp/'+args.target+'-'+buildType+'/'
+installPath = srcPath+'/algoviApp/'+args.target+'-'+buildType+'/'
 
 if args.clean_build and os.path.exists(buildPath):
     shutil.rmtree(buildPath, True)
@@ -36,7 +36,7 @@ cmakeArgs = [
     srcPath,
     '-DCMAKE_BUILD_TYPE=' + buildType,
     '-DCMAKE_INSTALL_PREFIX=' + installPath,
-    '-DGRAVIZ_TARGET_NAME=' + args.target,
+    '-DALGOVI_TARGET_NAME=' + args.target,
 ]
 
 if args.target == "win32":

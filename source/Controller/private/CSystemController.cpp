@@ -1,5 +1,5 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
  * @file     CSystemController.cpp
  * @author   Dmytro Sadovyi
@@ -14,7 +14,7 @@
 namespace NController
 {
 
-CSystemController::CSystemController(std::shared_ptr<CGravizWinMain> GUI)
+CSystemController::CSystemController(std::shared_ptr<CAlgoViWinMain> GUI)
     : mGUI(GUI)
     , mView(nullptr)
     , mModel(nullptr)
@@ -23,7 +23,7 @@ CSystemController::CSystemController(std::shared_ptr<CGravizWinMain> GUI)
             this, SLOT(handleCommand(NController::TTerminalCommandType, QString)));
 }
 
-void CSystemController::setModel(std::shared_ptr<NGraviz::CGravizSystem> model)
+void CSystemController::setModel(std::shared_ptr<NAlgoVi::CAlgoViSystem> model)
 {
     mModel = model;
 }

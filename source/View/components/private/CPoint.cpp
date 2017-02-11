@@ -1,5 +1,5 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
  * @file     CPoint.cpp
  * @author   Dmytro Sadovyi
@@ -19,7 +19,7 @@ const int CPoint::sPointRadius = 4;
 
 
 CPoint::CPoint(const QString& name, const QPoint &p)
-    : IGravizItem(name, p)
+    : IAlgoViItem(name, p)
 {
     qDebug () << "created Point " << name << " " << p;
 }
@@ -45,7 +45,7 @@ void CPoint::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QW
     Q_UNUSED(option);
     Q_UNUSED(widget);
 
-    IGravizItem::paint(painter, option, widget);
+    IAlgoViItem::paint(painter, option, widget);
 
     QBrush br;
     br.setColor(Qt::black);
@@ -55,7 +55,7 @@ void CPoint::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QW
 
 void CPoint::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
-    IGravizItem::mouseMoveEvent(event);
+    IAlgoViItem::mouseMoveEvent(event);
     this->scene()->update(this->boundingRect().adjusted(-pos().x(), -pos().y(), pos().x(), pos().y()));
 }
 

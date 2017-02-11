@@ -1,7 +1,7 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
- * @file     IGravizItem.h
+ * @file     IAlgoViItem.h
  * @author   Dmytro Sadovyi
  * @date     16.12.2016
  */
@@ -19,11 +19,11 @@
 namespace NView
 {
 
-class IGravizItem : public QObject, public QGraphicsItem
+class IAlgoViItem : public QObject, public QGraphicsItem
 {
     Q_OBJECT
 public: // methods
-    IGravizItem(const QString& name, const QPoint& p);
+    IAlgoViItem(const QString& name, const QPoint& p);
 
     QString getName() const;
     QPointF getPrevPos() const;

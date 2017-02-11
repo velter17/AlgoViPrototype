@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>CGravizWinMain</class>
- <widget class="QMainWindow" name="CGravizWinMain">
+ <class>CAlgoViWinMain</class>
+ <widget class="QMainWindow" name="CAlgoViWinMain">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -181,12 +181,12 @@
      <height>19</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuGraviz">
+   <widget class="QMenu" name="menuAlgoVi">
     <property name="title">
-     <string>Graviz</string>
+     <string>AlgoVi</string>
     </property>
    </widget>
-   <addaction name="menuGraviz"/>
+   <addaction name="menuAlgoVi"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <property name="orientation">

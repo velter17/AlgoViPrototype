@@ -1,5 +1,5 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
  * @file     CDistToCurveViz.h
  * @author   Dmytro Sadovyi
@@ -18,10 +18,10 @@ class CDistToCurveViz : public IProblemVisualizer
 public: // methods
     CDistToCurveViz();
 
-    QString serialize(const std::map<QString, IGravizItem *> &items) override;
+    QString serialize(const std::map<QString, IAlgoViItem *> &items) override;
     void realize(QString &data,
                  QPainter *painter,
-                 const std::map <QString, IGravizItem*>& items) override;
+                 const std::map <QString, IAlgoViItem*>& items) override;
 };
 
 } // namespace NView

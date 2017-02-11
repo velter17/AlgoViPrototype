@@ -1,5 +1,5 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
  * @file     IProblemChecker.h
  * @author   Dmytro Sadovyi

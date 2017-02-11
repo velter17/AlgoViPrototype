@@ -1,5 +1,5 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
  * @file     CCompilerHandler.h
  * @author   Dmytro Sadovyi

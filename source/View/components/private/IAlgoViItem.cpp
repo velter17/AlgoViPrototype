@@ -1,21 +1,21 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
- * @file     IGravizItem.cpp
+ * @file     IAlgoViItem.cpp
  * @author   Dmytro Sadovyi
  * @date     16.12.2016
  */
 
 #include <QInputDialog>
 
-#include "../IGravizItem.h"
+#include "../IAlgoViItem.h"
 
 namespace NView
 {
 
-const int IGravizItem::sPrevQueueSize = 10;
+const int IAlgoViItem::sPrevQueueSize = 10;
 
-IGravizItem::IGravizItem(const QString& name, const QPoint& p)
+IAlgoViItem::IAlgoViItem(const QString& name, const QPoint& p)
     : mName(name)
 {
     setFlag(QGraphicsItem::ItemIsMovable, true);
@@ -25,17 +25,17 @@ IGravizItem::IGravizItem(const QString& name, const QPoint& p)
         mPrevPosQueue.push(p);
 }
 
-QString IGravizItem::getName() const
+QString IAlgoViItem::getName() const
 {
     return mName;
 }
 
-QPointF IGravizItem::getPrevPos() const
+QPointF IAlgoViItem::getPrevPos() const
 {
     return mPrevPosQueue.front();
 }
 
-void IGravizItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+void IAlgoViItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
     Q_UNUSED(option);
     Q_UNUSED(widget);
@@ -50,7 +50,7 @@ void IGravizItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *optio
                 mName);
 }
 
-void IGravizItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
+void IAlgoViItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_UNUSED(event);
 
@@ -67,7 +67,7 @@ void IGravizItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
     }
 }
 
-void IGravizItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+void IAlgoViItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     if(event->lastScenePos() != event->scenePos())
         mPrevPosQueue.push(event->lastScenePos());

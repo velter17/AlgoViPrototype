@@ -1,5 +1,5 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
  * @file     CQuestioner.cpp
  * @author   Dmytro Sadovyi

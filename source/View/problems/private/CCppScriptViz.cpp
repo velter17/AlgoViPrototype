@@ -1,5 +1,5 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
  * @file     CCppScriptViz.cpp
  * @author   Dmytro Sadovyi
@@ -25,7 +25,7 @@ CCppScriptViz::CCppScriptViz(std::shared_ptr<NCommand::CCompilerHandler> compile
     }
 }
 
-QString CCppScriptViz::serialize(const std::map<QString, IGravizItem *> &items)
+QString CCppScriptViz::serialize(const std::map<QString, IAlgoViItem *> &items)
 {
     mMutex.lock();
     qDebug () << "CCppScriptViz> serialize";
@@ -65,7 +65,7 @@ QString CCppScriptViz::serialize(const std::map<QString, IGravizItem *> &items)
 
 void CCppScriptViz::realize(QString &data,
                            QPainter *painter,
-                           const std::map <QString, IGravizItem*>& items)
+                           const std::map <QString, IAlgoViItem*>& items)
 {
     qDebug () << "CCppScriptViz> realize with data = " << data;
     if(mCompilerHandler->isNeededCompilation(mScriptPath))
@@ -101,7 +101,7 @@ bool CCppScriptViz::isFree()
 }
 
 void CQueryHandler::queryHandler(QString query,
-                                 const std::map<QString, IGravizItem *> &items,
+                                 const std::map<QString, IAlgoViItem *> &items,
                                  QPainter *painter)
 {
     qDebug () << "queryHandler> with query: " << query;

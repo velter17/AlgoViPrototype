@@ -1,5 +1,5 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
  * @file     IProblemVisualizer.h
  * @author   Dmytro Sadovyi
@@ -11,7 +11,7 @@
 #include <QGraphicsScene>
 #include <QObject>
 #include <QTextStream>
-#include "View/components/IGravizItem.h"
+#include "View/components/IAlgoViItem.h"
 
 namespace NView
 {
@@ -19,10 +19,10 @@ namespace NView
 class IProblemVisualizer
 {
 public: // methods
-    virtual QString serialize(const std::map <QString, IGravizItem*>& items) = 0;
+    virtual QString serialize(const std::map <QString, IAlgoViItem*>& items) = 0;
     virtual void realize(QString& data,
                          QPainter *painter,
-                         const std::map <QString, IGravizItem*>& items) = 0;
+                         const std::map <QString, IAlgoViItem*>& items) = 0;
     virtual ~IProblemVisualizer() = 0;
 
     virtual bool isFree() {return true;}

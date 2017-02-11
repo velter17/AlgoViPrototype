@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <Terminal>
 	<HomeDir>$HOME</HomeDir>
-	<Title>graviz</Title>
+	<Title>algovi</Title>
 	<Colors>
 		<Color name = "background">#000000</Color>
 		<Color name = "main">#00FF00</Color>

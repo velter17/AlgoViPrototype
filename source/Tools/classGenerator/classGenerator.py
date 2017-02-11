@@ -6,7 +6,7 @@ import datetime
 
 
 def main():
-    parser = argparse.ArgumentParser(description = "Graviz class generator")
+    parser = argparse.ArgumentParser(description = "AlgoVi class generator")
     parser.add_argument("-p", "--path", help="path for header file")
     parser.add_argument("-n", "--name", help="name of class")
     parser.add_argument("-a", "--author", default="Dmytro Sadovyi", help="author of code")

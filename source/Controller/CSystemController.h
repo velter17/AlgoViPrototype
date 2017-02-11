@@ -1,5 +1,5 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
  * @file     CSystemController.h
  * @author   Dmytro Sadovyi
@@ -10,15 +10,15 @@
 
 #include <QObject>
 
-#include "gui/CGravizWinMain.h"
+#include "gui/CAlgoViWinMain.h"
 #include "Controller/CTerminal.h"
 #include "View/CGraphicView.h"
-#include "graviz/CGravizSystem.h"
+#include "algovi/CAlgoViSystem.h"
 
-class CGravizWinMain;
-namespace NGraviz
+class CAlgoViWinMain;
+namespace NAlgoVi
 {
-class CGravizSystem;
+class CAlgoViSystem;
 }
 
 namespace NController
@@ -28,13 +28,13 @@ class CSystemController : public QObject
 {
     Q_OBJECT
 public:
-    CSystemController(std::shared_ptr<CGravizWinMain> GUI);
+    CSystemController(std::shared_ptr<CAlgoViWinMain> GUI);
 
     /**
      * @brief setModel
      * @param model
      */
-    void setModel(std::shared_ptr<NGraviz::CGravizSystem> model);
+    void setModel(std::shared_ptr<NAlgoVi::CAlgoViSystem> model);
 
     /**
      * @brief setView
@@ -53,9 +53,9 @@ public slots:
     void exit();
 
 private:
-    std::shared_ptr<CGravizWinMain> mGUI;
+    std::shared_ptr<CAlgoViWinMain> mGUI;
     std::shared_ptr<NView::CGraphicView> mView;
-    std::shared_ptr<NGraviz::CGravizSystem> mModel;
+    std::shared_ptr<NAlgoVi::CAlgoViSystem> mModel;
 };
 
 } // namespace NController

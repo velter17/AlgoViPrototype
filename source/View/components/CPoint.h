@@ -1,5 +1,5 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
  * @file     CPoint.h
  * @author   Dmytro Sadovyi
@@ -8,12 +8,12 @@
 
 #pragma once
 
-#include "View/components/IGravizItem.h"
+#include "View/components/IAlgoViItem.h"
 
 namespace NView
 {
 
-class CPoint : public IGravizItem
+class CPoint : public IAlgoViItem
 {
 public: // methods
     CPoint(const QString& name, const QPoint& p);

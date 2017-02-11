@@ -1,5 +1,5 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
  * @file     CTestProvider.h
  * @author   Dmytro Sadovyi

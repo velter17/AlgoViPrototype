@@ -1,5 +1,5 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
  * @file     CGraphicView.cpp
  * @author   Dmytro Sadovyi
@@ -51,12 +51,12 @@ void CGraphicView::setVisualizer(std::shared_ptr<IProblemVisualizer> visualizer)
     mVisualizer = visualizer;
 }
 
-void CGraphicView::setObjectsMap(std::map<QString, IGravizItem *>* objectsMap)
+void CGraphicView::setObjectsMap(std::map<QString, IAlgoViItem *>* objectsMap)
 {
     mObjectsMap = objectsMap;
 }
 
-void CGraphicView::addGravizItem(IGravizItem *item)
+void CGraphicView::addAlgoViItem(IAlgoViItem *item)
 {
     this->addItem(item);
     item->update();

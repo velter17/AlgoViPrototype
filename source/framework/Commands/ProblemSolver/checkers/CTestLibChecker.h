@@ -1,5 +1,5 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
  * @file     CTestLibChecker.h
  * @author   Dmytro Sadovyi

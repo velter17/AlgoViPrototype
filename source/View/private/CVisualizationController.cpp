@@ -1,5 +1,5 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
  * @file     CVisualizationController.cpp
  * @author   Dmytro Sadovyi
@@ -27,7 +27,7 @@ CVisualizationController::CVisualizationController(
     , mMode(1)
     , mCurrentPrefix("Point")
 {
-    mConnections.push_back(connect(mView.get(), &CGraphicView::objectAdded, [this](IGravizItem* item){
+    mConnections.push_back(connect(mView.get(), &CGraphicView::objectAdded, [this](IAlgoViItem* item){
         mObjectsMap[item->getName()] = item;
     }));
     mConnections.push_back(connect(mView.get(), &CGraphicView::changed, [this](const QList<QRectF>& region){
@@ -59,7 +59,7 @@ void CVisualizationController::addPoint(const QPoint &p)
     {
         qDebug () << "add " << mCurrentPrefix << " in pos " << p;
         QString name = mCurrentPrefix + "#" + QString::number(++mPointNum[mCurrentPrefix]);
-        mView->addGravizItem(new CPoint(name, p));
+        mView->addAlgoViItem(new CPoint(name, p));
     }
 }
 

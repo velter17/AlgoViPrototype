@@ -1,6 +1,6 @@
 
-SET ( ${GRAVIZ_SOURCES}
-   "CGravizWinMain.cpp"
-   "CGravizWinMain.h"
-   "CGravizWinMain.ui"
+SET ( ${ALGOVI_SOURCES}
+   "CAlgoViWinMain.cpp"
+   "CAlgoViWinMain.h"
+   "CAlgoViWinMain.ui"
 )

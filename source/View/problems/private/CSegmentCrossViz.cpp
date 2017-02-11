@@ -1,5 +1,5 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
  * @file     CSegmentCrossViz.cpp
  * @author   Dmytro Sadovyi
@@ -16,14 +16,14 @@ CSegmentCrossViz::CSegmentCrossViz()
 
 }
 
-QString CSegmentCrossViz::serialize(const std::map<QString, IGravizItem *> &items)
+QString CSegmentCrossViz::serialize(const std::map<QString, IAlgoViItem *> &items)
 {
     
 }
 
 void CSegmentCrossViz::realize(QString &data,
                            QPainter *painter,
-                           const std::map <QString, IGravizItem*>& items)
+                           const std::map <QString, IAlgoViItem*>& items)
 {
 
 }

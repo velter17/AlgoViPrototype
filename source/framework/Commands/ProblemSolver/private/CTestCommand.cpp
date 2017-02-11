@@ -1,5 +1,5 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
  * @file     CTestCommand.cpp
  * @author   Dmytro Sadovyi

@@ -1,5 +1,5 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
  * @file     CConvexHullViz.cpp
  * @author   Dmytro Sadovyi
@@ -16,7 +16,7 @@ CConvexHullViz::CConvexHullViz()
 
 }
 
-QString CConvexHullViz::serialize(const std::map<QString, IGravizItem *> &items)
+QString CConvexHullViz::serialize(const std::map<QString, IAlgoViItem *> &items)
 {
     QString ret = QString::number(items.size()) + "\n";
     for(const auto itr : items)
@@ -28,7 +28,7 @@ QString CConvexHullViz::serialize(const std::map<QString, IGravizItem *> &items)
 
 void CConvexHullViz::realize(QString &data,
                              QPainter *painter,
-                             const std::map <QString, IGravizItem*>& items)
+                             const std::map <QString, IAlgoViItem*>& items)
 {
     QTextStream stream(&data);
     int n;

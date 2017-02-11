@@ -1,5 +1,5 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
  * @file     CSystemCmd.cpp
  * @author   Dmytro Sadovyi

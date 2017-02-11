@@ -1,5 +1,5 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
  * @file     $FILE_NAME$
  * @author   $AUTHOR$
@@ -16,14 +16,14 @@ $CLASS_NAME$::$CLASS_NAME$()
 
 }
 
-QString $CLASS_NAME$::serialize(const std::map<QString, IGravizItem *> &items)
+QString $CLASS_NAME$::serialize(const std::map<QString, IAlgoViItem *> &items)
 {
     
 }
 
 void $CLASS_NAME$::realize(QString &data,
                            QPainter *painter,
-                           const std::map <QString, IGravizItem*>& items)
+                           const std::map <QString, IAlgoViItem*>& items)
 {
 
 }

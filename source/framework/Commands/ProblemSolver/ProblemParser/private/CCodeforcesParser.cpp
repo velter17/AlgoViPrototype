@@ -1,5 +1,5 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
  * @file     CCodeforcesParser.cpp
  * @author   Dmytro Sadovyi

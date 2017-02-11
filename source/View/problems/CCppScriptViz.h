@@ -1,5 +1,5 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
  * @file     CCppScriptViz.h
  * @author   Dmytro Sadovyi
@@ -24,7 +24,7 @@ class CQueryHandler : public QObject
     Q_OBJECT
 public: // methods
     void queryHandler(QString query,
-                      const std::map<QString, IGravizItem *> &items,
+                      const std::map<QString, IAlgoViItem *> &items,
                       QPainter* painter = nullptr);
 
 signals:
@@ -38,10 +38,10 @@ public: // methods
     CCppScriptViz(std::shared_ptr<NCommand::CCompilerHandler> compilerHandler,
                   QString scriptPath);
 
-    QString serialize(const std::map<QString, IGravizItem *> &items) override;
+    QString serialize(const std::map<QString, IAlgoViItem *> &items) override;
     void realize(QString &data,
                  QPainter *painter,
-                 const std::map <QString, IGravizItem*>& items) override;
+                 const std::map <QString, IAlgoViItem*>& items) override;
 
     bool isFree();
 

@@ -1,7 +1,7 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
- * @file     CGravizWinMain.cpp
+ * @file     CAlgoViWinMain.cpp
  * @author   Dmytro Sadovyi
  * @date     03.11.2016
  */
@@ -11,13 +11,13 @@
 #include <QLabel>
 #include <QThread>
 
-#include "gui/CGravizWinMain.h"
-#include "ui_CGravizWinMain.h"
-#include "graviz/Types.h"
+#include "gui/CAlgoViWinMain.h"
+#include "ui_CAlgoViWinMain.h"
+#include "algovi/Types.h"
 
-CGravizWinMain::CGravizWinMain(QWidget *parent)
+CAlgoViWinMain::CAlgoViWinMain(QWidget *parent)
     : QMainWindow(parent)
-    , ui(new Ui::CGravizWinMain)
+    , ui(new Ui::CAlgoViWinMain)
 {
     ui->setupUi(this);
     connect(ui->mTerminal, &NController::CTerminal::command,
@@ -25,52 +25,52 @@ CGravizWinMain::CGravizWinMain(QWidget *parent)
                    const QString& cmd){emit newCommand(type, cmd);});
 }
 
-CGravizWinMain::~CGravizWinMain()
+CAlgoViWinMain::~CAlgoViWinMain()
 {
     delete ui;
 }
 
 
-QGraphicsView *CGravizWinMain::getGraphicsView()
+QGraphicsView *CAlgoViWinMain::getGraphicsView()
 {
     return ui->mGraphicsView;
 }
 
-void CGravizWinMain::lock()
+void CAlgoViWinMain::lock()
 {
     ui->mTerminal->lock();
 }
 
-void CGravizWinMain::unlock()
+void CAlgoViWinMain::unlock()
 {
     ui->mTerminal->unlock();
 }
 
-void CGravizWinMain::appMode()
+void CAlgoViWinMain::appMode()
 {
    ui->mTerminal->appMode();
 }
 
-void CGravizWinMain::questionMode()
+void CAlgoViWinMain::questionMode()
 {
    ui->mTerminal->questionMode();
 }
 
-void CGravizWinMain::handleLog(QString msg)
+void CAlgoViWinMain::handleLog(QString msg)
 {
     ui->mTerminal->appendOutput(msg);
 }
 
-void CGravizWinMain::handleError(QString msg)
+void CAlgoViWinMain::handleError(QString msg)
 {
     ui->mTerminal->appendError(msg);
 }
 
-void CGravizWinMain::handleLogHtml(QString msg)
+void CAlgoViWinMain::handleLogHtml(QString msg)
 {
     ui->mTerminal->appendOutputHtml(msg);
 }
 
-void CGravizWinMain::init()
+void CAlgoViWinMain::init()
 {
 }

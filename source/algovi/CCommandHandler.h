@@ -1,5 +1,5 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
  * @file     CCommandHandler.h
  * @author   Dmytro Sadovyi
@@ -8,19 +8,19 @@
 
 #pragma once
 
-#include "graviz/CGravizSystem.h"
-#include "graviz/Types.h"
+#include "algovi/CAlgoViSystem.h"
+#include "algovi/Types.h"
 
-namespace NGraviz
+namespace NAlgoVi
 {
 
-class CGravizSystem;
+class CAlgoViSystem;
 
 class CCommandHandler : public QObject
 {
     Q_OBJECT
 public: // methods
-    CCommandHandler(CGravizSystem* parent);
+    CCommandHandler(CAlgoViSystem* parent);
 
     void handle(const QString &commandStr);
 /*
@@ -38,8 +38,8 @@ private: // methods
     bool sysCommand(const QString& command);
 
 private: // fields
-    CGravizSystem* mParent;
+    CAlgoViSystem* mParent;
 };
 
-} // namespace NGraviz
+} // namespace NAlgoVi
 

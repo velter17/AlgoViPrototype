@@ -1,5 +1,5 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
  * @file     CVisualSolver.h
  * @author   Dmytro Sadovyi

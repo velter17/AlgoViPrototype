@@ -1,5 +1,5 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
  * @file     CGeometry.cpp
  * @author   Dmytro Sadovyi

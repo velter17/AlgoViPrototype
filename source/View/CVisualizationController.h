@@ -1,5 +1,5 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
  * @file     CVisualizationController.h
  * @author   Dmytro Sadovyi
@@ -13,7 +13,7 @@
 #include <map>
 #include <QDebug>
 
-#include "View/components/IGravizItem.h"
+#include "View/components/IAlgoViItem.h"
 #include "View/CGraphicView.h"
 #include "framework/Commands/ProblemSolver/CVisualSolver.h"
 #include "View/problems/IProblemVisualizer.h"
@@ -52,7 +52,7 @@ private: // fields
     std::shared_ptr <IProblemVisualizer> mVisualizer;
     NCommand::CVisualSolver* mVisualSolver;
     std::shared_ptr<NCommand::CCompilerHandler> mCompilerHandler;
-    std::map <QString, IGravizItem*> mObjectsMap;
+    std::map <QString, IAlgoViItem*> mObjectsMap;
     std::vector <QMetaObject::Connection> mConnections;
     std::map <QString, int> mPointNum;
     QString mCurrentPrefix;

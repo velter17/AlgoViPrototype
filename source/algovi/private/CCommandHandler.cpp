@@ -1,5 +1,5 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
  * @file     CCommandHandler.cpp
  * @author   Dmytro Sadovyi
@@ -14,10 +14,10 @@
 #include "../CCommandHandler.h"
 
 
-namespace NGraviz
+namespace NAlgoVi
 {
 
-CCommandHandler::CCommandHandler(CGravizSystem *parent)
+CCommandHandler::CCommandHandler(CAlgoViSystem *parent)
     : mParent(parent)
 {
 
@@ -30,7 +30,7 @@ void CCommandHandler::handle(const QString& commandStr)
     QStringList args = commandStr.split(QRegExp("\\s+"), QString::SkipEmptyParts);
     if(args.empty())
     {
-        mParent->handle<TGravizCommand::Empty>(args);
+        mParent->handle<TAlgoViCommand::Empty>(args);
         return;
     }
 
@@ -38,39 +38,39 @@ void CCommandHandler::handle(const QString& commandStr)
     args.erase(args.begin());
     if(command == "compile")
     {
-        mParent->handle<TGravizCommand::Compile>(args);
+        mParent->handle<TAlgoViCommand::Compile>(args);
     }
     else if(command == "cd")
     {
-        mParent->handle<TGravizCommand::ChangeDirectory>(args);
+        mParent->handle<TAlgoViCommand::ChangeDirectory>(args);
     }
     else if(command == "run")
     {
-        mParent->handle<TGravizCommand::RunSolver>(args);
+        mParent->handle<TAlgoViCommand::RunSolver>(args);
     }
     else if(command == "exit")
     {
-        mParent->handle<TGravizCommand::Exit>(args);
+        mParent->handle<TAlgoViCommand::Exit>(args);
     }
     else if(command == "test")
     {
-        mParent->handle<TGravizCommand::Test>(args);
+        mParent->handle<TAlgoViCommand::Test>(args);
     }
     else if(command == "parse")
     {
-        mParent->handle<TGravizCommand::ParseSite>(args);
+        mParent->handle<TAlgoViCommand::ParseSite>(args);
     }
     else if(command == "tester")
     {
-        mParent->handle<TGravizCommand::Tester>(args);
+        mParent->handle<TAlgoViCommand::Tester>(args);
     }
     else if(command == "run-visual")
     {
-        mParent->handle<TGravizCommand::RunSolverVisual>(args);
+        mParent->handle<TAlgoViCommand::RunSolverVisual>(args);
     }
     else if(command == "python")
     {
-        mParent->handle<TGravizCommand::Python>(QStringList());
+        mParent->handle<TAlgoViCommand::Python>(QStringList());
     }
     else if(sysCommand(command))
     {
@@ -79,11 +79,11 @@ void CCommandHandler::handle(const QString& commandStr)
 //        {
 //            command += " " + str;
 //        }
-        mParent->handle<TGravizCommand::System>(QStringList() << command << args);
+        mParent->handle<TAlgoViCommand::System>(QStringList() << command << args);
     }
     else
     {
-        mParent->handle<TGravizCommand::Unknown>(QStringList() << command << args);
+        mParent->handle<TAlgoViCommand::Unknown>(QStringList() << command << args);
     }
 
     /*
@@ -163,4 +163,4 @@ bool CCommandHandler::sysCommand(const QString &command)
 }
 
 
-} // namespace NGraviz
+} // namespace NAlgoVi

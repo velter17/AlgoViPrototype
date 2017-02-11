@@ -1,5 +1,5 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
  * @file     CTerminalSettings.cpp
  * @author   Dmytro Sadovyi

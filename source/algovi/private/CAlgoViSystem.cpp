@@ -1,7 +1,7 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
- * @file     CGravizSystem.cpp
+ * @file     CAlgoViSystem.cpp
  * @author   Dmytro Sadovyi
  * @date     03.11.2016
  */
@@ -11,7 +11,7 @@
 #include <QThread>
 #include <memory>
 
-#include "graviz/CGravizSystem.h"
+#include "algovi/CAlgoViSystem.h"
 #include "framework/Commands/system/CCompiler.h"
 #include "framework/Commands/ProblemSolver/CTestCommand.h"
 #include "framework/Commands/ProblemSolver/ProblemParser/CCodeforcesParser.h"
@@ -20,10 +20,10 @@
 #include "View/CVisualizationController.h"
 
 
-namespace NGraviz
+namespace NAlgoVi
 {
 
-CGravizSystem::CGravizSystem(std::shared_ptr<NController::CSystemController> controll)
+CAlgoViSystem::CAlgoViSystem(std::shared_ptr<NController::CSystemController> controll)
    : mView(new NView::CGraphicView())
    , mController(controll)
    , mMode(TSystemMode::Default)
@@ -32,7 +32,7 @@ CGravizSystem::CGravizSystem(std::shared_ptr<NController::CSystemController> con
    , mProblemSolver(nullptr)
    , mTestProvider(new NCommand::CTestProvider())
 {
-    mController->setModel(std::shared_ptr<CGravizSystem>(this));
+    mController->setModel(std::shared_ptr<CAlgoViSystem>(this));
     mController->setView(mView);
 
     connect(&NCommand::CFileSystem::getInstance(), &NCommand::CFileSystem::error, [this](const QString &msg){
@@ -51,13 +51,13 @@ CGravizSystem::CGravizSystem(std::shared_ptr<NController::CSystemController> con
 //    compilerHandlerThread->start();
 }
 
-void CGravizSystem::handleCommand(NController::TTerminalCommandType type, const QString &cmd)
+void CAlgoViSystem::handleCommand(NController::TTerminalCommandType type, const QString &cmd)
 {
-    qDebug () << "CGravizSystem> handleCommand " << cmd;
+    qDebug () << "CAlgoViSystem> handleCommand " << cmd;
 //    if(mMode == TSystemMode::InProcess)
     if(mMode != TSystemMode::Default)
     {
-        qDebug () << "CGravizSystem> terminate";
+        qDebug () << "CAlgoViSystem> terminate";
         if(cmd == "^C")
         {
             QMetaObject::invokeMethod(mTerminalCommand,"terminate", Qt::QueuedConnection);
@@ -84,29 +84,29 @@ void CGravizSystem::handleCommand(NController::TTerminalCommandType type, const 
 }
 
 
-void CGravizSystem::setMode(TSystemMode mode)
+void CAlgoViSystem::setMode(TSystemMode mode)
 {
     mMode = mode;
 }
 
 
-template <TGravizCommand command>
-void CGravizSystem::handleFuncRegistrator()
+template <TAlgoViCommand command>
+void CAlgoViSystem::handleFuncRegistrator()
 {
-    mCommandHandlers[(size_t)command] = &CGravizSystem::handle<command>;
-    handleFuncRegistrator<(TGravizCommand)((size_t)command+1)>();
+    mCommandHandlers[(size_t)command] = &CAlgoViSystem::handle<command>;
+    handleFuncRegistrator<(TAlgoViCommand)((size_t)command+1)>();
 }
 
 template <>
-void CGravizSystem::handleFuncRegistrator<TGravizCommand::Total>()
+void CAlgoViSystem::handleFuncRegistrator<TAlgoViCommand::Total>()
 {
 
 }
 
 template <>
-void CGravizSystem::handle<TGravizCommand::RunSolver>(const QStringList &args)
+void CAlgoViSystem::handle<TAlgoViCommand::RunSolver>(const QStringList &args)
 {
-    qDebug () << "CGravizSystem> RunSolver " << args;
+    qDebug () << "CAlgoViSystem> RunSolver " << args;
     setMode(TSystemMode::InProcess);
     //mProblemSolver.reset(new NCommand::CProblemSolver(args));
     mProblemSolver = new NCommand::CProblemSolver(args, mTestProvider);
@@ -137,7 +137,7 @@ void CGravizSystem::handle<TGravizCommand::RunSolver>(const QStringList &args)
 
     auto questionRunner = [this]()
     {
-       qDebug () << "CGravizSystem> RunSolver> questionRunner";
+       qDebug () << "CAlgoViSystem> RunSolver> questionRunner";
        this->setMode(TSystemMode::WaitForAnswer);
        mQuestioner = new NCommand::CQuestioner(QStringList()
           << "-q" << "Save test to archive?"
@@ -248,9 +248,9 @@ void CGravizSystem::handle<TGravizCommand::RunSolver>(const QStringList &args)
 
 
 template <>
-void CGravizSystem::handle<TGravizCommand::RunSolverVisual>(const QStringList &args)
+void CAlgoViSystem::handle<TAlgoViCommand::RunSolverVisual>(const QStringList &args)
 {
-    qDebug () << "CGravizSystem> RunSolverVisual " << args;
+    qDebug () << "CAlgoViSystem> RunSolverVisual " << args;
     NCommand::CVisualSolver* solver = new NCommand::CVisualSolver(args, mCompilerHandler);
     mController->setAppMode();
     setMode(TSystemMode::InProcess);
@@ -307,9 +307,9 @@ void CGravizSystem::handle<TGravizCommand::RunSolverVisual>(const QStringList &a
 }
 
 template <>
-void CGravizSystem::handle<TGravizCommand::System>(const QStringList &args)
+void CAlgoViSystem::handle<TAlgoViCommand::System>(const QStringList &args)
 {
-    qDebug () << "CGravizSystem> SystemCommand " << args;
+    qDebug () << "CAlgoViSystem> SystemCommand " << args;
     NCommand::CSystemCmd* cmd = new NCommand::CSystemCmd(args);
     cmd->setTime(60*60*3);
     mController->setAppMode();
@@ -332,9 +332,9 @@ void CGravizSystem::handle<TGravizCommand::System>(const QStringList &args)
 }
 
 template <>
-void CGravizSystem::handle<TGravizCommand::Python>(const QStringList &args)
+void CAlgoViSystem::handle<TAlgoViCommand::Python>(const QStringList &args)
 {
-    qDebug () << "CGravizSystem> Python " << args;
+    qDebug () << "CAlgoViSystem> Python " << args;
     setMode(TSystemMode::InProcess);
     mProblemSolver = new NCommand::CProblemSolver(QStringList() << args << "-s" << "Vika<3", mTestProvider);
     mTerminalCommand = mProblemSolver;
@@ -385,16 +385,16 @@ void CGravizSystem::handle<TGravizCommand::Python>(const QStringList &args)
 }
 
 template <>
-void CGravizSystem::handle<TGravizCommand::TerminateProcess>(const QStringList &args)
+void CAlgoViSystem::handle<TAlgoViCommand::TerminateProcess>(const QStringList &args)
 {
-    qDebug () << "CGravizSystem> terminate " << args;
+    qDebug () << "CAlgoViSystem> terminate " << args;
     mProblemSolver->terminate();
 }
 
 template <>
-void CGravizSystem::handle<TGravizCommand::Compile>(const QStringList &args)
+void CAlgoViSystem::handle<TAlgoViCommand::Compile>(const QStringList &args)
 {
-    qDebug () << "CGravizSystem> Compile " << args;
+    qDebug () << "CAlgoViSystem> Compile " << args;
     NCommand::CCompiler* compiler = new NCommand::CCompiler(args);
     connect(compiler, &NCommand::CCompiler::finished, [this, compiler](int code){
         compiler->deleteLater();
@@ -419,9 +419,9 @@ void CGravizSystem::handle<TGravizCommand::Compile>(const QStringList &args)
 }
 
 template <>
-void CGravizSystem::handle<TGravizCommand::Test>(const QStringList &args)
+void CAlgoViSystem::handle<TAlgoViCommand::Test>(const QStringList &args)
 {
-    qDebug () << "CGravizSystem> Test " << args;
+    qDebug () << "CAlgoViSystem> Test " << args;
     QThread* testThread = new QThread();
     NCommand::CTestCommand* test = new NCommand::CTestCommand(args, mTestProvider, mCompilerHandler);
     mTerminalCommand = test;
@@ -456,9 +456,9 @@ void CGravizSystem::handle<TGravizCommand::Test>(const QStringList &args)
 }
 
 template <>
-void CGravizSystem::handle<TGravizCommand::Tester>(const QStringList &args)
+void CAlgoViSystem::handle<TAlgoViCommand::Tester>(const QStringList &args)
 {
-    qDebug () << "CGravizSystem> Tester " << args;
+    qDebug () << "CAlgoViSystem> Tester " << args;
     QThread* testerThread = new QThread();
     NCommand::CProblemTester* tester = new NCommand::CProblemTester(
                 args,
@@ -497,9 +497,9 @@ void CGravizSystem::handle<TGravizCommand::Tester>(const QStringList &args)
 }
 
 template <>
-void CGravizSystem::handle<TGravizCommand::ParseSite>(const QStringList &args)
+void CAlgoViSystem::handle<TAlgoViCommand::ParseSite>(const QStringList &args)
 {
-    qDebug () << "CGravizSystem> ParseSite " << args;
+    qDebug () << "CAlgoViSystem> ParseSite " << args;
     NCommand::CCodeforcesParser* parser = new NCommand::CCodeforcesParser(args);
     connect(parser, &NCommand::CCodeforcesParser::finished, [this, parser](int code){
         parser->deleteLater();
@@ -521,39 +521,39 @@ void CGravizSystem::handle<TGravizCommand::ParseSite>(const QStringList &args)
 }
 
 template <>
-void CGravizSystem::handle<TGravizCommand::ChangeDirectory>(const QStringList &args)
+void CAlgoViSystem::handle<TAlgoViCommand::ChangeDirectory>(const QStringList &args)
 {
-    qDebug () << "CGravizSystem> ChangeDirectory " << args;
+    qDebug () << "CAlgoViSystem> ChangeDirectory " << args;
     NCommand::CFileSystem::getInstance().changeDir(*args.begin());
     mController->unlock();
 }
 
 template <>
-void CGravizSystem::handle<TGravizCommand::Exit>(const QStringList &args)
+void CAlgoViSystem::handle<TAlgoViCommand::Exit>(const QStringList &args)
 {
-    qDebug () << "CGravizSystem> Exit " << args;
+    qDebug () << "CAlgoViSystem> Exit " << args;
     mController->exit();
 }
 
 template <>
-void CGravizSystem::handle<TGravizCommand::Unknown>(const QStringList &args)
+void CAlgoViSystem::handle<TAlgoViCommand::Unknown>(const QStringList &args)
 {
-    qDebug () << "CGravizSystem> Unknown " << args;
+    qDebug () << "CAlgoViSystem> Unknown " << args;
     mController->handleError(QString(" [ Error ] ") + *args.begin() + " - No such command\n");
     mController->unlock();
 }
 
 template <>
-void CGravizSystem::handle<TGravizCommand::Empty>(const QStringList &args)
+void CAlgoViSystem::handle<TAlgoViCommand::Empty>(const QStringList &args)
 {
-    qDebug () << "CGravizSystem> Empty " << args;
+    qDebug () << "CAlgoViSystem> Empty " << args;
     mController->unlock();
 }
 
 template <>
-void CGravizSystem::handle<TGravizCommand::Total>(const QStringList &args)
+void CAlgoViSystem::handle<TAlgoViCommand::Total>(const QStringList &args)
 {
     // nothing...
 }
 
-} // namespace NGraviz
+} // namespace NAlgoVi

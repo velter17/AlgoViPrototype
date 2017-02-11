@@ -1,5 +1,5 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
  * @file     CSolverSettings.cpp
  * @author   Dmytro Sadovyi

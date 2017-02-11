@@ -1,5 +1,5 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
  * @file     CCompiler.cpp
  * @author   Dmytro Sadovyi

@@ -1,5 +1,5 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
  * @file     Types.h
  * @author   Dmytro Sadovyi
@@ -8,7 +8,7 @@
 
 #pragma once
 
-namespace NGraviz
+namespace NAlgoVi
 {
 
 enum class TSystemMode
@@ -27,7 +27,7 @@ enum class TProblemSolverType
     Interactive, // dialog with user
 };
 
-enum class TGravizCommand
+enum class TAlgoViCommand
 {
     System,             // should be redirect to system
     RunSolver,          // start application
@@ -48,4 +48,4 @@ enum class TGravizCommand
 };
 
 
-} // namespace NGraviz
+} // namespace NAlgoVi

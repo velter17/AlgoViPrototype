@@ -1,5 +1,5 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
  * @file     $FILE_NAME$
  * @author   $AUTHOR$
@@ -18,10 +18,10 @@ class $CLASS_NAME$ : public IProblemVisualizer
 public: // methods
     $CLASS_NAME$();
 
-    QString serialize(const std::map<QString, IGravizItem *> &items) override;
+    QString serialize(const std::map<QString, IAlgoViItem *> &items) override;
     void realize(QString &data,
                  QPainter *painter,
-                 const std::map <QString, IGravizItem*>& items) override;
+                 const std::map <QString, IAlgoViItem*>& items) override;
 };
 $N
 $N} // namespace $NAMESPACE$

@@ -1,5 +1,5 @@
 /**
- * Project   Graviz
+ * Project   AlgoVi
  *
  * @file     CCompilerHandler.cpp
  * @author   Dmytro Sadovyi
@@ -109,4 +109,4 @@ void SFileInfo::setUpToDate()
 }
 
 
-} // namespace NGraviz
+} // namespace NAlgoVi
