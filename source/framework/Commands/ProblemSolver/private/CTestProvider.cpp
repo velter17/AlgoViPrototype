@@ -158,5 +158,11 @@ QString CTestProvider::getFormatted(int i) const
    return ret;
 }
 
+void CTestProvider::setTest(int i, const STest &test)
+{
+    assert(i >= 0 && i < mTests.size());
+    mTests[i] = test;
+}
+
 
 } // namespace NCommand

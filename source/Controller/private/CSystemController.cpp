@@ -21,6 +21,18 @@ CSystemController::CSystemController(std::shared_ptr<CAlgoViWinMain> GUI)
 {
     connect(mGUI.get(), SIGNAL(newCommand(NController::TTerminalCommandType,QString)),
             this, SLOT(handleCommand(NController::TTerminalCommandType, QString)));
+
+    GUI->showGraphicScene(false);
+    GUI->showIoWin(false);
+
+    connect(mGUI.get(), &CAlgoViWinMain::ioOkButtonPressed, [this](){
+        QString input = mGUI->getIoData().first;
+        QString output = mGUI->getIoData().second;
+        emit ioOkButtonPressed(input, output);
+    });
+    connect(mGUI.get(), &CAlgoViWinMain::ioCancelButtonPressed, [this](){
+        emit ioCancelButtonPressed();
+    });
 }
 
 void CSystemController::setModel(std::shared_ptr<NAlgoVi::CAlgoViSystem> model)
@@ -78,6 +90,26 @@ void CSystemController::setQuestionMode()
 void CSystemController::exit()
 {
     mGUI->close();
+}
+
+void CSystemController::showGraphicScene(bool val)
+{
+    mGUI->showGraphicScene(val);
+}
+
+void CSystemController::showIoWin(bool val)
+{
+    mGUI->showIoWin(val);
+}
+
+QPair<QString, QString> CSystemController::getIoData()
+{
+    return mGUI->getIoData();
+}
+
+void CSystemController::setIoData(const QString &input, const QString &output)
+{
+    mGUI->setIoData(input, output);
 }
 
 } // namespace NController

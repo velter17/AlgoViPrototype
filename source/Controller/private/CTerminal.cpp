@@ -100,6 +100,7 @@ void CTerminal::keyPressEvent(QKeyEvent *e)
             //this->textCursor().insertHtml(clipboard->text());
             mLastWriter = 0;
             this->textCursor().insertHtml(preprocessMsg(clipboard->text()));
+            mInputBuffer += clipboard->text();
             this->verticalScrollBar()->setValue(verticalScrollBar()->maximum());
         }
 

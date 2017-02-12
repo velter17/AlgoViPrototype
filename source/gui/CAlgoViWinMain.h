@@ -12,6 +12,7 @@
 #include <memory>
 #include <QLabel>
 #include <QMap>
+#include <QSettings>
 
 #include "View/CGraphicView.h"
 #include "Controller/CSystemController.h"
@@ -47,12 +48,20 @@ public: // methids
     void handleError(QString msg);
     void handleLogHtml(QString msg);
 
+    void showGraphicScene(bool val);
+    void showIoWin(bool val);
+    QPair<QString, QString> getIoData();
+    void setIoData(const QString& input, const QString& output);
+
 signals:
     void modeChanged(NAlgoVi::TSystemMode mode);
     void newCommand(NController::TTerminalCommandType type, const QString& cmd);
+    void ioOkButtonPressed();
+    void ioCancelButtonPressed();
 
 private: //fields
     Ui::CAlgoViWinMain *ui;
 
     QMap<QString, std::shared_ptr<QLabel>> mAlgoLabels;
+    QByteArray mSplitterState;
 };

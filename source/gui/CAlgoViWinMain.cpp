@@ -20,9 +20,19 @@ CAlgoViWinMain::CAlgoViWinMain(QWidget *parent)
     , ui(new Ui::CAlgoViWinMain)
 {
     ui->setupUi(this);
+    ui->mGraphicsView->setMaximumHeight(16777215);
+    ui->ioWidget->setMaximumHeight(16777215);
+
     connect(ui->mTerminal, &NController::CTerminal::command,
             [this](NController::TTerminalCommandType type,
                    const QString& cmd){emit newCommand(type, cmd);});
+    connect(ui->ioOkButton, &QPushButton::clicked, [this]{
+        emit ioOkButtonPressed();
+    });
+    connect(ui->ioCancelButton, &QPushButton::clicked, [this]{
+        emit ioCancelButtonPressed();
+    });
+
 }
 
 CAlgoViWinMain::~CAlgoViWinMain()
@@ -69,6 +79,37 @@ void CAlgoViWinMain::handleError(QString msg)
 void CAlgoViWinMain::handleLogHtml(QString msg)
 {
     ui->mTerminal->appendOutputHtml(msg);
+}
+
+void CAlgoViWinMain::showGraphicScene(bool val)
+{
+    ui->mGraphicsView->setVisible(val);
+}
+
+void CAlgoViWinMain::showIoWin(bool val)
+{
+    ui->ioWidget->setVisible(val);
+    if(!val)
+    {
+        ui->inputTextEdit->clear();
+        ui->outputTextEdit->clear();
+        ui->splitter->restoreState(mSplitterState);
+    }
+    else
+    {
+        mSplitterState = ui->splitter->saveState();
+    }
+}
+
+QPair<QString, QString> CAlgoViWinMain::getIoData()
+{
+    return QPair<QString, QString>(ui->inputTextEdit->toPlainText(), ui->outputTextEdit->toPlainText());
+}
+
+void CAlgoViWinMain::setIoData(const QString &input, const QString &output)
+{
+    ui->inputTextEdit->append(input);
+    ui->outputTextEdit->append(output);
 }
 
 void CAlgoViWinMain::init()

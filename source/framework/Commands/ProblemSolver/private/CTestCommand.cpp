@@ -21,6 +21,8 @@ CTestCommand::CTestCommand(const QStringList &args,
     : ITerminalCommand(args)
     , mTestProvider(testProvider)
     , mCompilerHandler(compilerHandler)
+    , mState(TestCommandState::None)
+    , mConsoleMode(false)
 {
     mOptions.add_options()
         ("print,p", boost::program_options::value<std::string>(),
@@ -35,9 +37,11 @@ CTestCommand::CTestCommand(const QStringList &args,
         ("from-files", boost::program_options::value<std::string>(), "read tests from directory")
         ("to-files", boost::program_options::value<std::string>(), "write tests to files in directory[empty!]")
         ("create", boost::program_options::bool_switch()->default_value(false), "create test by typing")
+        ("edit,e", boost::program_options::value<int>(), "edit test by number")
+        ("win,w", "use window for create/edit/show")
         ("generate", boost::program_options::value<int>(), "generate tests using test-generator")
         ("generator", boost::program_options::value<std::string>(), "generator code")
-        ("solver", boost::program_options::value<std::string>(), "solver code");
+        ("solver", boost::program_options::value<std::string>(), "solver code for generator");
 }
 
 void CTestCommand::run()
@@ -77,7 +81,14 @@ void CTestCommand::run()
                 }
                 else
                 {
-                    emit logHtml("&nbsp;* Test #" + QString::number(test) + "<br>" + mTestProvider->getFormatted(test-1));
+                    if(vm.count("win"))
+                    {
+                        emit showInWindow(mTestProvider->get(test-1).input, mTestProvider->get(test-1).output);
+                    }
+                    else
+                    {
+                        emit logHtml("&nbsp;* Test #" + QString::number(test) + "<br>" + mTestProvider->getFormatted(test-1));
+                    }
                 }
             }
             else
@@ -114,11 +125,25 @@ void CTestCommand::run()
                     }
                     else
                     {
-                        for(size_t i = from-1; i < to; ++i)
+                        if(vm.count("win"))
                         {
-                            QString toEmit = "&nbsp;* Test #" + QString::number(i+1) + "<br>";
-                            toEmit += mTestProvider->getFormatted(i);
-                            emit logHtml(toEmit);
+                            if(from != to)
+                            {
+                                emit error("Unable to show more than 1 test in separate window");
+                            }
+                            else
+                            {
+                                emit showInWindow(mTestProvider->get(from-1).input, mTestProvider->get(from-1).output);
+                            }
+                        }
+                        else
+                        {
+                            for(size_t i = from-1; i < to; ++i)
+                            {
+                                QString toEmit = "&nbsp;* Test #" + QString::number(i+1) + "<br>";
+                                toEmit += mTestProvider->getFormatted(i);
+                                emit logHtml(toEmit);
+                            }
                         }
                     }
                 }
@@ -214,7 +239,16 @@ void CTestCommand::run()
     else if(vm["create"].as<bool>())
     {
         mCreateState = 1;
-        emit log("Input:\n");
+        mState = TestCommandState::CreateTest;
+        mConsoleMode = !vm.count("win");
+        if(mConsoleMode)
+        {
+            emit log("Input:\n");
+        }
+        else
+        {
+            emit startEditMode("", "");
+        }
         return;
     }
     else if(vm.count("generate"))
@@ -230,7 +264,7 @@ void CTestCommand::run()
 //            emit error(" [ Error ] No solver was specified\n");
 //            emit finished(1);
 //            return;
-//        }
+//        }bool_switch()->default_value(false)
         QString generatorCodePath = QString::fromStdString(CFileSystem::getInstance().getFullPath(
                     QString::fromStdString(vm["generator"].as<std::string>())).string());
         QString solverCodePath = vm.count("solver") ? QString::fromStdString(CFileSystem::getInstance().getFullPath(
@@ -241,6 +275,23 @@ void CTestCommand::run()
 
         compile(codes, 0, tests);
 
+        return;
+    }
+    else if(vm.count("edit"))
+    {
+        int test = vm["edit"].as<int>();
+        if(test < 1 || test > mTestProvider->size())
+        {
+            emit error("Index out of range, right range is " + QString("1..") + QString::number(mTestProvider->size()));
+            emit finished(0);
+        }
+        else
+        {
+            mCreateState = 1;
+            mTestToEdit = test-1;
+            mState = TestCommandState::EditTest;
+            emit startEditMode(mTestProvider->get(mTestToEdit).input, mTestProvider->get(mTestToEdit).output);
+        }
         return;
     }
     else
@@ -260,18 +311,39 @@ void CTestCommand::run()
 void CTestCommand::appendData(const QString &data)
 {
     qDebug () << "CTestCommand> appendData" << data;
-    if(mCreateState == 1)
+    if(mState == TestCommandState::CreateTest)
     {
-        mCreatedTest.input = data;
-        emit log("Output:\n");
-        mCreateState = 2;
+        if(mCreateState == 1)
+        {
+            mCreatedTest.input = data;
+            if(mConsoleMode)
+            {
+                emit log("Output:\n");
+            }
+            mCreateState = 2;
+        }
+        else
+        {
+            emit log("Saved to archive\n");
+            mCreatedTest.output = data;
+            mTestProvider->addTest(mCreatedTest);
+            mConsoleMode = false;
+            emit finished(0);
+        }
     }
-    else
+    else if (mState == TestCommandState::EditTest)
     {
-        emit log("Saved to archive\n");
-        mCreatedTest.output = data;
-        mTestProvider->addTest(mCreatedTest);
-        emit finished(0);
+        if(mCreateState == 1)
+        {
+            mCreatedTest.input = data;
+            mCreateState = 2;
+        }
+        else
+        {
+            mCreatedTest.output = data;
+            mTestProvider->setTest(mTestToEdit, mCreatedTest);
+            emit finished(0);
+        }
     }
 }
 

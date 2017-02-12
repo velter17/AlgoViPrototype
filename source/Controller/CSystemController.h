@@ -52,6 +52,15 @@ public slots:
     void setQuestionMode();
     void exit();
 
+    void showGraphicScene(bool val);
+    void showIoWin(bool val);
+    QPair<QString, QString> getIoData();
+    void setIoData(const QString& input, const QString& output);
+
+signals:
+    void ioOkButtonPressed(const QString& input, const QString& output);
+    void ioCancelButtonPressed();
+
 private:
     std::shared_ptr<CAlgoViWinMain> mGUI;
     std::shared_ptr<NView::CGraphicView> mView;

@@ -1,6 +1,6 @@
 CMAKE_MINIMUM_REQUIRED( VERSION 3.0 )
 
-PROJECT ( GraphicAlgoVisualizer )
+PROJECT ( AlgoVi )
 
 SET ( INSTALL_BIN_DIR "bin" )
 SET ( INSTALL_LIB_DIR "lib" )

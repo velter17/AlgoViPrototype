@@ -36,6 +36,7 @@ public: // methods
 
     STest get(int i) const;
     QString getFormatted(int i) const;
+    void setTest(int i, const STest& test);
 private:
     std::vector<STest> mTests;
 };

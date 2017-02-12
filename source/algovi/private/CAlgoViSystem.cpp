@@ -448,6 +448,58 @@ void CAlgoViSystem::handle<TAlgoViCommand::Test>(const QStringList &args)
         QMetaObject::invokeMethod(mController.get(), "handleLogHtml", Qt::QueuedConnection,
                                   Q_ARG(QString, msg));
     });
+    connect(test, &NCommand::CTestCommand::showInWindow, [this](const QString& input, const QString& output){
+        std::shared_ptr<QMetaObject::Connection> pconn1(new QMetaObject::Connection);
+        QMetaObject::Connection &conn1 = *pconn1;
+        conn1 = connect(mController.get(), &NController::CSystemController::ioOkButtonPressed,
+                       [this, pconn1, &conn1](){
+            QMetaObject::invokeMethod(mController.get(), "showIoWin", Qt::QueuedConnection, Q_ARG(bool, false));
+            disconnect(conn1);
+        });
+
+        std::shared_ptr<QMetaObject::Connection> pconn2(new QMetaObject::Connection);
+        QMetaObject::Connection &conn2 = *pconn2;
+        conn2 = connect(mController.get(), &NController::CSystemController::ioCancelButtonPressed,
+                       [this, pconn2, &conn2](){
+            QMetaObject::invokeMethod(mController.get(), "showIoWin", Qt::QueuedConnection, Q_ARG(bool, false));
+            disconnect(conn2);
+        });
+
+        QMetaObject::invokeMethod(mController.get(), "showIoWin", Qt::QueuedConnection, Q_ARG(bool, true));
+        QMetaObject::invokeMethod(mController.get(), "setIoData", Qt::QueuedConnection,
+                                  Q_ARG(QString, input),
+                                  Q_ARG(QString, output));
+    });
+
+    connect(test, &NCommand::CTestCommand::startEditMode, [this, test](const QString& input, const QString& output){
+        std::shared_ptr<QMetaObject::Connection> pconn1(new QMetaObject::Connection);
+        QMetaObject::Connection &conn1 = *pconn1;
+        conn1 = connect(mController.get(), &NController::CSystemController::ioOkButtonPressed,
+                       [this, pconn1, &conn1, test](const QString& input, const QString& output){
+            QMetaObject::invokeMethod(test, "appendData", Qt::QueuedConnection, Q_ARG(QString, input));
+            QMetaObject::invokeMethod(test, "appendData", Qt::QueuedConnection, Q_ARG(QString, output));
+            QMetaObject::invokeMethod(mController.get(), "showIoWin", Qt::QueuedConnection, Q_ARG(bool, false));
+            disconnect(conn1);
+        });
+
+        std::shared_ptr<QMetaObject::Connection> pconn2(new QMetaObject::Connection);
+        QMetaObject::Connection &conn2 = *pconn2;
+        conn2 = connect(mController.get(), &NController::CSystemController::ioCancelButtonPressed,
+                       [this, pconn2, &conn2, test](){
+            QMetaObject::invokeMethod(mController.get(), "showIoWin", Qt::QueuedConnection, Q_ARG(bool, false));
+            QMetaObject::invokeMethod(test, "terminate", Qt::QueuedConnection);
+            disconnect(conn2);
+        });
+
+        QMetaObject::invokeMethod(mController.get(), "showIoWin", Qt::QueuedConnection, Q_ARG(bool, true));
+        QMetaObject::invokeMethod(mController.get(), "setIoData", Qt::QueuedConnection,
+                                  Q_ARG(QString, input),
+                                  Q_ARG(QString, output));
+
+        setMode(TSystemMode::Default);
+    });
+
+
     connect(testThread, SIGNAL(started()), test, SLOT(run()));
     setMode(TSystemMode::InProcess);
     mController->setAppMode();

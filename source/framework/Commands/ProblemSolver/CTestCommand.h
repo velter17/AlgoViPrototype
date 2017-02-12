@@ -16,8 +16,16 @@
 namespace NCommand
 {
 
+enum class TestCommandState
+{
+    CreateTest,
+    EditTest,
+    None,
+};
+
 class CTestCommand : public ITerminalCommand
 {
+    Q_OBJECT
 public: // methods
     CTestCommand(const QStringList& args,
                  std::shared_ptr<CTestProvider> testProvider,
@@ -26,6 +34,10 @@ public: // methods
     void run() override;
     void appendData(const QString& data) override;
     void terminate() override;
+
+signals:
+    void showInWindow(const QString& input, const QString& output);
+    void startEditMode(const QString& input, const QString& output);
 
 private:
     void runGenerator(const QString& generatorPath,
@@ -38,6 +50,9 @@ private: // fields
     std::shared_ptr<CCompilerHandler> mCompilerHandler;
     int mCreateState;
     STest mCreatedTest;
+    TestCommandState mState;
+    bool mConsoleMode;
+    int mTestToEdit;
 };
 
 } // namespace NCommand
