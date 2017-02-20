@@ -421,7 +421,7 @@ void CTestCommand::compile(const std::vector<QString> codes, size_t code_idx, in
     if(code_idx == codes.size())
     {
         runGenerator(mCompilerHandler->getAppPath(codes[0]),
-                     mCompilerHandler->getAppPath(codes[1]),
+                     codes[1].isEmpty() ? codes[1] : mCompilerHandler->getAppPath(codes[1]),
                      tests);
         return;
     }
