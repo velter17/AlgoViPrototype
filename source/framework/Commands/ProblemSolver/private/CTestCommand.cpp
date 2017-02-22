@@ -11,6 +11,7 @@
 
 #include "../CTestCommand.h"
 #include "framework/Commands/CFileSystem.h"
+#include "framework/Commands/ProblemSolver/CTestValidator.h"
 
 namespace NCommand
 {
@@ -41,7 +42,8 @@ CTestCommand::CTestCommand(const QStringList &args,
         ("win,w", "use window for create/edit/show")
         ("generate", boost::program_options::value<int>(), "generate tests using test-generator")
         ("generator", boost::program_options::value<std::string>(), "generator code")
-        ("solver", boost::program_options::value<std::string>(), "solver code for generator");
+        ("solver", boost::program_options::value<std::string>(), "solver code for generator")
+        ("validate", boost::program_options::value<std::string>(), "validate test archive with validator code");
 }
 
 void CTestCommand::run()
@@ -277,6 +279,13 @@ void CTestCommand::run()
 
         return;
     }
+    else if(vm.count("validate"))
+    {
+        QString validatorCodePath = QString::fromStdString(CFileSystem::getInstance().getFullPath(
+                    QString::fromStdString(vm["validate"].as<std::string>())).string());
+        runValidator(validatorCodePath);
+        return;
+    }
     else if(vm.count("edit"))
     {
         int test = vm["edit"].as<int>();
@@ -414,6 +423,99 @@ void CTestCommand::runGenerator(const QString &appPath, const QString &solverPat
 
     mCreatedTest = STest();
     runGen();
+}
+
+void CTestCommand::runValidator(const QString &validatorPath)
+{
+    auto launchValidation = [this](const QString& validatorApp){
+        qDebug () << "launch Validator with path " << validatorApp;
+
+//        CSystemCmd* app = new CSystemCmd(QStringList() << validatorApp);
+//        connect(app, &CSystemCmd::log, [this](const QString& msg){
+//            mValidatorResultMessage += msg;
+//        });
+//        connect(app, &CSystemCmd::error, [this](const QString& msg){
+//            emit error(msg);
+//        });
+//        connect(app, &CSystemCmd::finished, [this, app, test, &validatorApp](int code){
+//            app->deleteLater();
+//            mValidationCounter += code == 0;
+//            qDebug () << "app finished with output " << mValidatorResultMessage;
+//            launchValidation(validatorApp, test+1);
+//        });
+//        connect(app, &CSystemCmd::started, [this, app](){
+//            QMetaObject::invokeMethod(app, "appendData", Qt::QueuedConnection,
+//                                      Q_ARG(QString, mCreatedTest.input));
+//            qDebug () << "app started";
+//        });
+//        app->run();
+        mValidationCounter = 0;
+        for(int i = 0; i < int(mTestProvider->size()); ++i)
+        {
+            IProblemChecker *validator = new CTestValidator(
+                            QStringList()
+                                << "--input" << mTestProvider->get(i).input
+                                << "--output" << mTestProvider->get(i).output,
+                            validatorApp);
+            QString toEmit = " test #" + QString::number(i+1) + ": ";
+            validator->run();
+            if(validator->getResult() == TCheckerResult::Success)
+            {
+                toEmit += "<font color=green>Passed</font>";
+                ++mValidationCounter;
+            }
+            else if(validator->getResult() == TCheckerResult::Fail)
+            {
+                toEmit += "<font color=red>Not passed</font>";
+            }
+            else
+            {
+                toEmit += "<font color=\"#CF8FA8\">Fail</font>";
+            }
+            toEmit += validator->details() + "<br>";
+            logHtml(toEmit);
+            validator->deleteLater();
+        }
+        emit logHtml(" Result: " + QString::number(mValidationCounter) +
+                " / " + QString::number(mTestProvider->size()) + " - " +
+                (mValidationCounter == int(mTestProvider->size()) ?
+                         "<font color=\"#9FFF3F\">Tests passed validation</font>" :
+                         "<font color=\"#FF6F3F\">Some tests didn't pass validation</font>")
+                + "<br>");
+        emit finished(0);
+    };
+
+    if(!mCompilerHandler->isSourceCode(validatorPath))
+    {
+        mCompilerHandler->addSourceCodePath(validatorPath);
+    }
+
+    if(mCompilerHandler->isNeededCompilation(validatorPath))
+    {
+        qDebug () << "neededCompilation";
+        std::shared_ptr<QMetaObject::Connection> pconn(new QMetaObject::Connection);
+        QMetaObject::Connection &conn = *pconn;
+        conn = connect(mCompilerHandler.get(), &CCompilerHandler::finished,
+                       [this, pconn, &conn, validatorPath, launchValidation](int code){
+            qDebug () << "compilation was finished";
+            if(code == 0)
+            {
+                qDebug () << "before launch validator";
+                launchValidation(mCompilerHandler->getAppPath(validatorPath));
+            }
+            else
+            {
+                emit error(" [ Error ] problem with compilation. Exit.\n");
+                emit finished(code);
+            }
+            disconnect(conn);
+        });
+        mCompilerHandler->performCompilation(validatorPath, QStringList());
+    }
+    else
+    {
+        launchValidation(mCompilerHandler->getAppPath(validatorPath));
+    }
 }
 
 void CTestCommand::compile(const std::vector<QString> codes, size_t code_idx, int tests)

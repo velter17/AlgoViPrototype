@@ -30,6 +30,7 @@ public: // methods
     QString getManualMessage() override;
 
 public slots: // methods
+    void checkerCompiler();
     void testRunner(int test);
     QString checkResult(int test, int returnCode);
 private:
@@ -39,6 +40,7 @@ private:
     QString mErrorBuffer;
     QString mSourceCodePath;
     QString mCheckerType;
+    bool mCustomChecker;
     int mTestFrom;
     int mTestTo;
     bool mTerminateFlag;

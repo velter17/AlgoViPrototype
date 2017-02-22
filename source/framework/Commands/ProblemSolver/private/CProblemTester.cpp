@@ -9,6 +9,7 @@
 #include "../CProblemTester.h"
 #include "framework/Commands/ProblemSolver/checkers/CStraightForwardChecker.h"
 #include "framework/Commands/ProblemSolver/checkers/CTestLibChecker.h"
+#include "framework/Commands/ProblemSolver/checkers/CCustomChecker.h"
 
 namespace NCommand
 {
@@ -50,6 +51,8 @@ void CProblemTester::run()
     if(vm.count("checker"))
     {
         mCheckerType = QString::fromStdString(vm["checker"].as<std::string>());
+        mCustomChecker = CFileSystem::getInstance().exists(mCheckerType);
+
     }
 
     auto validateNum = [](const QString& str)
@@ -161,7 +164,8 @@ void CProblemTester::run()
             qDebug () << "compilation was finished";
             if(code == 0)
             {
-                testRunner(mTestFrom);
+                //testRunner(mTestFrom);
+                checkerCompiler();
             }
             else
             {
@@ -174,7 +178,8 @@ void CProblemTester::run()
     }
     else
     {
-        testRunner(mTestFrom);
+        //testRunner(mTestFrom);
+        checkerCompiler();
     }
 }
 
@@ -213,6 +218,46 @@ QString CProblemTester::getManualMessage()
             &nbsp;&nbsp;&nbsp;&nbsp;&#x21b3;&nbsp;<font color=#aefa29>uncmp</font> - compare unordered sequences of integers<br> \
             &nbsp;&nbsp;&nbsp;&nbsp;&#x21b3;&nbsp;<font color=#aefa29>yesno</font> - compare yes/no messages<br> \
             <br>";
+}
+
+void CProblemTester::checkerCompiler()
+{
+    if(!mCustomChecker)
+    {
+        testRunner(mTestFrom);
+        return;
+    }
+
+    if(!mCompilerHandler->isSourceCode(mCheckerType))
+    {
+        mCompilerHandler->addSourceCodePath(mCheckerType);
+    }
+
+    if(mCompilerHandler->isNeededCompilation(mCheckerType))
+    {
+        qDebug () << "neededCompilation";
+        std::shared_ptr<QMetaObject::Connection> pconn(new QMetaObject::Connection);
+        QMetaObject::Connection &conn = *pconn;
+        conn = connect(mCompilerHandler.get(), &CCompilerHandler::finished,
+                       [this, pconn, &conn](int code){
+            qDebug () << "compilation was finished";
+            if(code == 0)
+            {
+                testRunner(mTestFrom);
+            }
+            else
+            {
+                emit error(" [ Error ] problem with compilation. Exit.\n");
+                emit finished(code);
+            }
+            disconnect(conn);
+        });
+        mCompilerHandler->performCompilation(mCheckerType, QStringList());
+    }
+    else
+    {
+        testRunner(mTestFrom);
+    }
 }
 
 void CProblemTester::testRunner(int test)
@@ -276,12 +321,24 @@ QString CProblemTester::checkResult(int test, int returnCode)
         }
         else
         {
-            checker = new CTestLibChecker(
-                        QStringList()
-                            << "--input" << mTestProvider->get(test).input
-                            << "--answer" << mTestProvider->get(test).output
-                            << "--output" << mOutputBuffer,
-                        mCheckerType);
+            if(!mCustomChecker)
+            {
+                checker = new CTestLibChecker(
+                            QStringList()
+                                << "--input" << mTestProvider->get(test).input
+                                << "--answer" << mTestProvider->get(test).output
+                                << "--output" << mOutputBuffer,
+                            mCheckerType);
+            }
+            else
+            {
+                checker = new CCustomChecker(
+                            QStringList()
+                                << "--input" << mTestProvider->get(test).input
+                                << "--answer" << mTestProvider->get(test).output
+                                << "--output" << mOutputBuffer,
+                            mCompilerHandler->getAppPath(mCheckerType));
+            }
         }
         checker->run();
         if(checker->getResult() == TCheckerResult::Success)

@@ -43,6 +43,7 @@ private:
     void runGenerator(const QString& generatorPath,
                       const QString& solverPath,
                       int tests);
+    void runValidator(const QString& validatorPath);
     void compile(const std::vector<QString> codes, size_t code_idx, int tests);
 
 private: // fields
@@ -53,6 +54,8 @@ private: // fields
     TestCommandState mState;
     bool mConsoleMode;
     int mTestToEdit;
+    QString mValidatorResultMessage;
+    int mValidationCounter;
 };
 
 } // namespace NCommand

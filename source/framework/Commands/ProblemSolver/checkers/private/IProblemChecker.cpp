@@ -22,6 +22,7 @@ void IProblemChecker::run()
     emit started();
     if(!readOptions(mArgs, mVarMap))
     {
+        qDebug () << "IProblemChecker> run : wrong options";
         emit finished(0);
         return;
     }
