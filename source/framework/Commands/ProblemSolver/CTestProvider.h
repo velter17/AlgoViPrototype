@@ -33,6 +33,7 @@ public: // methods
     size_t size() const;
 
     void deleteTest(int i);
+    void swapTests(int a, int b);
 
     STest get(int i) const;
     QString getFormatted(int i) const;

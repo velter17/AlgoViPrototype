@@ -40,6 +40,8 @@ signals:
     void startEditMode(const QString& input, const QString& output);
 
 private:
+    std::pair<int, int> parseTestRange(const QString& str);
+
     void runGenerator(const QString& generatorPath,
                       const QString& solverPath,
                       int tests);

@@ -45,6 +45,13 @@ void CTestProvider::deleteTest(int i)
     mTests.pop_back();
 }
 
+void CTestProvider::swapTests(int a, int b)
+{
+   assert(a >= 0 && a < mTests.size() &&
+          b >= 0 && b < mTests.size());
+   std::swap(mTests[a], mTests[b]);
+}
+
 STest CTestProvider::get(int i) const
 {
    assert(i >= 0 && i < mTests.size());

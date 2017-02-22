@@ -33,10 +33,12 @@ CTestCommand::CTestCommand(const QStringList &args,
             " -p 1-3 -> print tests from 1 to 3")
         ("clear,c", boost::program_options::bool_switch()->default_value(false),
             "delete all tests from archive")
-        ("delete,d", boost::program_options::value<int>(),
-            "delete test by number")
+        ("delete,d", boost::program_options::value<std::string>(),
+            "delete test by numbers")
+        ("swap", boost::program_options::value<std::string>(), "swap 2 tests by nums, use \'4-5\' to swap 4 and 5 tests")
         ("from-files", boost::program_options::value<std::string>(), "read tests from directory")
-        ("to-files", boost::program_options::value<std::string>(), "write tests to files in directory[empty!]")
+        ("to-files", boost::program_options::value<std::string>(), "write tests to files in directory")
+        ("append", "uses with --to-files for appending tests to existed")
         ("create", boost::program_options::bool_switch()->default_value(false), "create test by typing")
         ("edit,e", boost::program_options::value<int>(), "edit test by number")
         ("win,w", "use window for create/edit/show")
@@ -156,11 +158,32 @@ void CTestCommand::run()
     else if(vm.count("delete"))
     {
         qDebug () << "delete test";
-        int testNum = vm["delete"].as<int>();
-        if(testNum > 0 && testNum <= mTestProvider->size())
-            mTestProvider->deleteTest(testNum-1);
-        else
-            emit error(QString::number(testNum) + " is not valid index");
+        QString rangeStr = QString::fromStdString(vm["delete"].as<std::string>());
+        std::pair<int, int> range = parseTestRange(rangeStr);
+        if(range.first == -1)
+        {
+           emit error("Invalid range for delete command");
+           emit finished(1);
+           return;
+        }
+        int from = range.first - 1;
+        int to = range.second == -1 ? from : range.second - 1;
+        for(int i = from; i <= to; ++i)
+           mTestProvider->deleteTest(from);
+    }
+    else if(vm.count("swap"))
+    {
+       QString rangeStr = QString::fromStdString(vm["swap"].as<std::string>());
+       std::pair<int, int> range = parseTestRange(rangeStr);
+       if(range.first == -1 || range.second == -1)
+       {
+          emit error("Invalid range for swap command");
+          emit finished(1);
+          return;
+       }
+       mTestProvider->swapTests(range.first - 1, range.second - 1);
+       emit finished(0);
+       return;
     }
     else if(vm["clear"].as<bool>())
     {
@@ -222,10 +245,29 @@ void CTestCommand::run()
             return;
         }
         int cnt = 0;
+        int from = 1;
+        if(vm.count("append"))
+        {
+           int lbound = 1, rbound = 999;
+           while(lbound <= rbound)
+           {
+              int mid = (lbound + rbound) / 2;
+              QString fileData = QString("%1.dat").arg(mid, 3, 10, QChar('0'));
+              if(!CFileSystem::getInstance().exists(fullPath + "/" + fileData))
+              {
+                 from = mid;
+                 rbound = mid-1;
+              }
+              else
+              {
+                 lbound = mid+1;
+              }
+           }
+        }
         for(int i = 0; i < mTestProvider->size(); ++i)
         {
-            QString fileData = QString("%1.dat").arg(i+1, 3, 10, QChar('0'));
-            QString fileAns = QString("%1.ans").arg(i+1, 3, 10, QChar('0'));
+            QString fileData = QString("%1.dat").arg(i+from, 3, 10, QChar('0'));
+            QString fileAns = QString("%1.ans").arg(i+from, 3, 10, QChar('0'));
             ++cnt;
             std::ofstream file(fullPath.toStdString() + "/" + fileData.toStdString());
             emit log("write file " + fullPath + "/" + fileData + "\n");
@@ -358,7 +400,71 @@ void CTestCommand::appendData(const QString &data)
 
 void CTestCommand::terminate()
 {
-    emit finished(1);
+   emit finished(1);
+}
+
+std::pair<int, int> CTestCommand::parseTestRange(const QString &str)
+{
+   auto validateNum = [](const QString& str)
+   {
+       bool ret = true;
+       for(char c : str.toStdString())
+           ret &= isdigit(c);
+       return ret;
+   };
+   if(str.indexOf("-") == -1)
+   {
+       if(validateNum(str))
+       {
+           int test = str.toInt();
+           if(test < 1 || test > mTestProvider->size())
+           {
+              return std::make_pair(-1, -1);
+           }
+           else
+           {
+               return std::make_pair(test, -1);
+           }
+       }
+       else
+       {
+           return std::make_pair(-1, -1);
+       }
+   }
+   else
+   {
+      QStringList range = str.split('-');
+      if(range.size() != 2)
+      {
+          return std::make_pair(-1, -1);
+      }
+      else
+      {
+          QString strFrom = *range.begin();
+          QString strTo = *(range.begin()+1);
+          if(!validateNum(strFrom) || strFrom.toInt() < 1 || strFrom.toInt() > mTestProvider->size())
+          {
+              return std::make_pair(-1, -1);
+          }
+          else if(!validateNum(strTo) || strTo.toInt() < 1 || strTo.toInt() > mTestProvider->size())
+          {
+              return std::make_pair(-1, -1);
+          }
+          else
+          {
+              int from = strFrom.toInt();
+              int to = strTo.toInt();
+              if(from > to)
+              {
+                  return std::make_pair(-1, -1);
+              }
+              else
+              {
+                  return std::make_pair(from, to);
+              }
+          }
+      }
+   }
 }
 
 void CTestCommand::runGenerator(const QString &appPath, const QString &solverPath, int tests)
