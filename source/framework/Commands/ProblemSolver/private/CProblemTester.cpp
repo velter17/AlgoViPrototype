@@ -279,7 +279,7 @@ void CProblemTester::testRunner(int test)
                     << "-s" << mSourceCodePath, mTestProvider);
     mProblemSolverPtr = problemSolver;
     problemSolver->init();
-    problemSolver->setAppPath(mCompilerHandler->getAppPath(mSourceCodePath));
+    problemSolver->setAppPath(mCompilerHandler->getExecCmd(mSourceCodePath));
     connect(problemSolver, &CProblemSolver::started, [this, test, problemSolver](){
         qDebug () << "Testing of " << test+1 << " test was started";
         mOutputBuffer.clear();

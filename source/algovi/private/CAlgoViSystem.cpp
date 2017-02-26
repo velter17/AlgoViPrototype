@@ -213,7 +213,7 @@ void CAlgoViSystem::handle<TAlgoViCommand::RunSolver>(const QStringList &args)
     {
         mCompilerHandler->addSourceCodePath(sourceCodePath);
     }
-    mProblemSolver->setAppPath(mCompilerHandler->getAppPath(sourceCodePath));
+    mProblemSolver->setAppPath(mCompilerHandler->getExecCmd(sourceCodePath));
 
     if(mCompilerHandler->isNeededCompilation(sourceCodePath))
     {

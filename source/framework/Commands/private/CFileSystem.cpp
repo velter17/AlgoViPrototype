@@ -196,9 +196,47 @@ boost::filesystem::path CFileSystem::getFullPath(const QString &path)
     return boost::filesystem::complete(p);
 }
 
+QString CFileSystem::getFileName(const QString &path)
+{
+    boost::filesystem::path p;
+#ifdef WIN_TARGET
+    if(!(path.length() > 1 && path[1] == ':'))
+#else
+    if(path[0] != '/')
+#endif
+        p = mCurrentPath / path.toStdString();
+    else
+        p = path.toStdString();
+    return QString::fromStdString(p.stem().string());
+}
+
+QString CFileSystem::getFileExtension(const QString &path)
+{
+    boost::filesystem::path p;
+#ifdef WIN_TARGET
+    if(!(path.length() > 1 && path[1] == ':'))
+#else
+    if(path[0] != '/')
+#endif
+        p = mCurrentPath / path.toStdString();
+    else
+        p = path.toStdString();
+    return QString::fromStdString(p.extension().string());
+}
+
 void CFileSystem::remove(const QString &path)
 {
+    qDebug () << "remove " << path;
     boost::filesystem::remove(path.toStdString());
+}
+
+void CFileSystem::createDir(const QString &path)
+{
+    qDebug() << "create directory " << path;
+    if(!boost::filesystem::create_directory(path.toStdString()))
+    {
+        qDebug () << "path was not created!!!!";
+    }
 }
 
 } // namespace NCommand

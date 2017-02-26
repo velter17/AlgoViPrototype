@@ -26,9 +26,12 @@ struct SFileInfo
     QFileInfo mFileInfo;
     QDateTime mLastModified;
     QString mBinaryFilePath;
+    QString mExecCmd;
 
     SFileInfo();
-    SFileInfo(const QString& path, const QString& binaryPath);
+    SFileInfo(const QString& path,
+              const QString& binaryPath,
+              const QString& execCmd);
 
     bool isModified();
     void setUpToDate();
@@ -39,12 +42,14 @@ class CCompilerHandler : public QObject
     Q_OBJECT
 public: // methods
     CCompilerHandler();
+    ~CCompilerHandler();
 
     void addSourceCodePath(const QString& path);
     bool isSourceCode(const QString& path);
     bool isNeededCompilation(const QString& path);
     void performCompilation(const QString &path, const QStringList& args);
     QString getAppPath(const QString& codePath);
+    QString getExecCmd(const QString& codePath);
 
     void clear();
 

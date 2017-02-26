@@ -31,8 +31,11 @@ public: // methods
     bool isFile(const QString& obj);
     bool exists(const QString &path);
     boost::filesystem::path getFullPath(const QString& path);
+    QString getFileName(const QString& path);
+    QString getFileExtension(const QString& path);
 
     void remove(const QString& path);
+    void createDir(const QString& path);
 private: // methods
     CFileSystem();
     CFileSystem(const CFileSystem&);

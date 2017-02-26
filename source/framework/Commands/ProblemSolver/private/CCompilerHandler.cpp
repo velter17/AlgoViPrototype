@@ -17,13 +17,37 @@ CCompilerHandler::CCompilerHandler()
     mTempDir.setAutoRemove(true);
 }
 
+CCompilerHandler::~CCompilerHandler()
+{
+}
+
 void CCompilerHandler::addSourceCodePath(const QString &path)
 {
     qDebug () << "addSourceCodePath "  << path;
-    QString fullPath = QString::fromStdString(CFileSystem::getInstance().getFullPath(path).generic_string());
-    QString appName = mTempDir.path() + "/" + QString("app%1").arg(mAppIdx++);
-    qDebug () << "fullPath = " << fullPath << ", appName = " << appName;
-    mSourceCodeFileMap[fullPath] = SFileInfo(fullPath, appName);
+    if(CFileSystem::getInstance().getFileExtension(path) == ".cpp")
+    {
+        qDebug () << "cpp code";
+        QString fullPath = QString::fromStdString(CFileSystem::getInstance().getFullPath(path).generic_string());
+        QString appName = mTempDir.path() + "/" + QString("app%1").arg(mAppIdx++);
+        qDebug () << "fullPath = " << fullPath << ", appName = " << appName;
+        //TODO read solver cmd from config!
+        mSourceCodeFileMap[fullPath] = SFileInfo(fullPath, appName, appName);
+    }
+    else if(CFileSystem::getInstance().getFileExtension(path) == ".java")
+    {
+        qDebug () << "java code";
+        QString fullPath = QString::fromStdString(CFileSystem::getInstance().getFullPath(path).generic_string());
+        QString appFolder = mTempDir.path() + "/" + QString("app%1").arg(mAppIdx++);
+        CFileSystem::getInstance().createDir(appFolder);
+        //qDebug () << "fullPath = " << fullPath << ", appName = " << appName;
+        //TODO read solver cmd from config!
+        mSourceCodeFileMap[fullPath] = SFileInfo(fullPath, appFolder, "java -classpath " + appFolder +
+                                                 " " + CFileSystem::getInstance().getFileName(path));
+    }
+    else
+    {
+        qDebug () << "unknown extension " << CFileSystem::getInstance().getFileExtension(path);
+    }
 }
 
 bool CCompilerHandler::isSourceCode(const QString &path)
@@ -42,7 +66,7 @@ void CCompilerHandler::performCompilation(const QString& path, const QStringList
 {
     qDebug () << "CCompilerHandler> performCompilation: " << path << " " << args;
     QString fullPath = QString::fromStdString(CFileSystem::getInstance().getFullPath(path).generic_string());
-    NCommand::CFileSystem::getInstance().remove(getAppPath(fullPath));
+    //NCommand::CFileSystem::getInstance().remove(getAppPath(fullPath));
 
     CCompiler* compiler = new CCompiler(
                 QStringList() << "-i" << fullPath
@@ -78,6 +102,14 @@ QString CCompilerHandler::getAppPath(const QString &codePath)
     return mSourceCodeFileMap[fullPath].mBinaryFilePath;
 }
 
+QString CCompilerHandler::getExecCmd(const QString &codePath)
+{
+    QString fullPath = QString::fromStdString(CFileSystem::getInstance().getFullPath(codePath).generic_string());
+    qDebug () << "getAppPath " << codePath;
+    qDebug () << "return " << mSourceCodeFileMap[fullPath].mBinaryFilePath;
+    return mSourceCodeFileMap[fullPath].mExecCmd;
+}
+
 void CCompilerHandler::clear()
 {
     mSourceCodeFileMap.clear();
@@ -90,11 +122,15 @@ SFileInfo::SFileInfo()
 
 }
 
-SFileInfo::SFileInfo(const QString &path, const QString &binaryPath)
+SFileInfo::SFileInfo(const QString &path,
+                     const QString &binaryPath,
+                     const QString &execCmd)
 {
+    qDebug () << "add " << path << " " << binaryPath << " " << execCmd;
     mLastModified = QDateTime();
     mFileInfo.setFile(path);
     mBinaryFilePath = binaryPath;
+    mExecCmd = execCmd;
 }
 
 bool SFileInfo::isModified()

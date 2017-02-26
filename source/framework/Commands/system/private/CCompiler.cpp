@@ -13,13 +13,14 @@
 
 #include "framework/Commands/CFileSystem.h"
 #include "framework/Commands/system/CCompiler.h"
+#include "framework/settings/CSolverSettings.h"
 
 namespace NCommand
 {
 
 CCompiler::CCompiler(QStringList args)
     : ITerminalCommand(args)
-    , mFlags({"std=c++11", "O2", "w"})
+    //, mFlags({"std=c++11", "O2", "w"})
 {
     mOptions.add_options()
         ("input,i", boost::program_options::value<std::string>()->required(), "path to source file")
@@ -42,12 +43,17 @@ void CCompiler::run()
 
     QString src = QString::fromStdString(vm["input"].as<std::string>());
     QStringList compilerCommand;
-    compilerCommand << "g++";
-    compilerCommand << "-o" << QString::fromStdString(CFileSystem::getInstance().getFullPath(
-                               QString::fromStdString(vm["output"].as<std::string>())).string());
-//    QString compilerCommand = QString("-o ") +
-//            QString::fromStdString(CFileSystem::getInstance().getFullPath(
-//			QString::fromStdString(vm["output"].as<std::string>())).string());
+//    compilerCommand << "g++";
+//    compilerCommand << "-o" << QString::fromStdString(CFileSystem::getInstance().getFullPath(
+//                               QString::fromStdString(vm["output"].as<std::string>())).string());
+    QString compilerStr = NSettings::CSolverSettings::getInstance().getCompiler(
+                src.endsWith("cpp") ? "cpp" : "java"
+                );
+    compilerStr.replace("$SRC_PATH$", src);
+    compilerStr.replace("$BIN_PATH$", QString::fromStdString(CFileSystem::getInstance().getFullPath(
+                                                      QString::fromStdString(vm["output"].as<std::string>())).string()));
+    qDebug () << "compilerStr is " << compilerStr;
+    compilerCommand << compilerStr.split(" ");
     if(vm.count("flag"))
     {
         for(const std::string& f : vm["flag"].as<std::vector<std::string>>())
@@ -61,7 +67,7 @@ void CCompiler::run()
         //compilerCommand += QString(" -") + f.c_str();
     }
     //compilerCommand += QString(" ") + CFileSystem::getInstance().getFullPath(src).string().c_str();
-    compilerCommand << CFileSystem::getInstance().getFullPath(src).string().c_str();
+    //compilerCommand << CFileSystem::getInstance().getFullPath(src).string().c_str();
     qDebug () << "compiler command is " << compilerCommand;
     mProc.reset(new CSystemCmd(compilerCommand));
     //connect(proc.get(), SIGNAL(finished()), proc.get(), SLOT(deleteLater()));

@@ -1,19 +1,21 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <SolverSettings>
 	<Compilers>
-		<Compiler name="cpp">g++ -std=c++11 -O2 $SRC_PATH$ -o $BIN_PATH$</Compiler>
+		<Compiler name="cpp">g++ -std=c++11 -w -O2 $SRC_PATH$ -o $BIN_PATH$</Compiler>
+        <Compiler name="java">javac -d $BIN_PATH$ $SRC_PATH$</Compiler>
 	</Compilers>
 	<Runners>
         <!-- types:
             * compiler - compile source code to binary for execution
-                         compiler with the same name will be used
+                         solver with the same name will be used
             * interpreter - just run the source code
 
             BIN_PATH - path to binary file after compilation
             SRC_PATH - path to file, which is passed through command line 
         -->
-		<Runner name="cpp" type="compiler">./$BIN_PATH$</Runner>
+		<Runner name="cpp" type="compiler">$BIN_PATH$</Runner>
+        <Runner name="java" type="compiler">java $BIN_PATH$</Runner>
 		<Runner name="python" type="interpreter">/usr/bin/python ./$SRC_PATH$</Runner>
-		<Runner name="bin" type="interpreter">./$SRC_PATH$</Runner>
+		<Runner name="bin" type="interpreter">$SRC_PATH$</Runner>
 	</Runners>
 </SolverSettings>
