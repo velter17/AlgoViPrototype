@@ -25,9 +25,9 @@ CSolverSettings::CSolverSettings(const std::string& configPath)
     while(!node.isNull())
     {
         QDomElement command = node.toElement();
-        if(command.text() == "Compilers")
+        if(command.tagName() == "Compilers")
             parseCompilers(node);
-        else if(command.text() == "Solvers")
+        else if(command.tagName() == "Solvers")
             parseSolvers(node);
         node = node.nextSibling();
     }
@@ -39,6 +39,7 @@ void CSolverSettings::parseCompilers(QDomNode rootNode)
     while(!node.isNull())
     {
         QDomElement compiler = node.toElement();
+        qDebug () << "parsed " << compiler.attributeNode("name").value() << " ==> " << compiler.text();
         this->setCompiler(compiler.attributeNode("name").value(), compiler.text());
         node = node.nextSibling();
     }

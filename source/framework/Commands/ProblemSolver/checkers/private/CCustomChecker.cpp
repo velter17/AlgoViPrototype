@@ -24,8 +24,6 @@ CCustomChecker::CCustomChecker(const QStringList &args, const QString &path)
         ("input,i", boost::program_options::value<std::string>()->required()->default_value(""), "Input data")
         ("output,o", boost::program_options::value<std::string>()->required()->default_value(""), "Output data")
         ("answer,a", boost::program_options::value<std::string>()->required()->default_value(""), "Answer data");
-
-    mCheckerMessage = "invalid checker";
 }
 
 TCheckerResult CCustomChecker::check()
@@ -57,12 +55,11 @@ TCheckerResult CCustomChecker::check()
     });
     proc->start(mPathToChecker, QStringList() << (dir.path() + "input.txt")
                                                << (dir.path() + "output.txt")
-                                               << (dir.path() + "answer.txt")
-                                               << (dir.path() + "result.txt"));
+                                               << (dir.path() + "answer.txt"));
     proc->waitForFinished(10000000);
     qDebug () << "custom checker finished";
     TCheckerResult checker_result = proc->exitCode() == 0 ? TCheckerResult::Success : TCheckerResult::Fail;
-    std::string checker_result_msg;
+    /*std::string checker_result_msg;
     std::ifstream res_file((dir.path() + "result.txt").toStdString());
     mCheckerMessage.clear();
     while(std::getline(res_file, checker_result_msg))
@@ -72,7 +69,7 @@ TCheckerResult CCustomChecker::check()
     if(!mCheckerMessage.isEmpty())
     {
         mCheckerMessage.chop(1);
-    }
+    }*/
     proc->deleteLater();
     return checker_result;
 }
