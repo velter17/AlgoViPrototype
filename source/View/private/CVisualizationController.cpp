@@ -26,8 +26,13 @@ CVisualizationController::CVisualizationController(
     , mCompilerHandler(compilerHandler)
     , mMode(1)
     , mCurrentPrefix("Point")
+    , mSolverMode(0)
 {
     mConnections.push_back(connect(mView.get(), &CGraphicView::objectAdded, [this](IAlgoViItem* item){
+        mObjectsMap[item->getName()] = item;
+    }));
+    mConnections.push_back(connect(mView.get(), &CGraphicView::objectChangeName, [this](IAlgoViItem* item, QString oldName){
+        mObjectsMap.erase(oldName);
         mObjectsMap[item->getName()] = item;
     }));
     mConnections.push_back(connect(mView.get(), &CGraphicView::changed, [this](const QList<QRectF>& region){
@@ -91,11 +96,20 @@ void CVisualizationController::handleInput(const QString &data)
             return;
         mCurrentPrefix = *args.begin();
     }
+    if(command == "mode")
+    {
+       if(args.isEmpty())
+          return;
+       if(*args.begin() == "1")
+          mSolverMode = 1;
+       else
+          mSolverMode = 0;
+    }
 }
 
 void CVisualizationController::update()
 {
-    if(mVisualizer->isFree())
+    if(mVisualizer->isFree() && mSolverMode)
         emit sceneChanged(mVisualizer->serialize(mObjectsMap));
 }
 
@@ -105,7 +119,7 @@ void CVisualizationController::initVisualizer()
     qDebug () << "algoPath = " << algoPath;
     if(algoPath == "convex_hull")
         mVisualizer.reset(new CConvexHullViz);
-    else if(algoPath == "segment_cross")
+    else if(algoPath == "route")
         mVisualizer.reset(new CSegmentCrossViz);
     else if(algoPath == "dist_to_curve")
         mVisualizer.reset(new CDistToCurveViz);

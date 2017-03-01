@@ -60,6 +60,9 @@ void CGraphicView::addAlgoViItem(IAlgoViItem *item)
 {
     this->addItem(item);
     item->update();
+    connect(item, &IAlgoViItem::nameChanged, [this, item](const QString& oldName){
+       emit objectChangeName(item, oldName);
+    });
     emit objectAdded(item);
 }
 

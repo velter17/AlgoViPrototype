@@ -45,7 +45,9 @@ private: // fields
     boost::program_options::variables_map mVarMap;
     QProcess* mApp;
     std::vector<std::string> mFlagParsed;
+    std::vector<std::string> mArgsForApp;
     QStringList mFlags;
+    QStringList mArgsForAppList;
     QString mAppPath;
     bool mTestSaveFlag;
     std::ofstream mOutputFile;

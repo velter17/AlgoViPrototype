@@ -64,6 +64,10 @@ void CCommandHandler::handle(const QString& commandStr)
     {
         mParent->handle<TAlgoViCommand::Tester>(args);
     }
+    else if(command == "tester-interactive")
+    {
+        mParent->handle<TAlgoViCommand::TesterInteractive>(args);
+    }
     else if(command == "run-visual")
     {
         mParent->handle<TAlgoViCommand::RunSolverVisual>(args);

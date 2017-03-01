@@ -29,6 +29,7 @@ CProblemSolver::CProblemSolver(const QStringList &args, std::shared_ptr<CTestPro
         ("flag,f", boost::program_options::value<std::vector<std::string>>(&mFlagParsed),
             "compilation flags\n"
             "use c++ -DVAL like -f VAL")
+        ("arg", boost::program_options::value<std::vector<std::string>>(&mArgsForApp), "specific args for app")
         ("input,i",boost::program_options::value<std::string>(), "input file")
         ("output,o", boost::program_options::value<std::string>(), "output file")
         ("test-save,t", boost::program_options::bool_switch()->default_value(false), "Post saving test to archive");
@@ -77,6 +78,10 @@ bool CProblemSolver::init()
         for(const std::string& f : mFlagParsed)
         {
             mFlags << "-f" << QString::fromStdString(f);
+        }
+        for(const std::string& arg : mArgsForApp)
+        {
+           mArgsForAppList << QString::fromStdString(arg);
         }
         if(mTestToExecuteFlag && mVarMap.count("input"))
         {
@@ -145,13 +150,12 @@ void CProblemSolver::run()
                     QString::fromStdString(mVarMap["output"].as<std::string>())).string();
         mOutputFile.open(filePath);
     }
-
+    qDebug () << "args for app " << getSourceCodePath() << " are " << mArgsForAppList;
 #ifdef WIN_TARGET
     mApp->start(mAppPath, QProcess::Unbuffered | QProcess::ReadWrite);
 #else
-    mApp->start(QString("stdbuf -o 0 ") + mAppPath, QProcess::Unbuffered | QProcess::ReadWrite);
+    mApp->start(/*QString("stdbuf -o 0 ") + */mAppPath, mArgsForAppList, QProcess::Unbuffered | QProcess::ReadWrite);
 #endif
-
     mApp->waitForStarted();
     if(mTestToExecuteFlag)
     {

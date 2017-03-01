@@ -36,6 +36,7 @@ enum class TCommandHintName
     RunSolverVisual,
     Test,
     Tester,
+    TesterInteractive
 
 //    Total,
 };

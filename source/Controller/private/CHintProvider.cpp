@@ -13,6 +13,7 @@
 #include "framework/Commands/ProblemSolver/CVisualSolver.h"
 #include "framework/Commands/system/CCompiler.h"
 #include "framework/Commands/ProblemSolver/CProblemTester.h"
+#include "framework/Commands/ProblemSolver/CProblemTesterInteractive.h"
 #include "framework/Commands/CFileSystem.h"
 #include "framework/settings/CCommandSettings.h"
 #include "../CHintProvider.h"
@@ -63,6 +64,13 @@ tHint CHintProvider::hints<TCommandHintName::Tester>(const QString& input)
 }
 
 template <>
+tHint CHintProvider::hints<TCommandHintName::TesterInteractive>(const QString& input)
+{
+    NCommand::CProblemTesterInteractive tester(QStringList(), nullptr, nullptr);
+    return tHint(tester.getOptionList(), 0);
+}
+
+template <>
 tHint CHintProvider::hints<TCommandHintName::AppName>(const QString& input)
 {
     return tHint(mAppList, 0);
@@ -74,11 +82,12 @@ CHintProvider::CHintProvider()
     mFunc["run-visual"] = &CHintProvider::hints<TCommandHintName::RunSolverVisual>;
     mFunc["test"] = &CHintProvider::hints<TCommandHintName::Test>;
     mFunc["tester"] = &CHintProvider::hints<TCommandHintName::Tester>;
+    mFunc["tester-interactive"] = &CHintProvider::hints<TCommandHintName::TesterInteractive>;
     mFunc["compile"] = &CHintProvider::hints<TCommandHintName::Compile>;
 
     // internal commands
-    mAppList << "run" << "test" << "tester" << "compile" << "run-visual";
-    mAppList << NSettings::CCommandSettings::getInstance().getCommandList();
+    mAppList << "run" << "test" << "tester" << "compile" << "run-visual" << "tester-interactive";
+    mAppList << NSettings::CCommandSettings::getInstance().getCommandList() << "exit";
 }
 
 tHint CHintProvider::getHints(const QString& input)

@@ -16,6 +16,7 @@
 #include "framework/Commands/ProblemSolver/CTestCommand.h"
 #include "framework/Commands/ProblemSolver/ProblemParser/CCodeforcesParser.h"
 #include "framework/Commands/ProblemSolver/CProblemTester.h"
+#include "framework/Commands/ProblemSolver/CProblemTesterInteractive.h"
 #include "framework/Commands/ProblemSolver/CVisualSolver.h"
 #include "View/CVisualizationController.h"
 
@@ -537,6 +538,47 @@ void CAlgoViSystem::handle<TAlgoViCommand::Tester>(const QStringList &args)
                                   Q_ARG(QString, msg));
     });
     connect(tester, &NCommand::CProblemTester::logHtml, [this](QString msg){
+//        mController->handleLog(msg);
+        QMetaObject::invokeMethod(mController.get(), "handleLogHtml", Qt::QueuedConnection,
+                                  Q_ARG(QString, msg));
+    });
+    connect(testerThread, SIGNAL(started()), tester, SLOT(run()));
+    setMode(TSystemMode::InProcess);
+    QMetaObject::invokeMethod(mController.get(), "setAppMode", Qt::QueuedConnection);
+    testerThread->start();
+//    test->run();
+}
+
+template <>
+void CAlgoViSystem::handle<TAlgoViCommand::TesterInteractive>(const QStringList &args)
+{
+    qDebug () << "CAlgoViSystem> TesterInteractive " << args;
+    QThread* testerThread = new QThread();
+    NCommand::CProblemTesterInteractive* tester = new NCommand::CProblemTesterInteractive(
+                args,
+                mTestProvider,
+                mCompilerHandler);
+    mTerminalCommand = tester;
+    tester->moveToThread(testerThread);
+    connect(tester, &NCommand::CProblemTesterInteractive::finished, [this, testerThread, tester](int code){
+        testerThread->quit();
+        tester->deleteLater();
+        //mController->unlock();
+        setMode(TSystemMode::Default);
+        QMetaObject::invokeMethod(mController.get(), "unlock", Qt::QueuedConnection);
+    });
+    connect(testerThread, SIGNAL(finished()), testerThread, SLOT(deleteLater()));
+    connect(tester, &NCommand::CProblemTesterInteractive::error, [this](QString msg){
+//        mController->handleError(msg);
+        QMetaObject::invokeMethod(mController.get(), "handleError", Qt::QueuedConnection,
+                                  Q_ARG(QString, msg));
+    });
+    connect(tester, &NCommand::CProblemTesterInteractive::log, [this](QString msg){
+//        mController->handleLog(msg);
+        QMetaObject::invokeMethod(mController.get(), "handleLog", Qt::QueuedConnection,
+                                  Q_ARG(QString, msg));
+    });
+    connect(tester, &NCommand::CProblemTesterInteractive::logHtml, [this](QString msg){
 //        mController->handleLog(msg);
         QMetaObject::invokeMethod(mController.get(), "handleLogHtml", Qt::QueuedConnection,
                                   Q_ARG(QString, msg));

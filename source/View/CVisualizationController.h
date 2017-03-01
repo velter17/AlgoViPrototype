@@ -57,6 +57,7 @@ private: // fields
     std::map <QString, int> mPointNum;
     QString mCurrentPrefix;
     int mMode;
+    int mSolverMode;
 };
 
 } // namespace NView

@@ -35,6 +35,7 @@ enum class TAlgoViCommand
     ParseSite,          // parse site to get data
     Test,               // test commands
     Tester,             // launch tester
+    TesterInteractive,  // launch tester for interactive solutions
     TerminateProcess,   // stop application
     Compile,            // compile source code
     ChangeDirectory,    // change working directory
