@@ -6,7 +6,7 @@
  * @date     16.12.2016
  */
 
-#include "../CVisualizationController.h"
+#include "../CViewerController.h"
 #include "View/components/CPoint.h"
 
 #include "View/problems/CConvexHullViz.h"
@@ -17,22 +17,16 @@
 namespace NView
 {
 
-CVisualizationController::CVisualizationController(
-        std::shared_ptr<CGraphicView> view,
+CViewerController::CViewerController(std::shared_ptr<CGraphicView> view,
         std::shared_ptr<NCommand::CCompilerHandler> compilerHandler,
-        NCommand::CVisualSolver *visualSolver)
+        NCommand::CVisualViewer *visualSolver)
     : mView(view)
     , mVisualSolver(visualSolver)
     , mCompilerHandler(compilerHandler)
     , mMode(1)
     , mCurrentPrefix("Point")
-    , mSolverMode(0)
 {
     mConnections.push_back(connect(mView.get(), &CGraphicView::objectAdded, [this](IAlgoViItem* item){
-        mObjectsMap[item->getName()] = item;
-    }));
-    mConnections.push_back(connect(mView.get(), &CGraphicView::objectChangedName, [this](IAlgoViItem* item, QString oldName){
-        mObjectsMap.erase(oldName);
         mObjectsMap[item->getName()] = item;
     }));
     mConnections.push_back(connect(mView.get(), &CGraphicView::changed, [this](const QList<QRectF>& region){
@@ -46,19 +40,19 @@ CVisualizationController::CVisualizationController(
     mView->setObjectsMap(&mObjectsMap);
 }
 
-CVisualizationController::~CVisualizationController()
+CViewerController::~CVisualizationController()
 {
     mView->clear();
     mView->setDataToDraw("");
 }
 
-void CVisualizationController::finish()
+void CViewerController::finish()
 {
     for(QMetaObject::Connection& c : mConnections)
         disconnect(c);
 }
 
-void CVisualizationController::addPoint(const QPoint &p)
+void CViewerController::addPoint(const QPoint &p)
 {
     if(mMode == 1)
     {
@@ -68,12 +62,12 @@ void CVisualizationController::addPoint(const QPoint &p)
     }
 }
 
-void CVisualizationController::updateResult(const QString &data)
+void CViewerController::updateResult(const QString &data)
 {
     mView->setDataToDraw(data);
 }
 
-void CVisualizationController::handleInput(const QString &data)
+void CViewerController::handleInput(const QString &data)
 {
     qDebug () << "CVisualizerController> handleInput: " << data;
     QStringList args = data.split(QRegExp("\\s+"), QString::SkipEmptyParts);
@@ -96,34 +90,21 @@ void CVisualizationController::handleInput(const QString &data)
             return;
         mCurrentPrefix = *args.begin();
     }
-    if(command == "mode")
-    {
-        if(args.isEmpty())
-            return;
-        if(*args.begin() == "1")
-        {
-            mSolverMode = 1;
-        }
-        else
-        {
-            mSolverMode = 0;
-        }
-    }
 }
 
-void CVisualizationController::update()
+void CViewerController::update()
 {
-    if(mVisualizer->isFree() && mSolverMode)
+    if(mVisualizer->isFree())
         emit sceneChanged(mVisualizer->serialize(mObjectsMap));
 }
 
-void CVisualizationController::initVisualizer()
+void CViewerController::initVisualizer()
 {
     QString algoPath = mVisualSolver->getAlgoScriptPath();
     qDebug () << "algoPath = " << algoPath;
     if(algoPath == "convex_hull")
         mVisualizer.reset(new CConvexHullViz);
-    else if(algoPath == "polygon")
+    else if(algoPath == "segment_cross")
         mVisualizer.reset(new CSegmentCrossViz);
     else if(algoPath == "dist_to_curve")
         mVisualizer.reset(new CDistToCurveViz);

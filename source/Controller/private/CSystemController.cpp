@@ -22,7 +22,7 @@ CSystemController::CSystemController(std::shared_ptr<CAlgoViWinMain> GUI)
     connect(mGUI.get(), SIGNAL(newCommand(NController::TTerminalCommandType,QString)),
             this, SLOT(handleCommand(NController::TTerminalCommandType, QString)));
 
-    GUI->showGraphicScene(false);
+//    GUI->showGraphicScene(false);
     GUI->showIoWin(false);
 
     connect(mGUI.get(), &CAlgoViWinMain::ioOkButtonPressed, [this](){

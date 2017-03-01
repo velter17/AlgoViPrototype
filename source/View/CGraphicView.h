@@ -40,6 +40,7 @@ public slots:
 signals:
     void mousePressed(const QPoint& p);
     void objectAdded(IAlgoViItem* item);
+    void objectChangedName(IAlgoViItem* item, QString oldName);
 
 private: // fields
     std::shared_ptr<IProblemVisualizer> mVisualizer;

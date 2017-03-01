@@ -1,9 +1,9 @@
 /**
  * Project   AlgoVi
  *
- * @file     CVisualizationController.h
+ * @file     CViewerController.h
  * @author   Dmytro Sadovyi
- * @date     16.12.2016
+ * @date     27.02.2017
  */
 
 #pragma once
@@ -15,21 +15,21 @@
 
 #include "View/components/IAlgoViItem.h"
 #include "View/CGraphicView.h"
-#include "framework/Commands/ProblemSolver/CVisualSolver.h"
+#include "framework/Commands/ProblemSolver/CVisualViewer.h"
 #include "View/problems/IProblemVisualizer.h"
 #include "framework/Commands/ProblemSolver/CCompilerHandler.h"
 
 namespace NView
 {
 
-class CVisualizationController : public QObject
+class CViewerController : public QObject
 {
     Q_OBJECT
 public: // methods
-    CVisualizationController(std::shared_ptr<CGraphicView> view,
+    CViewerController(std::shared_ptr<CGraphicView> view,
                              std::shared_ptr<NCommand::CCompilerHandler> compilerHandler,
-                             NCommand::CVisualSolver* visualSolver);
-    ~CVisualizationController();
+                             NCommand::CVisualViewer* visualSolver);
+    ~CViewerController();
 
     void finish();
 
@@ -57,7 +57,6 @@ private: // fields
     std::map <QString, int> mPointNum;
     QString mCurrentPrefix;
     int mMode;
-    int mSolverMode;
 };
 
 } // namespace NView

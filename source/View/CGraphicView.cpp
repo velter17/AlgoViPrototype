@@ -38,7 +38,20 @@ void CGraphicView::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
 void CGraphicView::drawForeground(QPainter *painter, const QRectF &rect)
 {
+    const int gridSize = 10;
+    painter->setOpacity(0.15);
+    qreal left = int(rect.left()) - (int(rect.left()) % gridSize);
+    qreal top = int(rect.top()) - (int(rect.top()) % gridSize);
+    QVarLengthArray<QLineF, 100> lines;
+    for (qreal x = left; x < rect.right(); x += gridSize)
+        lines.append(QLineF(x, rect.top(), x, rect.bottom()));
+    for (qreal y = top; y < rect.bottom(); y += gridSize)
+        lines.append(QLineF(rect.left(), y, rect.right(), y));
+    painter->drawLines(lines.data(), lines.size());
+    painter->setOpacity(1.0);
+
     QGraphicsScene::drawForeground(painter, rect);
+
     if(0 != mVisualizer && !mDataToDraw.isEmpty())
     {
         mVisualizer->realize(mDataToDraw, painter, *mObjectsMap);
@@ -60,6 +73,9 @@ void CGraphicView::addAlgoViItem(IAlgoViItem *item)
 {
     this->addItem(item);
     item->update();
+    connect(item, &IAlgoViItem::nameChanged, [this, item](QString oldName){
+        emit objectChangedName(item, oldName);
+    });
     emit objectAdded(item);
 }
 
