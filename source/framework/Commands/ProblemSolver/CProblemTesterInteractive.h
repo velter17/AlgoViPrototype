@@ -47,8 +47,10 @@ private:
     int mTestFrom;
     int mTestTo;
     bool mDetailedReport;
+    bool mFullProtocol;
     int mAcceptedCounter;
     QTemporaryDir mDir;
+    std::vector <std::pair<bool, QString> > mInteractionProtocol;
 };
 
 } // namespace NCommand

@@ -118,7 +118,7 @@ void CProblemSolver::run()
     });
     connect(mApp, &QProcess::readyReadStandardOutput, [this](){
         QString str = mApp->readAllStandardOutput();
-        qDebug () << "output : " << str;
+//        qDebug () << "output : " << str;
         if(mVarMap.count("output"))
         {
             mOutputFile << str.toStdString();
@@ -160,6 +160,7 @@ void CProblemSolver::run()
     if(mTestToExecuteFlag)
     {
         this->appendData(mTestProvider->get(mTestToExecute).input);
+        mApp->closeWriteChannel();
     }
     else if(mVarMap.count("input"))
     {
@@ -171,12 +172,19 @@ void CProblemSolver::run()
         {
             this->appendData(QString::fromStdString(buffer) + "\n");
         }
+        mApp->closeWriteChannel();
     }
 }
 
 void CProblemSolver::terminate()
 {
     mApp->terminate();
+}
+
+void CProblemSolver::sendEOF()
+{
+    assert(0 != mApp);
+    mApp->closeWriteChannel();
 }
 
 void CProblemSolver::appendData(const QString &data)

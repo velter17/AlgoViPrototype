@@ -37,6 +37,7 @@ public: // methods
 public slots:
     void run() override;
     void terminate() override;
+    void sendEOF();
     void appendData(const QString& data) override;
 
 private: // fields

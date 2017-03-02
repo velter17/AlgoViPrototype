@@ -37,7 +37,8 @@ CProblemTesterInteractive::CProblemTesterInteractive(
             "If no param - test whole test archive\n"
             "If -t 2 -> test second test from archive\n"
             "If -t 2-5 -> test from 2 to 5 tests from archive")
-        ("verbose", boost::program_options::bool_switch()->default_value(false), "detailed report");
+        ("verbose", boost::program_options::bool_switch()->default_value(false), "detailed report")
+        ("full-protocol", boost::program_options::bool_switch()->default_value(false), "full interaction protocol");
 }
 
 void CProblemTesterInteractive::run()
@@ -143,6 +144,7 @@ void CProblemTesterInteractive::run()
     mSourceCodePath = QString::fromStdString(CFileSystem::getInstance().getFullPath(
                 QString::fromStdString(vm["src"].as<std::string>())).string());
     mDetailedReport = vm["verbose"].as<bool>();
+    mFullProtocol = vm["full-protocol"].as<bool>();
     mInteractorCodePath = QString::fromStdString(CFileSystem::getInstance().getFullPath(
                                                  QString::fromStdString(vm["interactor"].as<std::string>())).string());
     mCheckerCodePath = QString::fromStdString(CFileSystem::getInstance().getFullPath(
@@ -259,25 +261,36 @@ void CProblemTesterInteractive::runTester(int test)
    });
    connect(problemSolver, &CProblemSolver::finished,
                [this, test, problemSolver](int code){
-//       qDebug () << "finished with output: " << mOutputBuffer;
+       qDebug () << "problemSolver finished with code " << code;
 //       qDebug () << "test " << test+1 << " finished with code " << code;
 //       emit logHtml(" test #" + QString::number(test+1) + ": " + checkResult(test, code));
        problemSolver->deleteLater();
        mProblemSolverPtr = nullptr;
+       mInteractorPtr->sendEOF();
 //       testRunner(test+1);
    });
    connect(problemSolver, &CProblemSolver::log, [this](const QString& log){
 //       mOutputBuffer += log;
-      qDebug () << "TesterInteractor> problemSolver log: " << log;
-      mInteractorPtr->appendData(log);
+      //qDebug () << "TesterInteractor> problemSolver log: " << log;
+      mInteractionProtocol.push_back({true, log});
+      if(mInteractorPtr != nullptr)
+          mInteractorPtr->appendData(log);
+      else
+          mProblemSolverPtr->terminate();
    });
    connect(problemSolver, &CProblemSolver::error, [this](const QString& log){
-      qDebug () << "TesterInteractor> problemSolver error: " << log;
-       mErrorBuffer = log;
+      //qDebug () << "TesterInteractor> problemSolver error: " << log;
+//       mErrorBuffer = log;
    });
    connect(mInteractorPtr, &CProblemSolver::log, [this](const QString& log){
-      qDebug () << "TesterInteractor> interator log: " << log;
-      mProblemSolverPtr->appendData(log);
+      //qDebug () << "TesterInteractor> interator log: " << log;
+      mInteractionProtocol.push_back({false, log});
+      if(mProblemSolverPtr != nullptr)
+          mProblemSolverPtr->appendData(log);
+   });
+   connect(mInteractorPtr, &CProblemSolver::error, [this](const QString& log){
+      //qDebug () << "TesterInteractor> interator log: " << log;
+      mErrorBuffer = log;
    });
    connect(mInteractorPtr, &CProblemSolver::finished, [this, test](int code){
       qDebug () << "TesterInteractor> finished";
@@ -286,6 +299,7 @@ void CProblemTesterInteractive::runTester(int test)
       emit logHtml(" test #" + QString::number(test+1) + ": " + checkResult(test, code));
       runTester(test+1);
    });
+   mInteractionProtocol.clear();
    problemSolver->run();
    mInteractorPtr->run();
 }
@@ -314,6 +328,17 @@ QString CProblemTesterInteractive::checkResult(int test, int returnCode)
         else
         {
             ret = "<font color=\"#CF8FA8\">Fail</font>";
+        }
+        if(mFullProtocol)
+        {
+            for(std::size_t i = 0; i < mInteractionProtocol.size(); ++i)
+            {
+                if(mInteractionProtocol[i].first)
+                    ret += "<font color=green>Interactor: </font>";
+                else
+                    ret += "<font color=red>Solution: </font>";
+                ret += mInteractionProtocol[i].second + "<br>";
+            }
         }
         if(mDetailedReport)
         {
