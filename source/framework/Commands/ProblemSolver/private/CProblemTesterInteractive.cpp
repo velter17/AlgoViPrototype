@@ -9,6 +9,7 @@
 #include "../CProblemTesterInteractive.h"
 #include "framework/Commands/ProblemSolver/checkers/CStraightForwardChecker.h"
 #include "framework/Commands/ProblemSolver/checkers/CInteractorChecker.h"
+#include "framework/Commands/ProblemSolver/checkers/CTestLibChecker.h"
 
 namespace NCommand
 {
@@ -49,6 +50,12 @@ void CProblemTesterInteractive::run()
     {
         emit finished(0);
         return;
+    }
+
+    if(vm.count("checker"))
+    {
+        mCheckerType = QString::fromStdString(vm["checker"].as<std::string>());
+        mCustomChecker = CFileSystem::getInstance().exists(mCheckerType);
     }
 
     auto validateNum = [](const QString& str)
@@ -150,7 +157,11 @@ void CProblemTesterInteractive::run()
     mCheckerCodePath = QString::fromStdString(CFileSystem::getInstance().getFullPath(
                                                  QString::fromStdString(vm["checker"].as<std::string>())).string());
 
-    std::vector<QString> codes {mSourceCodePath, mInteractorCodePath, mCheckerCodePath};
+    std::vector<QString> codes {mSourceCodePath, mInteractorCodePath};
+    if(mCustomChecker)
+    {
+       codes.push_back(mCheckerCodePath);
+    }
 
     compile(codes, 0);
 }
@@ -272,7 +283,7 @@ void CProblemTesterInteractive::runTester(int test)
    connect(problemSolver, &CProblemSolver::log, [this](const QString& log){
 //       mOutputBuffer += log;
       //qDebug () << "TesterInteractor> problemSolver log: " << log;
-      mInteractionProtocol.push_back({true, log});
+      mInteractionProtocol.push_back({false, log});
       if(mInteractorPtr != nullptr)
           mInteractorPtr->appendData(log);
       else
@@ -284,7 +295,7 @@ void CProblemTesterInteractive::runTester(int test)
    });
    connect(mInteractorPtr, &CProblemSolver::log, [this](const QString& log){
       //qDebug () << "TesterInteractor> interator log: " << log;
-      mInteractionProtocol.push_back({false, log});
+      mInteractionProtocol.push_back({true, log});
       if(mProblemSolverPtr != nullptr)
           mProblemSolverPtr->appendData(log);
    });
@@ -296,6 +307,10 @@ void CProblemTesterInteractive::runTester(int test)
       qDebug () << "TesterInteractor> finished";
       mInteractorPtr->deleteLater();
       mInteractorPtr = nullptr;
+      if(mProblemSolverPtr != nullptr)
+      {
+         mProblemSolverPtr->terminate();
+      }
       emit logHtml(" test #" + QString::number(test+1) + ": " + checkResult(test, code));
       runTester(test+1);
    });
@@ -309,13 +324,43 @@ QString CProblemTesterInteractive::checkResult(int test, int returnCode)
     QString ret;
     if(returnCode == 0 && mErrorBuffer.isEmpty())
     {
-        IProblemChecker *checker = new CInteractorChecker(
-                            QStringList()
-                                << "--input" << mDir.path() + "input.txt"
-                                << "--answer" << mDir.path() + "answer.txt"
-                                << "--output" << mDir.path() + "output.txt",
-                            mCompilerHandler->getAppPath(mCheckerCodePath));
-        checker->run();
+//        IProblemChecker *checker = new CInteractorChecker(
+//                            QStringList()
+//                                << "--input" << mDir.path() + "input.txt"
+//                                << "--answer" << mDir.path() + "answer.txt"
+//                                << "--output" << mDir.path() + "output.txt",
+//                            mCompilerHandler->getAppPath(mCheckerCodePath));
+//        checker->run();
+       IProblemChecker *checker;
+       if(mCheckerType.isEmpty())
+       {
+           checker = new CStraightForwardChecker(
+               QStringList()
+                   << "--data" << mOutputBuffer
+                   << "--answer" << mTestProvider->get(test).output);
+       }
+       else
+       {
+           if(!mCustomChecker)
+           {
+               checker = new CInteractorChecker(
+                        QStringList()
+                            << "--input" << mDir.path() + "input.txt"
+                            << "--answer" << mDir.path() + "answer.txt"
+                            << "--output" << mDir.path() + "output.txt",
+                           "checkers/" + mCheckerType);
+           }
+           else
+           {
+              checker = new CInteractorChecker(
+                           QStringList()
+                               << "--input" << mDir.path() + "input.txt"
+                               << "--answer" << mDir.path() + "answer.txt"
+                               << "--output" << mDir.path() + "output.txt",
+                           mCompilerHandler->getAppPath(mCheckerCodePath));
+           }
+           checker->run();
+       }
         if(checker->getResult() == TCheckerResult::Success)
         {
             ret = "<font color=green>OK</font>";
@@ -329,16 +374,19 @@ QString CProblemTesterInteractive::checkResult(int test, int returnCode)
         {
             ret = "<font color=\"#CF8FA8\">Fail</font>";
         }
-        if(mFullProtocol)
+        if(mFullProtocol && checker->getResult() != TCheckerResult::Success)
         {
+            ret += "<br>======---Interaction protocol---=======<br>";
             for(std::size_t i = 0; i < mInteractionProtocol.size(); ++i)
             {
+
                 if(mInteractionProtocol[i].first)
                     ret += "<font color=green>Interactor: </font>";
                 else
                     ret += "<font color=red>Solution: </font>";
                 ret += mInteractionProtocol[i].second + "<br>";
             }
+            ret += "======---====================---=======<br>";
         }
         if(mDetailedReport)
         {
@@ -349,6 +397,20 @@ QString CProblemTesterInteractive::checkResult(int test, int returnCode)
     else
     {
         ret = "<font color=\"#CF8F18\">RE</font>";
+        if(mFullProtocol)
+        {
+            ret += "<br>======---Interaction protocol---=======<br>";
+            for(std::size_t i = 0; i < mInteractionProtocol.size(); ++i)
+            {
+
+                if(mInteractionProtocol[i].first)
+                    ret += "<font color=green>Interactor: </font>";
+                else
+                    ret += "<font color=red>Solution: </font>";
+                ret += mInteractionProtocol[i].second + "<br>";
+            }
+            ret += "======---====================---=======<br>";
+        }
         if(mDetailedReport)
         {
             if(mErrorBuffer.isEmpty())

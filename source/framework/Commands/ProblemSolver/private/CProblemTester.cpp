@@ -52,7 +52,6 @@ void CProblemTester::run()
     {
         mCheckerType = QString::fromStdString(vm["checker"].as<std::string>());
         mCustomChecker = CFileSystem::getInstance().exists(mCheckerType);
-
     }
 
     auto validateNum = [](const QString& str)

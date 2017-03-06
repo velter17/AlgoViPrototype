@@ -42,6 +42,8 @@ private:
     QString mCheckerCodePath;
     QString mInteractorCodePath;
     bool mTerminateFlag;
+    QString mCheckerType;
+    bool mCustomChecker;
     CProblemSolver* mProblemSolverPtr;
     CProblemSolver* mInteractorPtr;
     int mTestFrom;

@@ -317,10 +317,16 @@ void CTerminal::tabKeyHandler()
                 --idx;
             }
             cmdStr = cmdStr.mid(idx+1);
-            if(hints.first.size() == 1 &&
-                    NCommand::CFileSystem::getInstance().isDirectory(cmdStr + toAppend))
+            if(hints.first.size() == 1)
             {
-                this->textCursor().insertText("/");
+                if(NCommand::CFileSystem::getInstance().isDirectory(cmdStr + toAppend))
+                {
+                   this->textCursor().insertText("/");
+                }
+                else
+                {
+                    this->textCursor().insertText(" ");
+                }
             }
         }
     }
